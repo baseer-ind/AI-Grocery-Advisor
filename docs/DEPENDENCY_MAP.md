@@ -38,7 +38,7 @@ new layer.
 | Bill Processing (`bill_processing_service.py` + helpers) | `domain.schemas*`, `core.config`, Provider implementations, OCR implementations, `basket_service`, `bill_parsing_service`, `bill_recommendation_service` | `routes_bill_upload.py`, `worker.py` |
 | Providers (`services/providers/*`) | `services.providers.base` only | `provider_aggregator`, `bill_processing_service`, `bill_recommendation_service`, `routes_providers_search.py` |
 | OCR (`services/ocr/*`) | `services.ocr.base` only | `bill_processing_service` |
-| User (`domain.models.User`) | nothing | `worker.py`, `routes_bill_upload_async.py` (ownership FKs only — no service layer yet) |
+| User/Auth (`auth_service.py`, `user_service.py`, `domain.models.User/UserPreferences/UserSession/PasswordResetToken`) | `domain.models`, `core.config`, `google-auth`, `bcrypt` | `routes_auth.py`, `routes_users.py`, `api/v1/deps.py` (current-user resolution), `worker.py`/`routes_bill_upload_async.py` (ownership FKs) |
 | Offers | not built | — |
 | Analytics | not built | — |
 
@@ -49,6 +49,8 @@ new layer.
 | Postgres (asyncpg + SQLAlchemy async) | `db/session.py`, all routes/worker that persist | Primary datastore |
 | Redis | `core/cache.py` (search/recommendation cache), `queue.py`/`worker.py` (arq job queue) | Two distinct uses of the same instance — caching and job queue |
 | httpx (`AsyncClient`) | `services/providers/bigbasket_provider.py` | External price-provider HTTP calls |
+| google-auth (+ `requests` transitive dep) | `auth_service.py` | Google Sign-In ID token verification |
+| bcrypt | `auth_service.py` | Password hashing |
 | Tesseract (via `pytesseract`) | `services/ocr/tesseract_provider.py` | Bill OCR |
 | arq | `worker.py`, `queue.py` | Background job execution |
 | Alembic | `backend/alembic/` | Schema migrations |
@@ -73,7 +75,13 @@ of the readiness report (Option B, item 3).
 2. **Flat `services/` directory mixes domains** — no import-graph risk,
    but a discoverability cost: listing `services/*.py` interleaves
    Pricing, Recommendation, and Bill Processing files.
-3. **No service layer for `User`** — only ORM model + nullable FKs
-   exist; any future auth work will need a new `services/user_service.py`
-   (or `domains/user/`) with no current code to depend on or migrate
-   from, so this is a pure addition, not a refactor risk.
+3. **User/Auth service layer now exists** (`auth_service.py`,
+   `user_service.py`, `api/v1/deps.py`) — resolved the gap previously
+   noted here. `api/v1/deps.py` (`get_current_user`/
+   `get_current_user_optional`) is now the one place that resolves a
+   session token to a `User`; future authenticated routes should depend
+   on it rather than re-implementing token parsing.
+4. **`google-auth` is the second external HTTP-capable dependency**
+   alongside `httpx` (used only for token verification, not general
+   HTTP) — acceptable for now, but a third such dependency would be
+   worth consolidating.

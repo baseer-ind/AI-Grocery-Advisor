@@ -31,26 +31,37 @@ forward-looking domain-architecture assessment.
     `BillUpload`/`Basket` — no auth flow yet.
   - Search scalability: `pg_trgm` GIN indexes on `products.name`/`brand`.
   - Alembic migration tooling initialized and wired to the async engine.
-- **Architecture readiness documentation** (this PR): Architecture
+- **Architecture readiness documentation** (PR #5): Architecture
   Readiness Report, Dependency Map, 4 ADRs, this file — no code
   changes, per explicit instruction to review docs before any refactor.
+- **User Identity and Authentication domain** (this PR): email/password
+  + Google Sign-In auth, server-side session management (opaque
+  tokens, immediate revocation on logout), password reset flow,
+  `UserPreferences` (grocery/cashback preferences, membership tier),
+  ownership association for async bill uploads, and bill/basket history
+  endpoints. Partial Modularization refactor explicitly deferred again
+  per instruction — not part of this PR. See ADR-005.
 
 ## Pending Features
 
 (Numbering matches `ARCHITECTURE.md`'s original roadmap.)
 
-1. Basket Comparison (multi-platform optimal split) — not built.
+1. Basket Comparison (multi-platform optimal split) — not built. Next
+   planned milestone.
 2. Bill Upload Intelligence — OCR pipeline done; product-matching
    against a real catalog beyond the seed data is the remaining gap.
-3. Personalized Profiles (auth, cashback rules) — schema placeholder
-   only (`User` model); no auth flow, no service layer.
+3. Personalized Profiles (auth, cashback rules) — auth flow and
+   preferences now implemented (this PR); cashback *rules* (actual
+   offer logic, not just storing a preference) still not built.
 4. Offer Intelligence Engine — not built; flagged as the hardest
    data-acquisition problem in the product.
 5. Review Intelligence — not built.
 6. Smart Alternatives — not built.
 7. Price History & Buy-Now-or-Wait — `PriceHistory` model exists;
    no snapshot job or trend classifier yet.
-8. Price Alerts — not built; depends on Feature 7.
+8. Price Alerts — not built; depends on Feature 7. User domain is now
+   ready to attach this (new table + `user_id` FK, no `User` schema
+   change needed).
 9. Household Consumption Intelligence — not built; depends on Feature 2.
 10. Direct Purchase Links — already implemented (`product_url` on
     every listing, no checkout automation, by design).
@@ -61,7 +72,7 @@ forward-looking domain-architecture assessment.
 ## Current Architecture
 
 Domain-separated service modules (Product, Pricing, Recommendation,
-Bill Processing implemented; User schema-only; Offers/Analytics not
+Bill Processing, User/Auth implemented; Offers/Analytics not
 started) with a strict one-directional dependency graph and zero
 circular dependencies (verified, see `docs/DEPENDENCY_MAP.md`).
 FastAPI HTTP layer is a thin adapter over framework-agnostic service
@@ -77,10 +88,11 @@ async bill uploads). Full diagram in
   the product — no public APIs from Blinkit/Zepto/Swiggy Instamart;
   sustained scraping has ToS/legal exposure. Affiliate/partnership
   feeds should be evaluated before investing in a scraper fleet.
-- **No auth/identity layer at all** — blocks Personalized Profiles,
-  Price Alerts (need to know whose alert), and Partner APIs (need API
-  keys). Cheap to build now, expensive to retrofit once there's real
-  user data to migrate.
+- **Auth/identity layer now exists** (this PR) — unblocks Personalized
+  Profiles, Price Alerts, and Partner APIs going forward. Remaining
+  gap: no email-sending infra, so password reset tokens are only
+  returned directly in development; production needs a transport
+  before this flow is user-facing.
 - **Cashback/offer rule data goes stale** — needs a refresh process,
   not a one-time seed, once built.
 - **Bill-processing coordinator couples directly to concrete
@@ -95,34 +107,37 @@ async bill uploads). Full diagram in
 - Flat `services/` directory interleaves multiple domains in one
   directory listing (discoverability cost, not a correctness issue).
 - No formal Impact Analysis process applied to past PRs — template now
-  exists (`docs/ARCHITECTURE_READINESS_REPORT.md`, Section 9) to apply
-  going forward.
+  exists (`docs/ARCHITECTURE_READINESS_REPORT.md`, Section 9); applied
+  to this PR (see PR description) going forward.
 - Synchronous `/bills/upload` path still doesn't persist
   `Basket`/`BasketItem`/`BasketRecommendation` rows (only the async
   path does) — parity or retirement is an open decision, not yet made.
+  Ownership association in this PR therefore only applies to the async
+  path.
+- No email-sending infrastructure — password reset tokens are only
+  returned directly to the client in development; production needs a
+  transport before the reset flow is usable end-to-end.
 
 ## Roadmap (near-term, suggested sequencing)
 
 1. Review and decide on the Architecture Readiness Report's
    recommendation (Partial Modularization) before any further service
-   restructuring.
-2. Build the User/auth domain (schema already exists) — highest
-   leverage scalability item per the readiness report, and a
-   prerequisite for Personalized Profiles, Price Alerts, Partner APIs.
-3. Basket Comparison (Feature 1) — extends the existing pricing engine
-   per-item; no new infrastructure needed.
-4. Resolve the data-acquisition strategy for live prices
+   restructuring — still deferred, per instruction, in this PR.
+2. Basket Comparison (Feature 1) — extends the existing pricing engine
+   per-item; no new infrastructure needed. Next planned milestone.
+3. Resolve the data-acquisition strategy for live prices
    (affiliate/partnership feed evaluation) before scaling provider
    coverage further.
-5. Price History snapshot job + trend classifier (Feature 7), as the
-   prerequisite for Price Alerts (Feature 8).
+4. Price History snapshot job + trend classifier (Feature 7), as the
+   prerequisite for Price Alerts (Feature 8), which can now attach to
+   `User` directly.
 
 ## Recommended Next Priorities
 
-1. Decide on Architecture Readiness Report recommendation (approve/
-   modify/reject Partial Modularization).
-2. Auth/User domain implementation.
+1. Basket Comparison feature (next planned milestone).
+2. Decide on Architecture Readiness Report recommendation (approve/
+   modify/reject Partial Modularization) — still pending.
 3. Live price data-acquisition strategy decision (affiliate vs.
    scraping vs. status quo).
-4. Basket Comparison feature.
+4. Email-sending infrastructure, to make password reset production-ready.
 5. Formal adoption of the Impact Analysis template for all new PRs.
