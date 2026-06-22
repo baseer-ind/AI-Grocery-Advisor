@@ -17,34 +17,34 @@ def _write_csv(path, rows):
         writer.writerows(rows)
 
 
-def test_missing_file_returns_unavailable(tmp_path):
-    result = CSVProvider(tmp_path / "missing.csv").fetch("atta")
+async def test_missing_file_returns_unavailable(tmp_path):
+    result = await CSVProvider(tmp_path / "missing.csv").fetch("atta")
     assert result.status == ProviderStatus.UNAVAILABLE
 
 
-def test_match_returns_success(tmp_path):
+async def test_match_returns_success(tmp_path):
     csv_path = tmp_path / "prices.csv"
     _write_csv(
         csv_path,
         [["jiomart", "JioMart", "Aashirvaad Atta 5kg", "399", "321", "30", "0", "0", "4.0", "3.9", "120", "true", "https://example.com"]],
     )
-    result = CSVProvider(csv_path).fetch("atta")
+    result = await CSVProvider(csv_path).fetch("atta")
     assert result.status == ProviderStatus.SUCCESS
     assert result.listings[0].selling_price == 321.0
 
 
-def test_no_match_returns_not_found(tmp_path):
+async def test_no_match_returns_not_found(tmp_path):
     csv_path = tmp_path / "prices.csv"
     _write_csv(csv_path, [["jiomart", "JioMart", "Amul Butter 500g", "275", "255", "30", "0", "0", "4.4", "3.9", "120", "true", "https://example.com"]])
-    result = CSVProvider(csv_path).fetch("atta")
+    result = await CSVProvider(csv_path).fetch("atta")
     assert result.status == ProviderStatus.NOT_FOUND
 
 
-def test_malformed_numeric_row_is_skipped(tmp_path):
+async def test_malformed_numeric_row_is_skipped(tmp_path):
     csv_path = tmp_path / "prices.csv"
     _write_csv(
         csv_path,
         [["jiomart", "JioMart", "Aashirvaad Atta 5kg", "not-a-number", "321", "30", "0", "0", "4.0", "3.9", "120", "true", "https://example.com"]],
     )
-    result = CSVProvider(csv_path).fetch("atta")
+    result = await CSVProvider(csv_path).fetch("atta")
     assert result.status == ProviderStatus.NOT_FOUND

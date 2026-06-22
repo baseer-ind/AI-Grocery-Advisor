@@ -6,7 +6,7 @@ class _WorkingProvider(PriceProvider):
     platform_slug = "working"
     platform_name = "Working Mart"
 
-    def fetch(self, query: str) -> ProviderResult:
+    async def fetch(self, query: str, location_key: str | None = None) -> ProviderResult:
         listing = NormalizedListing(
             platform_slug=self.platform_slug,
             platform_name=self.platform_name,
@@ -29,12 +29,12 @@ class _BlockedProvider(PriceProvider):
     platform_slug = "blocked-platform"
     platform_name = "Blocked Platform"
 
-    def fetch(self, query: str) -> ProviderResult:
+    async def fetch(self, query: str, location_key: str | None = None) -> ProviderResult:
         return ProviderResult(status=ProviderStatus.BLOCKED, platform_slug=self.platform_slug, message="blocked")
 
 
-def test_recommendations_built_from_working_provider_despite_blocked_one():
-    result = search_providers([_WorkingProvider(), _BlockedProvider()], "atta")
+async def test_recommendations_built_from_working_provider_despite_blocked_one():
+    result = await search_providers([_WorkingProvider(), _BlockedProvider()], "atta")
 
     assert result.recommendations is not None
     assert result.recommendations.cheapest.platform_name == "Working Mart"
@@ -44,7 +44,7 @@ def test_recommendations_built_from_working_provider_despite_blocked_one():
     assert statuses["blocked-platform"] == ProviderStatus.BLOCKED
 
 
-def test_all_providers_blocked_returns_no_recommendations_but_reports_status():
-    result = search_providers([_BlockedProvider()], "atta")
+async def test_all_providers_blocked_returns_no_recommendations_but_reports_status():
+    result = await search_providers([_BlockedProvider()], "atta")
     assert result.recommendations is None
     assert result.provider_results[0].status == ProviderStatus.BLOCKED

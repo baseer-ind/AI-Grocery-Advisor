@@ -28,8 +28,8 @@ def _build_providers() -> list:
 
 
 @router.get("", response_model=ProviderSearchResult)
-async def search(q: str = Query(..., min_length=2)) -> ProviderSearchResult:
-    result = search_providers(_build_providers(), q)
+async def search(q: str = Query(..., min_length=2), location: str | None = Query(None)) -> ProviderSearchResult:
+    result = await search_providers(_build_providers(), q, location_key=location)
 
     providers_out = [
         ProviderStatusOut(
@@ -51,6 +51,7 @@ async def search(q: str = Query(..., min_length=2)) -> ProviderSearchResult:
                     eta_minutes=listing.eta_minutes,
                     in_stock=listing.in_stock,
                     product_url=listing.product_url,
+                    location_key=listing.location_key,
                 )
                 for listing in r.listings
             ],
@@ -69,4 +70,4 @@ async def search(q: str = Query(..., min_length=2)) -> ProviderSearchResult:
             best_value=RecommendationOut(**rs.best_value.__dict__),
         )
 
-    return ProviderSearchResult(query=q, providers=providers_out, recommendations=recommendations_out)
+    return ProviderSearchResult(query=q, location=location, providers=providers_out, recommendations=recommendations_out)

@@ -1,6 +1,7 @@
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import httpx
+import pytest
 
 from app.services.providers.base import ProviderStatus
 from app.services.providers.bigbasket_provider import BigBasketProvider
@@ -10,31 +11,38 @@ def _response(status_code, text=""):
     return httpx.Response(status_code, text=text, request=httpx.Request("GET", "https://www.bigbasket.com/ps/"))
 
 
-def test_403_returns_blocked():
-    with patch("httpx.get", return_value=_response(403)):
-        result = BigBasketProvider().fetch("atta")
+@pytest.mark.asyncio
+async def test_403_returns_blocked():
+    with patch.object(BigBasketProvider, "_request", AsyncMock(return_value=_response(403))):
+        result = await BigBasketProvider().fetch("atta")
     assert result.status == ProviderStatus.BLOCKED
 
 
-def test_network_error_returns_unavailable():
-    with patch("httpx.get", side_effect=httpx.ConnectError("connection refused")):
-        result = BigBasketProvider().fetch("atta")
+@pytest.mark.asyncio
+async def test_network_error_returns_unavailable():
+    with patch.object(BigBasketProvider, "_request", AsyncMock(side_effect=httpx.ConnectError("connection refused"))):
+        result = await BigBasketProvider().fetch("atta")
     assert result.status == ProviderStatus.UNAVAILABLE
 
 
-def test_unexpected_status_returns_unavailable():
-    with patch("httpx.get", return_value=_response(500)):
-        result = BigBasketProvider().fetch("atta")
+@pytest.mark.asyncio
+async def test_unexpected_status_returns_unavailable():
+    with patch.object(BigBasketProvider, "_request", AsyncMock(return_value=_response(500))):
+        result = await BigBasketProvider().fetch("atta")
     assert result.status == ProviderStatus.UNAVAILABLE
 
 
-def test_200_with_no_matching_cards_returns_not_found():
-    with patch("httpx.get", return_value=_response(200, text="<html><body>no products here</body></html>")):
-        result = BigBasketProvider().fetch("atta")
+@pytest.mark.asyncio
+async def test_200_with_no_matching_cards_returns_not_found():
+    with patch.object(
+        BigBasketProvider, "_request", AsyncMock(return_value=_response(200, text="<html><body>no products here</body></html>"))
+    ):
+        result = await BigBasketProvider().fetch("atta")
     assert result.status == ProviderStatus.NOT_FOUND
 
 
-def test_200_with_parseable_cards_returns_success():
+@pytest.mark.asyncio
+async def test_200_with_parseable_cards_returns_success():
     html = """
     <html><body>
       <div qa-locator="product">
@@ -44,15 +52,16 @@ def test_200_with_parseable_cards_returns_success():
       </div>
     </body></html>
     """
-    with patch("httpx.get", return_value=_response(200, text=html)):
-        result = BigBasketProvider().fetch("atta")
+    with patch.object(BigBasketProvider, "_request", AsyncMock(return_value=_response(200, text=html))):
+        result = await BigBasketProvider().fetch("atta")
     assert result.status == ProviderStatus.SUCCESS
     assert result.listings[0].selling_price == 321.0
     assert result.listings[0].mrp == 399.0
 
 
-def test_parse_exception_returns_parse_error():
-    with patch("httpx.get", return_value=_response(200, text="<html></html>")), \
+@pytest.mark.asyncio
+async def test_parse_exception_returns_parse_error():
+    with patch.object(BigBasketProvider, "_request", AsyncMock(return_value=_response(200, text="<html></html>"))), \
          patch.object(BigBasketProvider, "_parse", side_effect=ValueError("boom")):
-        result = BigBasketProvider().fetch("atta")
+        result = await BigBasketProvider().fetch("atta")
     assert result.status == ProviderStatus.PARSE_ERROR

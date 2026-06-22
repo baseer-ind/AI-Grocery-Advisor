@@ -14,6 +14,11 @@ The CSS selectors in `_parse` are best-effort and UNVERIFIED against live
 markup, since a successful fetch couldn't be obtained while building this.
 A malformed/unexpected page structure surfaces as PARSE_ERROR rather than
 raising, so this is safe to ship even though the selectors aren't proven.
+
+Uses `httpx.AsyncClient` rather than the blocking `httpx.get` so a slow or
+hanging request against BigBasket can't stall the event loop — every other
+provider (and every other in-flight request) keeps running while this one
+waits out its timeout.
 """
 
 import httpx
@@ -30,9 +35,9 @@ class BigBasketProvider(PriceProvider):
     platform_slug = "bigbasket"
     platform_name = "BigBasket"
 
-    def fetch(self, query: str) -> ProviderResult:
+    async def fetch(self, query: str, location_key: str | None = None) -> ProviderResult:
         try:
-            response = self._request(query)
+            response = await self._request(query)
         except httpx.RequestError as exc:
             return ProviderResult(
                 status=ProviderStatus.UNAVAILABLE,
@@ -68,14 +73,9 @@ class BigBasketProvider(PriceProvider):
 
         return ProviderResult(status=ProviderStatus.SUCCESS, platform_slug=self.platform_slug, listings=listings)
 
-    def _request(self, query: str) -> httpx.Response:
-        return httpx.get(
-            _SEARCH_URL,
-            params={"q": query},
-            headers={"User-Agent": _USER_AGENT},
-            timeout=_TIMEOUT_SECONDS,
-            follow_redirects=True,
-        )
+    async def _request(self, query: str) -> httpx.Response:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=_TIMEOUT_SECONDS) as client:
+            return await client.get(_SEARCH_URL, params={"q": query}, headers={"User-Agent": _USER_AGENT})
 
     def _parse(self, html: str, query: str) -> list[NormalizedListing]:
         soup = BeautifulSoup(html, "html.parser")

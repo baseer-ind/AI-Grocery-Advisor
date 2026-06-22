@@ -7,7 +7,7 @@ class _CheaperElsewhereProvider(PriceProvider):
     platform_slug = "cheaper-mart"
     platform_name = "Cheaper Mart"
 
-    def fetch(self, query: str) -> ProviderResult:
+    async def fetch(self, query: str, location_key: str | None = None) -> ProviderResult:
         listing = NormalizedListing(
             platform_slug=self.platform_slug,
             platform_name=self.platform_name,
@@ -26,10 +26,10 @@ class _CheaperElsewhereProvider(PriceProvider):
         return ProviderResult(status=ProviderStatus.SUCCESS, platform_slug=self.platform_slug, listings=[listing])
 
 
-def test_bills_own_price_is_fed_into_recommendation_engine():
+async def test_bills_own_price_is_fed_into_recommendation_engine():
     basket = Basket(items=[BasketItem(product_name="Aashirvaad Whole Wheat Atta 5kg", quantity=1, unit="kg", total_price=399.0)])
 
-    results = build_recommendations_for_basket([_CheaperElsewhereProvider()], basket)
+    results = await build_recommendations_for_basket([_CheaperElsewhereProvider()], basket)
 
     assert len(results) == 1
     recommendations = results[0].result.recommendations
@@ -40,9 +40,9 @@ def test_bills_own_price_is_fed_into_recommendation_engine():
     assert "Cheaper Mart" in platform_names
 
 
-def test_bill_listing_wins_when_it_is_the_cheapest():
+async def test_bill_listing_wins_when_it_is_the_cheapest():
     basket = Basket(items=[BasketItem(product_name="Aashirvaad Whole Wheat Atta 5kg", quantity=1, unit="kg", total_price=200.0)])
 
-    results = build_recommendations_for_basket([_CheaperElsewhereProvider()], basket)
+    results = await build_recommendations_for_basket([_CheaperElsewhereProvider()], basket)
 
     assert results[0].result.recommendations.cheapest.platform_name == "Your Bill"

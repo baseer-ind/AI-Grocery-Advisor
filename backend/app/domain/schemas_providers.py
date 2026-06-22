@@ -17,6 +17,7 @@ class ProviderListingOut(BaseModel):
     eta_minutes: int
     in_stock: bool
     product_url: str
+    location_key: str | None = None
 
 
 class ProviderStatusOut(BaseModel):
@@ -28,5 +29,6 @@ class ProviderStatusOut(BaseModel):
 
 class ProviderSearchResult(BaseModel):
     query: str
+    location: str | None
     providers: list[ProviderStatusOut]
     recommendations: RecommendationSetOut | None

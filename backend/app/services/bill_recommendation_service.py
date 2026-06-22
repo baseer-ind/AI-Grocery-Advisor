@@ -7,6 +7,7 @@ their bill was a good deal relative to other platforms — using the same
 `provider_aggregator` that powers live product search.
 """
 
+import asyncio
 from dataclasses import dataclass
 
 from app.services.basket_service import Basket, BasketItem
@@ -41,13 +42,13 @@ def _bill_listing(item: BasketItem) -> NormalizedListing:
     )
 
 
-def build_recommendations_for_basket(
-    providers: list[PriceProvider], basket: Basket
+async def build_recommendations_for_basket(
+    providers: list[PriceProvider], basket: Basket, location_key: str | None = None
 ) -> list[BasketItemRecommendation]:
-    return [
-        BasketItemRecommendation(
-            basket_item=item,
-            result=search_providers(providers, item.product_name, extra_listings=[_bill_listing(item)]),
+    results = await asyncio.gather(
+        *(
+            search_providers(providers, item.product_name, location_key=location_key, extra_listings=[_bill_listing(item)])
+            for item in basket.items
         )
-        for item in basket.items
-    ]
+    )
+    return [BasketItemRecommendation(basket_item=item, result=result) for item, result in zip(basket.items, results)]

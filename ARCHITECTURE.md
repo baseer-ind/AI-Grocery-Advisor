@@ -1,5 +1,9 @@
 # Architecture & Roadmap
 
+> See [`ARCHITECTURE_HARDENING.md`](./ARCHITECTURE_HARDENING.md) for the
+> async/caching/migration/background-job work done to future-proof this
+> slice before new product features are layered on top of it.
+
 ## What's built (vertical slice)
 
 **Product Search → Effective-Cost Pricing → AI Recommendation → UI**, fully
