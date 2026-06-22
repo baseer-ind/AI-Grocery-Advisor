@@ -11,7 +11,7 @@ preserved and returned alongside the recommendations so the caller/UI can show
 from dataclasses import dataclass
 
 from app.services.pricing_engine import compute_pricing
-from app.services.providers.base import PriceProvider, ProviderResult
+from app.services.providers.base import NormalizedListing, PriceProvider, ProviderResult
 from app.services.recommendation_engine import ListingView, RecommendationSet, build_recommendations
 
 
@@ -28,20 +28,21 @@ class AggregatedSearchResult:
     provider_results: list[ProviderResult]
 
 
-def search_providers(providers: list[PriceProvider], query: str) -> AggregatedSearchResult:
+def search_providers(
+    providers: list[PriceProvider],
+    query: str,
+    extra_listings: list[NormalizedListing] | None = None,
+) -> AggregatedSearchResult:
     provider_results = [provider.fetch(query) for provider in providers]
 
-    views: list[ListingView] = []
+    all_listings = list(extra_listings or [])
     for result in provider_results:
-        for listing in result.listings:
-            pricing = compute_pricing(listing)
-            views.append(
-                ListingView(
-                    listing=listing,
-                    platform=PlatformStub(name=listing.platform_name),
-                    pricing=pricing,
-                )
-            )
+        all_listings.extend(result.listings)
+
+    views = [
+        ListingView(listing=listing, platform=PlatformStub(name=listing.platform_name), pricing=compute_pricing(listing))
+        for listing in all_listings
+    ]
 
     recommendations = build_recommendations(views) if views else None
     return AggregatedSearchResult(recommendations=recommendations, provider_results=provider_results)

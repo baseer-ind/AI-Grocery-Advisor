@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     environment: str = "development"
     curated_prices_path: str = "data/curated_prices.csv"
+    ocr_engine: str = "tesseract"
 
     class Config:
         env_file = ".env"
