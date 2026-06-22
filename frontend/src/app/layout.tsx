@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Grocery Advisor",
-  description: "AI-powered grocery price, offer and recommendation engine for India.",
+  title: "Household Advisor — AI Household Purchase Advisor",
+  description:
+    "Helping households buy the right product, from the right place, at the right time, for the right price.",
 };
 
 export default function RootLayout({
