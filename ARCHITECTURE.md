@@ -4,6 +4,24 @@
 > async/caching/migration/background-job work done to future-proof this
 > slice before new product features are layered on top of it.
 
+## Product vision (reframed)
+
+The product is not a price-comparison app, an expense tracker, a
+coupon app, or "BuyHatke for groceries." Per the Competitive Analysis
+(`docs/COMPETITIVE_ANALYSIS.md`) and the resulting product-positioning
+decision: this is an **AI Household Purchase Advisor**. Every feature
+should answer one question — *how can this household buy better*, not
+just cheaper. Category scope is deliberately restricted to groceries
+and household consumables (cleaning supplies, personal care, baby care,
+pet food) until product-market fit is established — no flights, hotels,
+electronics, insurance, mutual funds, or fashion. The product's
+north-star metric is household savings generated, not products
+compared, users, or bills uploaded. This reframing doesn't change any
+already-built feature; it changes how new roadmap items (Historical
+Price Intelligence, Community Pricing, Household Consumption
+Intelligence) are designed and sequenced — see "Future Architecture
+Plan" below.
+
 ## What's built (vertical slice)
 
 **Product Search → Effective-Cost Pricing → AI Recommendation → UI**, fully
@@ -96,6 +114,27 @@ Suggested schema additions are noted inline.
 This section tracks features that have a complete design proposal but are
 explicitly not yet approved for implementation, plus the sequencing
 decisions still open.
+
+### Historical Price Intelligence (proposed, design-only)
+
+Full design in `docs/adr/0008-historical-price-intelligence.md`, written
+directly in response to `docs/COMPETITIVE_ANALYSIS.md` ranking this the
+strongest available long-term defensible asset (price history compounds
+over time and can't be backfilled by a later entrant — the same moat
+BuyHatke holds today). Generalizes the existing `PriceHistory` model and
+ADR-007's community-history design into one unified, source/confidence-
+aware `price_observations` table, plus a daily-aggregate rollup, a
+retention/archival policy (18-month raw retention, indefinite aggregate
+retention), and location-key reuse from the existing `location_key`
+precedent. Effort estimate ~6–6.5 days, excluding Household Intelligence
+join logic and true ML forecasting (both explicitly deferred).
+
+**Status: recommended as the next implementation priority**, ahead of
+Community Price Intelligence's ingestion routes — ADR-008 argues those
+routes should write into the table this ADR defines, rather than
+shipping a separate community-only history table as ADR-007 originally
+proposed. This is a recommendation, not a decision made on the user's
+behalf; final sequencing is still the user's call.
 
 ### Local Kirana & Community Price Intelligence (proposed, design-only)
 

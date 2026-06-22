@@ -88,10 +88,23 @@ forward-looking domain-architecture assessment.
     core engine + Basket Comparison.
 13. Local Kirana & Community Price Intelligence — **design-only, not
     built**. Full architecture/schema/confidence-model proposal in
-    `docs/adr/0007-community-price-intelligence.md`, per explicit
-    instruction to review before implementing. Sequencing against Basket
-    Comparison is an open decision for the user, not yet made — see
-    "Future Architecture Plan" in `ARCHITECTURE.md`.
+    `docs/adr/0007-community-price-intelligence.md`. **Superseded in
+    part by ADR-008** (see #14): community price history is no longer a
+    separate table, it's rows in ADR-008's unified `price_observations`
+    table; ADR-007's confidence-tier/level model and ingestion-route
+    plan are otherwise unchanged.
+14. **Historical Price Intelligence — design-only, not built.** Full
+    architecture/schema proposal in
+    `docs/adr/0008-historical-price-intelligence.md`, written in
+    response to the Competitive Analysis report
+    (`docs/COMPETITIVE_ANALYSIS.md`) identifying this as the strongest
+    long-term defensible asset in the category. Unifies and generalizes
+    the existing `PriceHistory` model and ADR-007's community-history
+    design into one `price_observations` table, source/confidence-aware
+    from day one. ADR-008 recommends this be built **before** ADR-007's
+    community-submission ingestion routes (not independently, as
+    ADR-007 originally concluded), since ADR-007 now writes into the
+    table this ADR defines.
 
 ## Current Architecture
 
@@ -128,6 +141,14 @@ async bill uploads). Full diagram in
   stays unbuilt the longer the product has no mitigation for the
   unsolved live-price-acquisition problem above; the sequencing decision
   is explicitly the user's, not made here.
+- **Historical Price Intelligence is fully designed (ADR-008) but
+  unbuilt** — per the Competitive Analysis report, this is the
+  strongest available long-term moat (price history compounds and
+  can't be backfilled by a later entrant) and the clock on that
+  compounding doesn't start until the table exists and is being
+  populated; ADR-008 recommends building this early, before ADR-007's
+  ingestion routes, for that reason. Sequencing decision is still the
+  user's to make, not assumed here.
 
 ## Technical Debt
 
@@ -153,35 +174,42 @@ async bill uploads). Full diagram in
 
 ## Roadmap (near-term, suggested sequencing)
 
-1. Review and decide on the Architecture Readiness Report's
+1. **Historical Price Intelligence (Feature 14, ADR-008) — design
+   complete, recommended as the next implementation priority** per the
+   Competitive Analysis report's defensibility ranking and ADR-008's
+   own "start the data-compounding clock early" argument. ADR-008
+   recommends this precede Community Price Intelligence's ingestion
+   routes (a change from ADR-007's original "ship in either order"
+   conclusion), since the two are now one unified schema.
+2. Local Kirana & Community Price Intelligence (Feature 13, ADR-007) —
+   design complete; confidence-tier/level model unchanged, but its
+   ingestion routes should land after #1 per ADR-008.
+3. Review and decide on the Architecture Readiness Report's
    recommendation (Partial Modularization) before any further service
-   restructuring — still deferred, per instruction, in this PR.
-2. Basket Comparison (Feature 1) — **implemented** this PR
+   restructuring — still deferred, per instruction.
+4. Basket Comparison (Feature 1) — **implemented**
    (`basket_optimization_engine.py`/`basket_comparison_service.py`).
-3. **Local Kirana & Community Price Intelligence (Feature 13) — design
-   complete (ADR-007), implementation not started.** Sequencing decision
-   (build now vs. after other pending features) is explicitly left to the
-   user; the ADR's own analysis is that it has no hard dependency on
-   Basket Comparison and can ship independently.
-4. Resolve the data-acquisition strategy for live prices
+5. Resolve the data-acquisition strategy for live prices
    (affiliate/partnership feed evaluation) before scaling provider
-   coverage further — also directly relevant to deciding whether
-   Community Price Intelligence is worth prioritizing sooner, since it
-   is one mitigation for this same problem.
-5. Price History snapshot job + trend classifier (Feature 7), as the
-   prerequisite for Price Alerts (Feature 8), which can now attach to
-   `User` directly. Note: Feature 13's `CommunityPriceHistory` design
-   (ADR-007 §6) is deliberately compatible with this so the two don't
-   diverge if both get built.
+   coverage further.
+6. Household Consumption Intelligence (Feature 9) — explicitly flagged
+   in ADR-008 §6 as the next design needed after Historical Price
+   Intelligence, since the two together (price + behavior) are what
+   produce the "household purchase advisor" recommendations described
+   in the product-vision reframing (see `ARCHITECTURE.md`).
 
 ## Recommended Next Priorities
 
-1. **Decide on Community Price Intelligence sequencing** (ADR-007) —
-   build now, build after other pending features, or hold — this is the
-   one open decision blocking further work on that feature.
-2. Decide on Architecture Readiness Report recommendation (approve/
+1. **Decide on Historical Price Intelligence sequencing** (ADR-008) —
+   the Competitive Analysis report's top-ranked defensibility item;
+   ADR-008 recommends building it before Community Price
+   Intelligence's ingestion routes. This is the most consequential
+   open decision right now.
+2. Decide on Community Price Intelligence sequencing (ADR-007) relative
+   to #1 above.
+3. Decide on Architecture Readiness Report recommendation (approve/
    modify/reject Partial Modularization) — still pending.
-3. Live price data-acquisition strategy decision (affiliate vs.
-   scraping vs. status quo) — informs priority #1 above.
-4. Email-sending infrastructure, to make password reset production-ready.
-5. Formal adoption of the Impact Analysis template for all new PRs.
+4. Live price data-acquisition strategy decision (affiliate vs.
+   scraping vs. status quo).
+5. Email-sending infrastructure, to make password reset production-ready.
+6. Formal adoption of the Impact Analysis template for all new PRs.
