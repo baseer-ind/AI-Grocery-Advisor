@@ -1,0 +1,4 @@
+platform_slug,platform_name,product_name,mrp,selling_price,delivery_fee,platform_fee,handling_fee,product_rating,delivery_rating,eta_minutes,in_stock,product_url
+jiomart,JioMart,Aashirvaad Whole Wheat Atta 5kg,399,321,30,0,0,4.0,3.9,120,true,https://www.jiomart.com/search/aashirvaad-atta-5kg
+dmart-ready,DMart Ready,Aashirvaad Whole Wheat Atta 5kg,399,289,49,0,0,4.2,3.7,1440,true,https://www.dmart.in/search?q=aashirvaad+atta+5kg
+jiomart,JioMart,Amul Butter 500g,275,255,30,0,0,4.4,3.9,120,true,https://www.jiomart.com/search/amul-butter-500g

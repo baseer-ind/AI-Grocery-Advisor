@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     claude_api_key: str | None = None
     openai_api_key: str | None = None
     environment: str = "development"
+    curated_prices_path: str = "data/curated_prices.csv"
 
     class Config:
         env_file = ".env"
