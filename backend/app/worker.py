@@ -10,7 +10,9 @@ from arq.connections import RedisSettings
 
 from app.core.config import settings
 from app.db.session import SessionLocal
-from app.domain.models import Basket, BasketItem, BasketRecommendation, BillUpload
+from dataclasses import asdict
+
+from app.domain.models import Basket, BasketItem, BasketOptimization, BasketRecommendation, BillUpload
 from app.services.bill_processing_service import BillProcessingError, process_bill
 
 
@@ -33,11 +35,16 @@ async def process_bill_job(ctx, bill_upload_id: int, file_bytes: bytes, content_
             await session.commit()
             return
 
-        basket = Basket(bill_upload_id=bill_upload.id, user_id=bill_upload.user_id)
+        basket = Basket(
+            bill_upload_id=bill_upload.id,
+            user_id=bill_upload.user_id,
+            source="bill_upload",
+            location_key=location,
+        )
         session.add(basket)
         await session.flush()
 
-        for item_out, item_rec_out in zip(result.basket, result.recommendations):
+        for item_out, item_rec_out in zip(result.response.basket, result.response.recommendations):
             basket_item = BasketItem(
                 basket_id=basket.id,
                 product_name=item_out.product_name,
@@ -52,6 +59,14 @@ async def process_bill_job(ctx, bill_upload_id: int, file_bytes: bytes, content_
                 BasketRecommendation(
                     basket_item_id=basket_item.id,
                     recommendation_json=item_rec_out.model_dump(),
+                )
+            )
+
+        if result.optimization is not None:
+            session.add(
+                BasketOptimization(
+                    basket_id=basket.id,
+                    optimization_json=asdict(result.optimization),
                 )
             )
 

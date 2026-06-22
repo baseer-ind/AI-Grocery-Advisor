@@ -21,6 +21,7 @@ async def upload_bill(file: UploadFile, location: str | None = Query(None)) -> B
     content_type = file.content_type or ""
 
     try:
-        return await process_bill(file_bytes, content_type, location=location)
+        result = await process_bill(file_bytes, content_type, location=location)
+        return result.response
     except BillProcessingError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.message) from exc

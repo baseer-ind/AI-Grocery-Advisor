@@ -8,7 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.deps import get_current_user_optional
 from app.db.session import get_session
-from app.domain.models import Basket, BasketItem, BasketRecommendation, BillUpload, User
+from app.domain.models import Basket, BasketItem, BasketOptimization, BasketRecommendation, BillUpload, User
+from app.domain.schemas_baskets import BasketOptimizationOut
 from app.domain.schemas_bills import BasketItemRecommendationOut, BillUploadResponse
 from app.domain.schemas_bills_async import BillUploadAsyncAccepted, BillUploadStatusOut
 from app.queue import get_arq_pool
@@ -94,4 +95,11 @@ async def get_bill_upload_status(
         ],
     )
 
-    return BillUploadStatusOut(bill_upload_id=bill_upload.id, status=bill_upload.status, result=result)
+    optimization_row = (
+        await session.execute(BasketOptimization.__table__.select().where(BasketOptimization.basket_id == basket_id))
+    ).first()
+    optimization_out = BasketOptimizationOut(**optimization_row.optimization_json) if optimization_row else None
+
+    return BillUploadStatusOut(
+        bill_upload_id=bill_upload.id, status=bill_upload.status, result=result, optimization=optimization_out
+    )

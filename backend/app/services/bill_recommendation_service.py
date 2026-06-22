@@ -47,7 +47,12 @@ async def build_recommendations_for_basket(
 ) -> list[BasketItemRecommendation]:
     results = await asyncio.gather(
         *(
-            search_providers(providers, item.product_name, location_key=location_key, extra_listings=[_bill_listing(item)])
+            search_providers(
+                providers,
+                item.product_name,
+                location_key=location_key,
+                extra_listings=[_bill_listing(item)] if item.total_price > 0 else None,
+            )
             for item in basket.items
         )
     )

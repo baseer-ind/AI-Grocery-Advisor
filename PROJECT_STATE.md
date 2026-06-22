@@ -34,20 +34,38 @@ forward-looking domain-architecture assessment.
 - **Architecture readiness documentation** (PR #5): Architecture
   Readiness Report, Dependency Map, 4 ADRs, this file — no code
   changes, per explicit instruction to review docs before any refactor.
-- **User Identity and Authentication domain** (this PR): email/password
+- **User Identity and Authentication domain**: email/password
   + Google Sign-In auth, server-side session management (opaque
   tokens, immediate revocation on logout), password reset flow,
   `UserPreferences` (grocery/cashback preferences, membership tier),
   ownership association for async bill uploads, and bill/basket history
   endpoints. Partial Modularization refactor explicitly deferred again
-  per instruction — not part of this PR. See ADR-005.
+  per instruction. See ADR-005.
+- **Basket Comparison and Basket Optimization Engine** (this PR):
+  `basket_optimization_engine.py` (pure, no-I/O) ranks platforms across
+  an entire basket — current cost, cheapest platform, best-overall
+  platform, multi-platform cherry-picked optimum, estimated savings —
+  and produces four basket-level recommendations (Best Overall,
+  Cheapest, Best Value, Fastest), each with a reason string.
+  `basket_comparison_service.py` is the source-agnostic orchestration
+  entry point: bill uploads, OCR-derived baskets, and now manually
+  entered baskets (`POST /api/v1/baskets/compare`) all flow through the
+  same pipeline. Comparison results persist as `BasketOptimization`
+  (one JSON row per basket, same pattern as
+  `BasketRecommendation`) when the caller is authenticated; anonymous
+  comparisons still return a full result, just unsaved. New `GET
+  /api/v1/baskets/{basket_id}/comparison` retrieves a saved result.
+  `Basket.source`/`Basket.location_key` columns added (migration
+  `e7a1c9d3f456`). See ADR-006.
 
 ## Pending Features
 
 (Numbering matches `ARCHITECTURE.md`'s original roadmap.)
 
-1. Basket Comparison (multi-platform optimal split) — not built. Next
-   planned milestone.
+1. Basket Comparison (multi-platform optimal split) — implemented this
+   PR (`basket_optimization_engine.py`/`basket_comparison_service.py`);
+   covers bill-derived, OCR-derived, and manual baskets. Saved-basket
+   favorites/history beyond raw `Basket` rows still not built.
 2. Bill Upload Intelligence — OCR pipeline done; product-matching
    against a real catalog beyond the seed data is the remaining gap.
 3. Personalized Profiles (auth, cashback rules) — auth flow and
@@ -72,9 +90,10 @@ forward-looking domain-architecture assessment.
 ## Current Architecture
 
 Domain-separated service modules (Product, Pricing, Recommendation,
-Bill Processing, User/Auth implemented; Offers/Analytics not
-started) with a strict one-directional dependency graph and zero
-circular dependencies (verified, see `docs/DEPENDENCY_MAP.md`).
+Bill Processing, User/Auth, Basket Comparison implemented;
+Offers/Analytics not started) with a strict one-directional dependency
+graph and zero circular dependencies (verified, see
+`docs/DEPENDENCY_MAP.md`).
 FastAPI HTTP layer is a thin adapter over framework-agnostic service
 functions. Two runtime processes share Postgres + Redis: the API
 process (request/response, including async bill-upload enqueue) and
@@ -101,9 +120,12 @@ async bill uploads). Full diagram in
 
 ## Technical Debt
 
-- `bill_processing_service.py` imports concrete provider/OCR classes
-  directly instead of via a registry (Recommendation: fix as part of
-  Partial Modularization, not urgent on its own).
+- `bill_processing_service.py` imports concrete OCR classes
+  directly instead of via a registry (price providers now go through
+  `providers/registry.py`, added this PR since basket comparison needed
+  the same provider list as bill processing — OCR has no second caller
+  yet, so it wasn't pulled out; Recommendation: fix as part of Partial
+  Modularization, not urgent on its own).
 - Flat `services/` directory interleaves multiple domains in one
   directory listing (discoverability cost, not a correctness issue).
 - No formal Impact Analysis process applied to past PRs — template now

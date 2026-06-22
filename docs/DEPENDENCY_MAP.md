@@ -35,10 +35,11 @@ new layer.
 | Pricing (`pricing_engine.py`) | `domain.models` | `recommendation_engine`, `product_search_service`, `provider_aggregator` |
 | Recommendation (`recommendation_engine.py`) | `domain.models`, Pricing | `product_search_service`, `provider_aggregator` |
 | Product (`product_search_service.py`, `domain.models.Product/ProductListing`) | Pricing, Recommendation, `domain.schemas` | `routes_search.py` |
-| Bill Processing (`bill_processing_service.py` + helpers) | `domain.schemas*`, `core.config`, Provider implementations, OCR implementations, `basket_service`, `bill_parsing_service`, `bill_recommendation_service` | `routes_bill_upload.py`, `worker.py` |
-| Providers (`services/providers/*`) | `services.providers.base` only | `provider_aggregator`, `bill_processing_service`, `bill_recommendation_service`, `routes_providers_search.py` |
+| Bill Processing (`bill_processing_service.py` + helpers) | `domain.schemas*`, `core.config`, OCR implementations, `providers.registry`, `basket_service`, `basket_optimization_engine`, `bill_parsing_service`, `bill_recommendation_service`, `basket_comparison_service` (boundary-conversion helpers) | `routes_bill_upload.py`, `worker.py` |
+| Providers (`services/providers/*`) | `services.providers.base` only; `providers.registry` additionally depends on the concrete provider classes and `core.config` | `provider_aggregator`, `bill_processing_service`, `bill_recommendation_service`, `basket_comparison_service`, `routes_providers_search.py`, `routes_baskets.py` |
 | OCR (`services/ocr/*`) | `services.ocr.base` only | `bill_processing_service` |
-| User/Auth (`auth_service.py`, `user_service.py`, `domain.models.User/UserPreferences/UserSession/PasswordResetToken`) | `domain.models`, `core.config`, `google-auth`, `bcrypt` | `routes_auth.py`, `routes_users.py`, `api/v1/deps.py` (current-user resolution), `worker.py`/`routes_bill_upload_async.py` (ownership FKs) |
+| User/Auth (`auth_service.py`, `user_service.py`, `domain.models.User/UserPreferences/UserSession/PasswordResetToken`) | `domain.models`, `core.config`, `google-auth`, `bcrypt` | `routes_auth.py`, `routes_users.py`, `api/v1/deps.py` (current-user resolution), `worker.py`/`routes_bill_upload_async.py`/`routes_baskets.py` (ownership FKs) |
+| Basket Comparison (`basket_optimization_engine.py`, `basket_comparison_service.py`, `domain.models.Basket/BasketItem/BasketOptimization`) | `pricing_engine`, `basket_service`, `bill_recommendation_service`, `providers.registry`, `domain.schemas_baskets` | `bill_processing_service.py`, `worker.py`, `routes_baskets.py`, `routes_bill_upload_async.py` (surfacing `BasketOptimizationOut`) |
 | Offers | not built | — |
 | Analytics | not built | — |
 
@@ -58,20 +59,27 @@ new layer.
 ## Circular dependency analysis
 
 **None found.** Verified by grepping every `from app.` / `import app.`
-statement across `backend/app` (see Architecture Readiness Report,
-Section 4/5, for the full per-file listing and reasoning). The only
-flagged risk is a *direction-correct but interface-bypassing* coupling:
-`bill_processing_service.py` imports concrete provider/OCR classes
-directly rather than only their base interfaces — not a cycle, but a
-maintenance/testability cost addressed in the Recommendation section
-of the readiness report (Option B, item 3).
+statement across `backend/app`, re-checked after this PR's new modules
+(`basket_optimization_engine.py`, `basket_comparison_service.py`,
+`providers/registry.py`, `routes_baskets.py`) — `bill_processing_service.py`
+now depends on `basket_comparison_service.py` for boundary-conversion
+helpers, and `basket_comparison_service.py` does not depend back on
+`bill_processing_service.py`, so the new edge is one-directional (see
+Architecture Readiness Report, Section 4/5, for the full per-file listing
+and reasoning predating this PR). The only flagged risk is a
+*direction-correct but interface-bypassing* coupling:
+`bill_processing_service.py` imports concrete OCR classes directly rather
+than only their base interface — not a cycle, but a maintenance/
+testability cost addressed in the Recommendation section of the
+readiness report (Option B, item 3). The equivalent coupling for price
+providers was resolved this PR via `providers/registry.py`.
 
 ## Future maintenance risks (non-circular)
 
-1. **Concrete-class coupling in `bill_processing_service.py`** — adding
-   a new price provider or OCR backend requires editing this
-   coordinator file's imports and instantiation logic, rather than
-   registering a new implementation against an existing interface.
+1. **Concrete-class coupling in `bill_processing_service.py` (OCR only)**
+   — adding a new OCR backend still requires editing this coordinator
+   file's imports and instantiation logic; price providers no longer
+   have this problem (`providers/registry.py`, this PR).
 2. **Flat `services/` directory mixes domains** — no import-graph risk,
    but a discoverability cost: listing `services/*.py` interleaves
    Pricing, Recommendation, and Bill Processing files.

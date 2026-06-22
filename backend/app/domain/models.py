@@ -208,8 +208,16 @@ class BillUpload(Base):
 
 
 class Basket(Base):
-    """A normalized set of items derived from a bill upload (or, in future,
-    a manually built basket) — the unit ownership is attached to.
+    """A normalized set of items derived from a bill upload, OCR, or a
+    manually entered list — the unit ownership and comparison results are
+    attached to.
+
+    `source` distinguishes how the basket was built (`"bill_upload"` vs.
+    `"manual"` today; OCR-derived baskets currently flow through
+    `bill_upload` since they originate from the same upload pipeline).
+    `location_key` mirrors `ProductListing.location_key` — the same opaque
+    pincode/city/dark-store identifier — so a saved basket can be re-compared
+    against the location it was originally priced for.
     """
 
     __tablename__ = "baskets"
@@ -217,11 +225,16 @@ class Basket(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     bill_upload_id: Mapped[int | None] = mapped_column(ForeignKey("bill_uploads.id"), nullable=True)
+    source: Mapped[str] = mapped_column(String(32), default="manual", server_default="manual")
+    location_key: Mapped[str | None] = mapped_column(String(64), nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     user: Mapped["User | None"] = relationship(back_populates="baskets")
     bill_upload: Mapped["BillUpload | None"] = relationship(back_populates="basket")
     items: Mapped[list["BasketItem"]] = relationship(back_populates="basket")
+    optimization: Mapped["BasketOptimization | None"] = relationship(
+        back_populates="basket", uselist=False, cascade="all, delete-orphan"
+    )
 
 
 class BasketItem(Base):
@@ -254,3 +267,24 @@ class BasketRecommendation(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     basket_item: Mapped["BasketItem"] = relationship(back_populates="recommendation")
+
+
+class BasketOptimization(Base):
+    """The basket-level comparison result (current/cheapest/best-overall/
+    multi-platform-optimized cost plus the four recommendations), persisted
+    as JSON for the same reason `BasketRecommendation.recommendation_json`
+    is: a point-in-time computed result that doesn't need its own joinable
+    columns, and shouldn't require a migration every time
+    `BasketOptimizationResult` grows a field. One row per basket — re-running
+    a comparison for the same basket overwrites it rather than accumulating
+    history, since "basket history" is the list of `Basket` rows themselves.
+    """
+
+    __tablename__ = "basket_optimizations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    basket_id: Mapped[int] = mapped_column(ForeignKey("baskets.id"), unique=True)
+    optimization_json: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    basket: Mapped["Basket"] = relationship(back_populates="optimization")

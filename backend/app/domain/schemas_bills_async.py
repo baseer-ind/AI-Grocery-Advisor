@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+from app.domain.schemas_baskets import BasketOptimizationOut
 from app.domain.schemas_bills import BillUploadResponse
 
 
@@ -14,3 +15,4 @@ class BillUploadStatusOut(BaseModel):
     status: str
     error_message: str | None = None
     result: BillUploadResponse | None = None
+    optimization: BasketOptimizationOut | None = None
