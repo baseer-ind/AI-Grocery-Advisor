@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     curated_prices_path: str = "data/curated_prices.csv"
     ocr_engine: str = "tesseract"
+    google_client_id: str | None = None
 
     class Config:
         env_file = ".env"

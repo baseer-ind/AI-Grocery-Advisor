@@ -93,19 +93,93 @@ class PriceHistory(Base):
 
 
 class User(Base):
-    """Minimal account record — no auth flow yet, just the ownership anchor
-    so bills/baskets/recommendations don't have to be retrofitted with a
-    user relationship once accounts exist.
+    """Account record. `hashed_password` is nullable because Google
+    Sign-In accounts never set one; `google_sub` is nullable because
+    email/password accounts never set it. A user may have either, both,
+    or (temporarily, mid-registration) neither — never enforced as
+    mutually exclusive, since linking both methods to one account is a
+    reasonable future feature, not something to design out now.
     """
 
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True)
+    full_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    hashed_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    google_sub: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    preferences: Mapped["UserPreferences | None"] = relationship(
+        back_populates="user", uselist=False, cascade="all, delete-orphan"
+    )
+    sessions: Mapped[list["UserSession"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    password_reset_tokens: Mapped[list["PasswordResetToken"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
     bill_uploads: Mapped[list["BillUpload"]] = relationship(back_populates="user")
     baskets: Mapped[list["Basket"]] = relationship(back_populates="user")
+
+
+class UserPreferences(Base):
+    """Free-form preference storage, one row per user. JSON columns
+    (rather than dedicated tables) for `grocery_preferences` and
+    `cashback_preferences` because both are open-ended, user-editable
+    key/value data that doesn't need to be queried/joined on — the same
+    reasoning already applied to `BasketRecommendation.recommendation_json`.
+    `membership_tier` is a plain column (not JSON) because it's a small,
+    enumerable value other code may eventually need to filter/branch on
+    (e.g. a future recommendation-engine discount for paid members).
+    """
+
+    __tablename__ = "user_preferences"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
+    grocery_preferences: Mapped[dict] = mapped_column(JSON, default=dict)
+    cashback_preferences: Mapped[dict] = mapped_column(JSON, default=dict)
+    membership_tier: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user: Mapped["User"] = relationship(back_populates="preferences")
+
+
+class UserSession(Base):
+    """A server-side session: the token handed to the client is opaque
+    (a random string), not a self-describing JWT, so a session can be
+    revoked (logout) by deleting/marking this row rather than waiting
+    out a token's expiry.
+    """
+
+    __tablename__ = "user_sessions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    token: Mapped[str] = mapped_column(String(128), unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    user: Mapped["User"] = relationship(back_populates="sessions")
+
+    __table_args__ = (Index("ix_user_sessions_token", "token"),)
+
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    token: Mapped[str] = mapped_column(String(128), unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime)
+    used_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    user: Mapped["User"] = relationship(back_populates="password_reset_tokens")
+
+    __table_args__ = (Index("ix_password_reset_tokens_token", "token"),)
 
 
 class BillUpload(Base):

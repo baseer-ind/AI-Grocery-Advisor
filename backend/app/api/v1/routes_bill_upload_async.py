@@ -6,8 +6,9 @@ poll; `routes_bill_upload.py` remains the inline/synchronous variant.
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.deps import get_current_user_optional
 from app.db.session import get_session
-from app.domain.models import Basket, BasketItem, BasketRecommendation, BillUpload
+from app.domain.models import Basket, BasketItem, BasketRecommendation, BillUpload, User
 from app.domain.schemas_bills import BasketItemRecommendationOut, BillUploadResponse
 from app.domain.schemas_bills_async import BillUploadAsyncAccepted, BillUploadStatusOut
 from app.queue import get_arq_pool
@@ -19,6 +20,7 @@ router = APIRouter(prefix="/api/v1/bills", tags=["bills"])
 async def upload_bill_async(
     file: UploadFile,
     location: str | None = Query(None),
+    user: User | None = Depends(get_current_user_optional),
     session: AsyncSession = Depends(get_session),
 ) -> BillUploadAsyncAccepted:
     file_bytes = await file.read()
@@ -28,6 +30,7 @@ async def upload_bill_async(
         original_filename=file.filename or "",
         content_type=content_type,
         status="pending",
+        user_id=user.id if user else None,
     )
     session.add(bill_upload)
     await session.commit()
