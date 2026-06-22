@@ -42,7 +42,7 @@ class MockProvider(PriceProvider):
     platform_slug = "demo-mart"
     platform_name = "Demo Mart"
 
-    def fetch(self, query: str) -> ProviderResult:
+    async def fetch(self, query: str, location_key: str | None = None) -> ProviderResult:
         query_lower = query.lower()
         matches = [item for item in _CATALOG if query_lower in item.product_name.lower()]
 

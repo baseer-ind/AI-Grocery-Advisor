@@ -3,7 +3,7 @@ normalized basket plus, per item, the same provider-driven recommendations
 that power live product search — including how their bill price compares.
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import APIRouter, HTTPException, Query, UploadFile
 
 from app.core.config import settings
 from app.domain.schemas import RecommendationOut, RecommendationSetOut
@@ -40,7 +40,7 @@ _OCR_ERROR_STATUS_CODE = {
 
 
 @router.post("/upload", response_model=BillUploadResponse)
-async def upload_bill(file: UploadFile) -> BillUploadResponse:
+async def upload_bill(file: UploadFile, location: str | None = Query(None)) -> BillUploadResponse:
     file_bytes = await file.read()
     content_type = file.content_type or ""
 
@@ -57,7 +57,7 @@ async def upload_bill(file: UploadFile) -> BillUploadResponse:
     if not basket.items:
         return BillUploadResponse(basket=[], recommendations=[], message="No recognizable line items found on this bill.")
 
-    item_recommendations = build_recommendations_for_basket(_build_price_providers(), basket)
+    item_recommendations = await build_recommendations_for_basket(_build_price_providers(), basket, location_key=location)
 
     basket_out = [
         BasketItemOut(
@@ -92,6 +92,7 @@ async def upload_bill(file: UploadFile) -> BillUploadResponse:
                         eta_minutes=listing.eta_minutes,
                         in_stock=listing.in_stock,
                         product_url=listing.product_url,
+                        location_key=listing.location_key,
                     )
                     for listing in r.listings
                 ],

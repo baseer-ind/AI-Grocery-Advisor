@@ -5,6 +5,11 @@ parsing, file formats) is allowed to live. Everything downstream — pricing,
 recommendations, the API layer — only ever sees `NormalizedListing` and
 `ProviderResult`, so adding Blinkit/Zepto/Instamart/Amazon Fresh/JioMart later
 means writing one new file here, not touching the engines.
+
+`fetch` is async so a slow/blocked provider (BigBasket today, any live
+platform tomorrow) can't stall the event loop or the other providers being
+queried alongside it — `provider_aggregator` runs every provider's `fetch`
+concurrently via `asyncio.gather`.
 """
 
 from abc import ABC, abstractmethod
@@ -22,7 +27,13 @@ class ProviderStatus(str, Enum):
 
 @dataclass
 class NormalizedListing:
-    """The common shape every provider must normalize its data into."""
+    """The common shape every provider must normalize its data into.
+
+    `location_key` is an opaque pincode/city/dark-store identifier. Every
+    current provider ignores it (it's location-agnostic data), but it's
+    threaded through end-to-end so a location-aware provider can be added
+    without changing this shape or anything downstream of it.
+    """
 
     platform_slug: str
     platform_name: str
@@ -38,6 +49,7 @@ class NormalizedListing:
     in_stock: bool
     product_url: str
     id: int = 0
+    location_key: str | None = None
 
 
 @dataclass
@@ -53,8 +65,9 @@ class PriceProvider(ABC):
     platform_name: str
 
     @abstractmethod
-    def fetch(self, query: str) -> ProviderResult:
-        """Look up `query` against this platform and return a normalized result.
+    async def fetch(self, query: str, location_key: str | None = None) -> ProviderResult:
+        """Look up `query` (optionally scoped to `location_key`) against this
+        platform and return a normalized result.
 
         Must never raise — network/parse failures are reported via
         ProviderStatus, not exceptions, so one broken provider can't take
