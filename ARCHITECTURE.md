@@ -82,6 +82,42 @@ Suggested schema additions are noted inline.
     data layer.
 12. **WhatsApp / Voice / Recipe-to-Cart** — channel layers on top of the same
     API; build after the core engine and at least Basket Comparison exist.
+13. **Local Kirana & Community Price Intelligence** — community-submitted
+    prices (bills, receipts, shelf-tag/product photos, manual entries,
+    independent-website submissions), explicitly never trusted at the same
+    confidence level as official platform data. Full architecture, schema,
+    confidence-scoring, and provider-model proposal in
+    `docs/adr/0007-community-price-intelligence.md` — **proposed, not yet
+    implemented**, pending the sequencing decision against Basket Comparison
+    (see "Future Architecture Plan" below).
+
+## Future Architecture Plan
+
+This section tracks features that have a complete design proposal but are
+explicitly not yet approved for implementation, plus the sequencing
+decisions still open.
+
+### Local Kirana & Community Price Intelligence (proposed, design-only)
+
+Full design in `docs/adr/0007-community-price-intelligence.md`, covering:
+architecture proposal, database schema (`CommunityPriceObservation` +
+`CommunityPriceAggregate`), a two-tier confidence model (`VERIFIED`/
+`COMMUNITY` tier, `LOW`/`MEDIUM`/`HIGH` level within `COMMUNITY`), a
+schema-only foundation for a future contributor-reputation system, provider
+model changes (`OfficialProvider`/`CommunityProvider` marker base classes),
+a price-history foundation (`CommunityPriceHistory`) for future buy-time
+intelligence, dependency-impact analysis, and an effort estimate
+(~6.5–8 days, excluding reputation scoring, forecasting, and photo-upload
+storage infra).
+
+**Status: awaiting a sequencing decision.** The ADR's own analysis (§10)
+is that this feature and Basket Comparison are independent — neither
+blocks the other — and can ship in either order, with one flagged minor
+follow-up (`basket_optimization_engine.py` would eventually need the same
+confidence-penalty treatment once community prices exist). The decision of
+which to build first (or whether to build this at all yet, given the
+unresolved photo-upload-storage and live-price-acquisition open questions)
+is explicitly left to the user/founder, not made here.
 
 ## Key risks worth flagging before scaling this
 

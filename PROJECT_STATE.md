@@ -86,6 +86,12 @@ forward-looking domain-architecture assessment.
 11. Conversational AI Assistant — not built; depends on Features 1–9.
 12. WhatsApp / Voice / Recipe-to-Cart — not built; depends on the
     core engine + Basket Comparison.
+13. Local Kirana & Community Price Intelligence — **design-only, not
+    built**. Full architecture/schema/confidence-model proposal in
+    `docs/adr/0007-community-price-intelligence.md`, per explicit
+    instruction to review before implementing. Sequencing against Basket
+    Comparison is an open decision for the user, not yet made — see
+    "Future Architecture Plan" in `ARCHITECTURE.md`.
 
 ## Current Architecture
 
@@ -117,6 +123,11 @@ async bill uploads). Full diagram in
 - **Bill-processing coordinator couples directly to concrete
   provider/OCR classes** rather than a registry — maintainability gap,
   not a correctness risk; documented in the readiness report.
+- **Local Kirana & Community Price Intelligence is fully designed
+  (ADR-007) but unbuilt** — not a current risk per se, but the longer it
+  stays unbuilt the longer the product has no mitigation for the
+  unsolved live-price-acquisition problem above; the sequencing decision
+  is explicitly the user's, not made here.
 
 ## Technical Debt
 
@@ -145,21 +156,32 @@ async bill uploads). Full diagram in
 1. Review and decide on the Architecture Readiness Report's
    recommendation (Partial Modularization) before any further service
    restructuring — still deferred, per instruction, in this PR.
-2. Basket Comparison (Feature 1) — extends the existing pricing engine
-   per-item; no new infrastructure needed. Next planned milestone.
-3. Resolve the data-acquisition strategy for live prices
+2. Basket Comparison (Feature 1) — **implemented** this PR
+   (`basket_optimization_engine.py`/`basket_comparison_service.py`).
+3. **Local Kirana & Community Price Intelligence (Feature 13) — design
+   complete (ADR-007), implementation not started.** Sequencing decision
+   (build now vs. after other pending features) is explicitly left to the
+   user; the ADR's own analysis is that it has no hard dependency on
+   Basket Comparison and can ship independently.
+4. Resolve the data-acquisition strategy for live prices
    (affiliate/partnership feed evaluation) before scaling provider
-   coverage further.
-4. Price History snapshot job + trend classifier (Feature 7), as the
+   coverage further — also directly relevant to deciding whether
+   Community Price Intelligence is worth prioritizing sooner, since it
+   is one mitigation for this same problem.
+5. Price History snapshot job + trend classifier (Feature 7), as the
    prerequisite for Price Alerts (Feature 8), which can now attach to
-   `User` directly.
+   `User` directly. Note: Feature 13's `CommunityPriceHistory` design
+   (ADR-007 §6) is deliberately compatible with this so the two don't
+   diverge if both get built.
 
 ## Recommended Next Priorities
 
-1. Basket Comparison feature (next planned milestone).
+1. **Decide on Community Price Intelligence sequencing** (ADR-007) —
+   build now, build after other pending features, or hold — this is the
+   one open decision blocking further work on that feature.
 2. Decide on Architecture Readiness Report recommendation (approve/
    modify/reject Partial Modularization) — still pending.
 3. Live price data-acquisition strategy decision (affiliate vs.
-   scraping vs. status quo).
+   scraping vs. status quo) — informs priority #1 above.
 4. Email-sending infrastructure, to make password reset production-ready.
 5. Formal adoption of the Impact Analysis template for all new PRs.
