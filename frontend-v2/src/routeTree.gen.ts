@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
+import { Route as TodayRouteImport } from './routes/today'
 import { Route as ThisWeekRouteImport } from './routes/this-week'
 import { Route as StoresRouteImport } from './routes/stores'
 import { Route as ProductsRouteImport } from './routes/products'
@@ -35,6 +36,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
   path: '/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TodayRoute = TodayRouteImport.update({
+  id: '/today',
+  path: '/today',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ThisWeekRoute = ThisWeekRouteImport.update({
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/products': typeof ProductsRoute
   '/stores': typeof StoresRoute
   '/this-week': typeof ThisWeekRoute
+  '/today': typeof TodayRoute
   '/upload': typeof UploadRoute
 }
 export interface FileRoutesByTo {
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/products': typeof ProductsRoute
   '/stores': typeof StoresRoute
   '/this-week': typeof ThisWeekRoute
+  '/today': typeof TodayRoute
   '/upload': typeof UploadRoute
 }
 export interface FileRoutesById {
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/products': typeof ProductsRoute
   '/stores': typeof StoresRoute
   '/this-week': typeof ThisWeekRoute
+  '/today': typeof TodayRoute
   '/upload': typeof UploadRoute
 }
 export interface FileRouteTypes {
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/stores'
     | '/this-week'
+    | '/today'
     | '/upload'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/stores'
     | '/this-week'
+    | '/today'
     | '/upload'
   id:
     | '__root__'
@@ -288,6 +299,7 @@ export interface FileRouteTypes {
     | '/products'
     | '/stores'
     | '/this-week'
+    | '/today'
     | '/upload'
   fileRoutesById: FileRoutesById
 }
@@ -313,6 +325,7 @@ export interface RootRouteChildren {
   ProductsRoute: typeof ProductsRoute
   StoresRoute: typeof StoresRoute
   ThisWeekRoute: typeof ThisWeekRoute
+  TodayRoute: typeof TodayRoute
   UploadRoute: typeof UploadRoute
 }
 
@@ -323,6 +336,13 @@ declare module '@tanstack/react-router' {
       path: '/upload'
       fullPath: '/upload'
       preLoaderRoute: typeof UploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/today': {
+      id: '/today'
+      path: '/today'
+      fullPath: '/today'
+      preLoaderRoute: typeof TodayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/this-week': {
@@ -497,6 +517,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductsRoute: ProductsRoute,
   StoresRoute: StoresRoute,
   ThisWeekRoute: ThisWeekRoute,
+  TodayRoute: TodayRoute,
   UploadRoute: UploadRoute,
 }
 export const routeTree = rootRouteImport

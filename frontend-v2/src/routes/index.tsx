@@ -814,7 +814,7 @@ function Footer() {
         </div>
         <div className="flex items-center gap-5">
           <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
-          <Link to="/home" className="hover:text-foreground">Home</Link>
+          <Link to="/today" className="hover:text-foreground">Today</Link>
           <Link to="/bill-check" className="hover:text-foreground">Bill Check</Link>
         </div>
       </div>

@@ -19,7 +19,7 @@ const navGroups = [
   {
     label: "Your Household",
     items: [
-      { to: "/home", label: "Home", icon: HomeIcon },
+      { to: "/today", label: "Today", icon: HomeIcon },
       { to: "/bill-check", label: "Bill Check", icon: ShoppingBasket },
       { to: "/this-week", label: "This Week", icon: ListChecks },
     ],
