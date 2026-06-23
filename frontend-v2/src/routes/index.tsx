@@ -21,7 +21,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Upload your grocery bill and our AI shows you better stores, smarter alternatives, and how much you could have saved — without compromising on quality.",
+          "Upload your grocery bill. We OCR-scan it and show you better stores, smarter alternatives, and how much you could have saved.",
       },
       { property: "og:title", content: "Household Advisor AI" },
       {
@@ -46,7 +46,6 @@ function Landing() {
       <Insights />
       <Alternatives />
       <WhyUs />
-      <FuturePreview />
       <FinalCta />
       <Footer />
     </div>
@@ -115,16 +114,14 @@ function Hero() {
             <span className="text-muted-foreground">Discover how much you could have saved.</span>
           </h1>
           <p className="mt-6 max-w-xl text-muted-foreground text-base lg:text-lg text-pretty">
-            We analyze your bill and quietly show you where you overspent, what to switch, and where to
-            buy next month — without nagging or compromising on quality.
+            We OCR-scan your bill and quietly show you where you overspent and what to switch —
+            no nagging, no compromise on quality.
           </p>
           <ul className="mt-6 grid sm:grid-cols-2 gap-2.5 max-w-xl">
             {[
               "Better places to buy",
               "Alternative products",
-              "Missed savings opportunities",
-              "Quality vs price advice",
-              "Smarter purchasing decisions",
+              "Missed savings",
               "Timed buy / wait calls",
             ].map((x) => (
               <li key={x} className="flex items-center gap-2 text-sm">
@@ -225,9 +222,8 @@ function SavingsHeroCard() {
         <div className="mt-6 rounded-xl border border-border bg-background p-3 flex items-start gap-3">
           <Sparkles className="h-4 w-4 text-accent mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground">
-            <span className="text-foreground font-medium">AI insight.</span> You could save ₹500/month
-            without changing product quality. We never recommend the cheapest — we recommend the
-            smartest.
+            <span className="text-foreground font-medium">Insight.</span> Save ₹500/month without
+            changing product quality.
           </p>
         </div>
       </div>
@@ -326,14 +322,14 @@ function HowItWorks() {
     },
     {
       n: "02",
-      title: "AI analysis",
-      body: "We analyze prices, brands, categories and your household's shopping pattern.",
+      title: "OCR scan",
+      body: "We extract every item, price and brand straight off the bill — no manual entry.",
       icon: Sparkles,
     },
     {
       n: "03",
       title: "Get recommendations",
-      body: "Where to buy, what to buy, when to buy — and exactly how much you could save.",
+      body: "Where to buy, what to buy, when to buy — and how much you could save.",
       icon: ShoppingBasket,
     },
   ];
@@ -507,7 +503,7 @@ function Stores() {
             </h2>
           </div>
           <p className="text-sm text-muted-foreground max-w-sm">
-            We weigh price, availability, delivery and rating — not just the cheapest sticker.
+            Price, availability, delivery and rating — not just the cheapest sticker.
           </p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -560,24 +556,21 @@ function Kv({ k, v }: { k: string; v: string }) {
 /* ---------- Insights ---------- */
 function Insights() {
   const items = [
-    "You spend 22% of your grocery budget on snacks — well above the 14% average.",
-    "You're paying above-average prices for cooking oil. Three nearby stores carry it for less.",
-    "You're loyal to high-quality brands, which explains part of your cost difference — and it's fine.",
-    "You could save ₹500/month without changing product quality. Just timing and store.",
+    "22% of your budget goes to snacks — above the 14% average.",
+    "Cooking oil is cheaper at 3 nearby stores.",
+    "You're brand-loyal — that's fine, it explains the gap.",
+    "Save ₹500/month with no quality trade-off.",
   ];
   return (
     <section className="border-b border-border">
       <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-12 gap-10">
         <div className="lg:col-span-4">
           <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            AI insights
+            Insights
           </div>
           <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
             Observations only your household needs to hear.
           </h2>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Plain language. No jargon. Never judgemental.
-          </p>
         </div>
         <div className="lg:col-span-8 grid sm:grid-cols-2 gap-4">
           {items.map((t, i) => (
@@ -628,7 +621,7 @@ function Alternatives() {
             Swap one or two things. Keep everything else.
           </h2>
           <p className="mt-4 text-sm text-muted-foreground">
-            We never push the cheapest. Only switches where quality stays close and savings are real.
+            Only switches where quality stays close and savings are real.
           </p>
         </div>
         <div className="rounded-2xl border border-border bg-background overflow-hidden">
@@ -675,10 +668,10 @@ function Alternatives() {
 /* ---------- Why us ---------- */
 function WhyUs() {
   const cards = [
-    { icon: Store, title: "Know where to buy", body: "Balanced across price, availability, delivery and rating." },
-    { icon: Clock, title: "Know when to buy", body: "Buy-now vs wait calls based on price history and seasonality." },
-    { icon: ShoppingBasket, title: "Know what to buy", body: "Quiet alternatives that respect your taste and brand loyalty." },
-    { icon: Sparkles, title: "Save without compromise", body: "We tune for value, never for the cheapest possible cart." },
+    { icon: Store, title: "Know where to buy", body: "Price, availability, delivery and rating — balanced." },
+    { icon: Clock, title: "Know when to buy", body: "Buy-now vs wait, based on price history." },
+    { icon: ShoppingBasket, title: "Know what to buy", body: "Alternatives that respect your taste." },
+    { icon: Sparkles, title: "Save without compromise", body: "Never the cheapest cart — the smartest." },
   ];
   return (
     <section id="why" className="border-b border-border">
@@ -699,52 +692,6 @@ function WhyUs() {
               </div>
               <h3 className="mt-5 font-semibold tracking-tight">{c.title}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{c.body}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Future ---------- */
-function FuturePreview() {
-  const items = [
-    "Household Intelligence",
-    "Pantry Assistant",
-    "Price History",
-    "Buy-Now vs Wait",
-    "Community Pricing",
-  ];
-  return (
-    <section className="border-b border-border bg-surface">
-      <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-20">
-        <div className="flex items-end justify-between flex-wrap gap-4">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              Coming soon
-            </div>
-            <h2 className="mt-2 text-2xl lg:text-3xl font-semibold tracking-tight">
-              A quiet roadmap built around your household.
-            </h2>
-          </div>
-          <Link
-            to="/pricing"
-            className="text-sm font-semibold text-foreground hover:opacity-80 inline-flex items-center gap-1.5"
-          >
-            See Pro plan <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {items.map((x) => (
-            <div
-              key={x}
-              className="rounded-xl border border-border bg-background p-4 flex items-center justify-between"
-            >
-              <span className="text-sm font-medium">{x}</span>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                Soon
-              </span>
             </div>
           ))}
         </div>
