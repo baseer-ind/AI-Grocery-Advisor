@@ -11,6 +11,7 @@ import {
   Clock,
   ShoppingBasket,
   Quote,
+  ScanLine,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -118,16 +119,19 @@ function Hero() {
             We analyze your bill and quietly show you where you overspent, what to switch, and where to
             buy next month — without nagging or compromising on quality.
           </p>
-          <ul className="mt-6 grid sm:grid-cols-2 gap-2.5 max-w-xl">
+          <ul className="mt-6 flex flex-wrap gap-2 max-w-xl">
             {[
               "Better places to buy",
               "Alternative products",
-              "Missed savings opportunities",
-              "Quality vs price advice",
-              "Smarter purchasing decisions",
-              "Timed buy / wait calls",
+              "Missed savings",
+              "Quality vs price",
+              "Smarter decisions",
+              "Buy / wait calls",
             ].map((x) => (
-              <li key={x} className="flex items-center gap-2 text-sm">
+              <li
+                key={x}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface pl-1.5 pr-3 py-1 text-xs font-medium"
+              >
                 <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background">
                   <Check className="h-2.5 w-2.5" />
                 </span>
@@ -321,44 +325,63 @@ function HowItWorks() {
     {
       n: "01",
       title: "Upload your bill",
-      body: "Drop a photo, PDF or screenshot from any grocery app or kirana.",
+      body: "Photo, PDF or screenshot — any grocery app or kirana.",
       icon: UploadIcon,
     },
     {
       n: "02",
-      title: "AI analysis",
-      body: "We analyze prices, brands, categories and your household's shopping pattern.",
-      icon: Sparkles,
+      title: "OCR extraction",
+      body: "Items, prices and brands lifted off the bill instantly.",
+      icon: ScanLine,
+      tag: "Cost-efficient",
     },
     {
       n: "03",
+      title: "AI analysis",
+      body: "Our AI reasons over the extracted data — your spend, brands, patterns.",
+      icon: Sparkles,
+      tag: "AI-powered",
+    },
+    {
+      n: "04",
       title: "Get recommendations",
-      body: "Where to buy, what to buy, when to buy — and exactly how much you could save.",
+      body: "Where, what and when to buy — and how much you'd save.",
       icon: ShoppingBasket,
     },
   ];
   return (
     <section id="how" className="border-b border-border">
       <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-24">
-        <div className="max-w-2xl">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            How it works
+        <div className="flex items-end justify-between flex-wrap gap-4 max-w-3xl">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              How it works
+            </div>
+            <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
+              OCR reads it. AI analyzes it.
+            </h2>
           </div>
-          <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
-            Three steps. Then your household just gets quietly smarter.
-          </h2>
+          <p className="text-xs text-muted-foreground max-w-xs">
+            OCR handles raw extraction so our AI only spends its reasoning where it matters — leaner,
+            faster, and built to scale.
+          </p>
         </div>
-        <div className="mt-12 grid md:grid-cols-3 gap-px bg-border rounded-2xl overflow-hidden border border-border">
+        <div className="mt-12 grid sm:grid-cols-2 md:grid-cols-4 gap-px bg-border rounded-2xl overflow-hidden border border-border">
           {steps.map((s) => (
-            <div key={s.n} className="bg-background p-7">
+            <div key={s.n} className="bg-background p-6 relative">
               <div className="flex items-center justify-between">
                 <div className="font-mono text-[10px] text-muted-foreground tracking-widest">
                   STEP {s.n}
                 </div>
                 <s.icon className="h-4 w-4 text-muted-foreground" />
               </div>
-              <h3 className="mt-6 text-xl font-semibold tracking-tight">{s.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{s.body}</p>
+              <h3 className="mt-5 text-base font-semibold tracking-tight">{s.title}</h3>
+              <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">{s.body}</p>
+              {s.tag && (
+                <span className="mt-3 inline-flex items-center rounded-full bg-surface-2 px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                  {s.tag}
+                </span>
+              )}
             </div>
           ))}
         </div>
