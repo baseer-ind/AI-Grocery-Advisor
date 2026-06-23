@@ -240,13 +240,13 @@ function Feedback() {
               <MessageCircle className="h-4 w-4" /> Join WhatsApp Community (Coming Soon)
             </button>
             <Link
-              to="/journey"
+              to="/home"
               className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold hover:bg-surface-2"
             >
               Follow Product Updates
             </Link>
             <Link
-              to="/command"
+              to="/home"
               className="inline-flex items-center gap-1.5 rounded-lg bg-foreground text-background px-4 py-2.5 text-sm font-semibold hover:opacity-90"
             >
               Return To Dashboard <ArrowRight className="h-4 w-4" />

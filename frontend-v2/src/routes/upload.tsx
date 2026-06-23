@@ -93,7 +93,7 @@ function UploadPage() {
                     <Stat label="Total Spend" value="₹9,250" />
                   </div>
                   <Link
-                    to="/analysis"
+                    to="/bill-check"
                     className="mt-6 inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
                   >
                     Analyze My Spending

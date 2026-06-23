@@ -1,66 +1,27 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import {
-  LayoutDashboard,
   Upload,
-  Sparkles,
   ShoppingBasket,
-  MessagesSquare,
-  Boxes,
-  Home,
-  Store,
+  Home as HomeIcon,
   Crown,
   Menu,
   X,
-  Refrigerator,
   ListChecks,
-  Compass,
-  Bell,
-  Flame,
-  Calendar,
-  TrendingUp,
-  Gauge,
   Heart,
 } from "lucide-react";
 import { FeedbackCta } from "./feedback-cta";
 import { ThemeToggle } from "./theme-toggle";
+import { AskAiWidget } from "./ask-ai-widget";
 import { cn } from "@/lib/utils";
 
 const navGroups = [
   {
-    label: "Get Started",
+    label: "Your Household",
     items: [
-      { to: "/command", label: "Overview", icon: Gauge },
-      { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/discovery", label: "Discover", icon: Compass },
-    ],
-  },
-  {
-    label: "Shopping",
-    items: [
-      { to: "/upload", label: "Upload Bill", icon: Upload },
-      { to: "/analysis", label: "Bill Insights", icon: Sparkles },
-      { to: "/basket", label: "Smart Basket", icon: ShoppingBasket },
-      { to: "/pantry", label: "Pantry", icon: Refrigerator },
-      { to: "/list", label: "Shopping List", icon: ListChecks },
-    ],
-  },
-  {
-    label: "Insights",
-    items: [
-      { to: "/advisor", label: "Ask Advisor", icon: MessagesSquare },
-      { to: "/products", label: "Product Picks", icon: Boxes },
-      { to: "/household", label: "About Your Home", icon: Home },
-      { to: "/stores", label: "Compare Stores", icon: Store },
-      { to: "/inflation", label: "Price Trends", icon: Flame },
-    ],
-  },
-  {
-    label: "Planning",
-    items: [
-      { to: "/calendar", label: "Calendar", icon: Calendar },
-      { to: "/alerts", label: "Price Alerts", icon: Bell },
-      { to: "/journey", label: "My Savings", icon: TrendingUp },
+      { to: "/home", label: "Home", icon: HomeIcon },
+      { to: "/bill-check", label: "Bill Check", icon: ShoppingBasket },
+      { to: "/this-week", label: "This Week", icon: ListChecks },
     ],
   },
   {
@@ -204,6 +165,7 @@ export function AppShell({ children, title, eyebrow }: { children: ReactNode; ti
         </main>
       </div>
       <FeedbackCta />
+      <AskAiWidget />
     </div>
   );
 }

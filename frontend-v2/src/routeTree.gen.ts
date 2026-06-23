@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
+import { Route as ThisWeekRouteImport } from './routes/this-week'
 import { Route as StoresRouteImport } from './routes/stores'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -18,11 +19,13 @@ import { Route as ListRouteImport } from './routes/list'
 import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as InflationRouteImport } from './routes/inflation'
 import { Route as HouseholdRouteImport } from './routes/household'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as DiscoveryRouteImport } from './routes/discovery'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CommandRouteImport } from './routes/command'
 import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as BillCheckRouteImport } from './routes/bill-check'
 import { Route as BasketRouteImport } from './routes/basket'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as AlertsRouteImport } from './routes/alerts'
@@ -32,6 +35,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
   path: '/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ThisWeekRoute = ThisWeekRouteImport.update({
+  id: '/this-week',
+  path: '/this-week',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StoresRoute = StoresRouteImport.update({
@@ -74,6 +82,11 @@ const HouseholdRoute = HouseholdRouteImport.update({
   path: '/household',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FeedbackRoute = FeedbackRouteImport.update({
   id: '/feedback',
   path: '/feedback',
@@ -97,6 +110,11 @@ const CommandRoute = CommandRouteImport.update({
 const CalendarRoute = CalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BillCheckRoute = BillCheckRouteImport.update({
+  id: '/bill-check',
+  path: '/bill-check',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BasketRoute = BasketRouteImport.update({
@@ -131,11 +149,13 @@ export interface FileRoutesByFullPath {
   '/alerts': typeof AlertsRoute
   '/analysis': typeof AnalysisRoute
   '/basket': typeof BasketRoute
+  '/bill-check': typeof BillCheckRoute
   '/calendar': typeof CalendarRoute
   '/command': typeof CommandRoute
   '/dashboard': typeof DashboardRoute
   '/discovery': typeof DiscoveryRoute
   '/feedback': typeof FeedbackRoute
+  '/home': typeof HomeRoute
   '/household': typeof HouseholdRoute
   '/inflation': typeof InflationRoute
   '/journey': typeof JourneyRoute
@@ -144,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/products': typeof ProductsRoute
   '/stores': typeof StoresRoute
+  '/this-week': typeof ThisWeekRoute
   '/upload': typeof UploadRoute
 }
 export interface FileRoutesByTo {
@@ -152,11 +173,13 @@ export interface FileRoutesByTo {
   '/alerts': typeof AlertsRoute
   '/analysis': typeof AnalysisRoute
   '/basket': typeof BasketRoute
+  '/bill-check': typeof BillCheckRoute
   '/calendar': typeof CalendarRoute
   '/command': typeof CommandRoute
   '/dashboard': typeof DashboardRoute
   '/discovery': typeof DiscoveryRoute
   '/feedback': typeof FeedbackRoute
+  '/home': typeof HomeRoute
   '/household': typeof HouseholdRoute
   '/inflation': typeof InflationRoute
   '/journey': typeof JourneyRoute
@@ -165,6 +188,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/products': typeof ProductsRoute
   '/stores': typeof StoresRoute
+  '/this-week': typeof ThisWeekRoute
   '/upload': typeof UploadRoute
 }
 export interface FileRoutesById {
@@ -174,11 +198,13 @@ export interface FileRoutesById {
   '/alerts': typeof AlertsRoute
   '/analysis': typeof AnalysisRoute
   '/basket': typeof BasketRoute
+  '/bill-check': typeof BillCheckRoute
   '/calendar': typeof CalendarRoute
   '/command': typeof CommandRoute
   '/dashboard': typeof DashboardRoute
   '/discovery': typeof DiscoveryRoute
   '/feedback': typeof FeedbackRoute
+  '/home': typeof HomeRoute
   '/household': typeof HouseholdRoute
   '/inflation': typeof InflationRoute
   '/journey': typeof JourneyRoute
@@ -187,6 +213,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/products': typeof ProductsRoute
   '/stores': typeof StoresRoute
+  '/this-week': typeof ThisWeekRoute
   '/upload': typeof UploadRoute
 }
 export interface FileRouteTypes {
@@ -197,11 +224,13 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/analysis'
     | '/basket'
+    | '/bill-check'
     | '/calendar'
     | '/command'
     | '/dashboard'
     | '/discovery'
     | '/feedback'
+    | '/home'
     | '/household'
     | '/inflation'
     | '/journey'
@@ -210,6 +239,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/products'
     | '/stores'
+    | '/this-week'
     | '/upload'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -218,11 +248,13 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/analysis'
     | '/basket'
+    | '/bill-check'
     | '/calendar'
     | '/command'
     | '/dashboard'
     | '/discovery'
     | '/feedback'
+    | '/home'
     | '/household'
     | '/inflation'
     | '/journey'
@@ -231,6 +263,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/products'
     | '/stores'
+    | '/this-week'
     | '/upload'
   id:
     | '__root__'
@@ -239,11 +272,13 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/analysis'
     | '/basket'
+    | '/bill-check'
     | '/calendar'
     | '/command'
     | '/dashboard'
     | '/discovery'
     | '/feedback'
+    | '/home'
     | '/household'
     | '/inflation'
     | '/journey'
@@ -252,6 +287,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/products'
     | '/stores'
+    | '/this-week'
     | '/upload'
   fileRoutesById: FileRoutesById
 }
@@ -261,11 +297,13 @@ export interface RootRouteChildren {
   AlertsRoute: typeof AlertsRoute
   AnalysisRoute: typeof AnalysisRoute
   BasketRoute: typeof BasketRoute
+  BillCheckRoute: typeof BillCheckRoute
   CalendarRoute: typeof CalendarRoute
   CommandRoute: typeof CommandRoute
   DashboardRoute: typeof DashboardRoute
   DiscoveryRoute: typeof DiscoveryRoute
   FeedbackRoute: typeof FeedbackRoute
+  HomeRoute: typeof HomeRoute
   HouseholdRoute: typeof HouseholdRoute
   InflationRoute: typeof InflationRoute
   JourneyRoute: typeof JourneyRoute
@@ -274,6 +312,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   ProductsRoute: typeof ProductsRoute
   StoresRoute: typeof StoresRoute
+  ThisWeekRoute: typeof ThisWeekRoute
   UploadRoute: typeof UploadRoute
 }
 
@@ -284,6 +323,13 @@ declare module '@tanstack/react-router' {
       path: '/upload'
       fullPath: '/upload'
       preLoaderRoute: typeof UploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/this-week': {
+      id: '/this-week'
+      path: '/this-week'
+      fullPath: '/this-week'
+      preLoaderRoute: typeof ThisWeekRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/stores': {
@@ -342,6 +388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HouseholdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/feedback': {
       id: '/feedback'
       path: '/feedback'
@@ -375,6 +428,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bill-check': {
+      id: '/bill-check'
+      path: '/bill-check'
+      fullPath: '/bill-check'
+      preLoaderRoute: typeof BillCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/basket': {
@@ -421,11 +481,13 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsRoute: AlertsRoute,
   AnalysisRoute: AnalysisRoute,
   BasketRoute: BasketRoute,
+  BillCheckRoute: BillCheckRoute,
   CalendarRoute: CalendarRoute,
   CommandRoute: CommandRoute,
   DashboardRoute: DashboardRoute,
   DiscoveryRoute: DiscoveryRoute,
   FeedbackRoute: FeedbackRoute,
+  HomeRoute: HomeRoute,
   HouseholdRoute: HouseholdRoute,
   InflationRoute: InflationRoute,
   JourneyRoute: JourneyRoute,
@@ -434,6 +496,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   ProductsRoute: ProductsRoute,
   StoresRoute: StoresRoute,
+  ThisWeekRoute: ThisWeekRoute,
   UploadRoute: UploadRoute,
 }
 export const routeTree = rootRouteImport

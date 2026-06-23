@@ -146,7 +146,7 @@ function Hero() {
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              to="/analysis"
+              to="/bill-check"
               className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-5 py-3 text-sm font-semibold hover:bg-surface-2"
             >
               See sample analysis
@@ -792,7 +792,7 @@ function FinalCta() {
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
-            to="/analysis"
+            to="/bill-check"
             className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-6 py-3 text-sm font-semibold hover:bg-surface-2"
           >
             See sample analysis
@@ -814,8 +814,8 @@ function Footer() {
         </div>
         <div className="flex items-center gap-5">
           <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
-          <Link to="/dashboard" className="hover:text-foreground">Dashboard</Link>
-          <Link to="/advisor" className="hover:text-foreground">Advisor</Link>
+          <Link to="/home" className="hover:text-foreground">Home</Link>
+          <Link to="/bill-check" className="hover:text-foreground">Bill Check</Link>
         </div>
       </div>
     </footer>
