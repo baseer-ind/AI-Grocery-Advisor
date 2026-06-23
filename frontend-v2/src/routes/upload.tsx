@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowRight, FileText, Image as ImageIcon, Upload as UploadIcon, CheckCircle2 } from "lucide-react";
+import { ArrowRight, FileText, Image as ImageIcon, Upload as UploadIcon, CheckCircle2, ScanLine, BarChart3, Lightbulb } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { cn } from "@/lib/utils";
 
@@ -47,8 +47,8 @@ function UploadPage() {
               </div>
               <h2 className="text-xl font-semibold tracking-tight">Drop your bill here</h2>
               <p className="text-sm text-muted-foreground mt-2 max-w-md">
-                Drag and drop a photo, PDF, or screenshot from any grocery app. We'll parse line items, categorize spend,
-                and never store the original image.
+                Drag and drop a photo, PDF, or screenshot from any grocery app. We read it instantly —
+                and never keep the original image.
               </p>
               <button
                 onClick={start}
@@ -70,22 +70,22 @@ function UploadPage() {
               {stage === "processing" ? (
                 <div>
                   <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
-                    Parsing bill…
+                    Reading your bill…
                   </div>
                   <div className="h-1 w-full bg-surface-2 rounded-full overflow-hidden">
                     <div className="h-full bg-foreground animate-[entrance_1.4s_linear] w-full origin-left" />
                   </div>
                   <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-                    <li>· OCR text extraction</li>
-                    <li>· Normalizing 42 line items</li>
-                    <li>· Matching to product catalog</li>
+                    <li>· Reading the text</li>
+                    <li>· Sorting 42 items</li>
+                    <li>· Matching products</li>
                   </ul>
                 </div>
               ) : (
                 <div>
                   <div className="flex items-center gap-2 mb-5">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span className="font-semibold">Bill parsed — BigBasket · 21 Aug 2025</span>
+                    <span className="font-semibold">Bill read — BigBasket · 21 Aug 2025</span>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <Stat label="Products Found" value="42" />
@@ -111,15 +111,17 @@ function UploadPage() {
           </div>
           <ol className="space-y-5">
             {[
-              ["01", "Parse", "OCR + catalog matching identifies every product, unit price and quantity."],
-              ["02", "Contextualize", "We compare against your last 6 months and your household profile."],
-              ["03", "Advise", "You get 3 basket alternatives and timing recommendations — never a generic 'cheapest'."],
-            ].map(([n, t, b]) => (
-              <li key={n} className="flex gap-3">
-                <span className="font-mono text-[10px] font-semibold text-muted-foreground mt-1">{n}</span>
+              { icon: ScanLine, title: "We read your bill", body: "Every item, price and quantity — picked up automatically." },
+              { icon: BarChart3, title: "We compare it", body: "Against your past shopping, so we know what's normal for you." },
+              { icon: Lightbulb, title: "We give you tips", body: "3 easy swaps and the best time to buy — never just \"cheapest\"." },
+            ].map((step) => (
+              <li key={step.title} className="flex gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-foreground text-background">
+                  <step.icon className="h-4 w-4" />
+                </span>
                 <div>
-                  <div className="font-semibold text-sm">{t}</div>
-                  <div className="text-sm text-muted-foreground">{b}</div>
+                  <div className="font-semibold text-sm">{step.title}</div>
+                  <div className="text-sm text-muted-foreground">{step.body}</div>
                 </div>
               </li>
             ))}

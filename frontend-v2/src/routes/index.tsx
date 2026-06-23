@@ -10,8 +10,9 @@ import {
   Store,
   Clock,
   ShoppingBasket,
-  Quote,
   ScanLine,
+  Heart,
+  Flame,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Upload your grocery bill and our AI shows you better stores, smarter alternatives, and how much you could have saved — without compromising on quality.",
+          "Upload your grocery bill. Our AI shows you better stores, smarter swaps, and how much you could have saved.",
       },
       { property: "og:title", content: "Household Advisor AI" },
       {
@@ -115,18 +116,15 @@ function Hero() {
             Upload your grocery bill. <br />
             <span className="text-muted-foreground">Discover how much you could have saved.</span>
           </h1>
-          <p className="mt-6 max-w-xl text-muted-foreground text-base lg:text-lg text-pretty">
-            We analyze your bill and quietly show you where you overspent, what to switch, and where to
-            buy next month — without nagging or compromising on quality.
+          <p className="mt-5 max-w-xl text-muted-foreground text-base lg:text-lg text-pretty">
+            See exactly where your money went — and how to spend smarter next time.
           </p>
-          <ul className="mt-6 flex flex-wrap gap-2 max-w-xl">
+          <ul className="mt-5 flex flex-wrap gap-2 max-w-xl">
             {[
-              "Better places to buy",
-              "Alternative products",
-              "Missed savings",
-              "Quality vs price",
-              "Smarter decisions",
-              "Buy / wait calls",
+              "Better stores",
+              "Smarter swaps",
+              "Hidden savings",
+              "When to buy",
             ].map((x) => (
               <li
                 key={x}
@@ -583,10 +581,10 @@ function Kv({ k, v }: { k: string; v: string }) {
 /* ---------- Insights ---------- */
 function Insights() {
   const items = [
-    "You spend 22% of your grocery budget on snacks — well above the 14% average.",
-    "You're paying above-average prices for cooking oil. Three nearby stores carry it for less.",
-    "You're loyal to high-quality brands, which explains part of your cost difference — and it's fine.",
-    "You could save ₹500/month without changing product quality. Just timing and store.",
+    { icon: Flame, text: "22% of your spend is snacks — above average." },
+    { icon: TrendingDown, text: "Cooking oil is cheaper at 3 nearby stores." },
+    { icon: Heart, text: "You're brand-loyal — and that's perfectly fine." },
+    { icon: Sparkles, text: "Save ₹500/month, no quality trade-off." },
   ];
   return (
     <section className="border-b border-border">
@@ -596,20 +594,19 @@ function Insights() {
             AI insights
           </div>
           <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
-            Observations only your household needs to hear.
+            What we'd quietly tell you.
           </h2>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Plain language. No jargon. Never judgemental.
-          </p>
         </div>
         <div className="lg:col-span-8 grid sm:grid-cols-2 gap-4">
-          {items.map((t, i) => (
+          {items.map((item, i) => (
             <div
               key={i}
-              className="rounded-2xl border border-border bg-surface p-6 flex gap-3"
+              className="rounded-2xl border border-border bg-surface p-5 flex items-center gap-3"
             >
-              <Quote className="h-4 w-4 text-accent shrink-0 mt-1" />
-              <p className="text-sm leading-relaxed">{t}</p>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-foreground text-background">
+                <item.icon className="h-4 w-4" />
+              </span>
+              <p className="text-sm font-medium leading-snug">{item.text}</p>
             </div>
           ))}
         </div>

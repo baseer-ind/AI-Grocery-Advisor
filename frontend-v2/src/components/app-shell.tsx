@@ -30,37 +30,37 @@ const navGroups = [
   {
     label: "Get Started",
     items: [
-      { to: "/command", label: "Command Center", icon: Gauge },
+      { to: "/command", label: "Overview", icon: Gauge },
       { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { to: "/discovery", label: "Household Discovery", icon: Compass },
+      { to: "/discovery", label: "Discover", icon: Compass },
     ],
   },
   {
     label: "Shopping",
     items: [
       { to: "/upload", label: "Upload Bill", icon: Upload },
-      { to: "/analysis", label: "AI Analysis", icon: Sparkles },
-      { to: "/basket", label: "Basket Optimization", icon: ShoppingBasket },
-      { to: "/pantry", label: "Pantry Assistant", icon: Refrigerator },
-      { to: "/list", label: "Smart Shopping List", icon: ListChecks },
+      { to: "/analysis", label: "Bill Insights", icon: Sparkles },
+      { to: "/basket", label: "Smart Basket", icon: ShoppingBasket },
+      { to: "/pantry", label: "Pantry", icon: Refrigerator },
+      { to: "/list", label: "Shopping List", icon: ListChecks },
     ],
   },
   {
-    label: "Intelligence",
+    label: "Insights",
     items: [
-      { to: "/advisor", label: "AI Advisor", icon: MessagesSquare },
-      { to: "/products", label: "Product Intelligence", icon: Boxes },
-      { to: "/household", label: "Household Intelligence", icon: Home },
-      { to: "/stores", label: "Store Intelligence", icon: Store },
-      { to: "/inflation", label: "Grocery Inflation", icon: Flame },
+      { to: "/advisor", label: "Ask Advisor", icon: MessagesSquare },
+      { to: "/products", label: "Product Picks", icon: Boxes },
+      { to: "/household", label: "About Your Home", icon: Home },
+      { to: "/stores", label: "Compare Stores", icon: Store },
+      { to: "/inflation", label: "Price Trends", icon: Flame },
     ],
   },
   {
     label: "Planning",
     items: [
-      { to: "/calendar", label: "Household Calendar", icon: Calendar },
+      { to: "/calendar", label: "Calendar", icon: Calendar },
       { to: "/alerts", label: "Price Alerts", icon: Bell },
-      { to: "/journey", label: "Savings Journey", icon: TrendingUp },
+      { to: "/journey", label: "My Savings", icon: TrendingUp },
     ],
   },
   {
@@ -101,7 +101,7 @@ export function AppShell({ children, title, eyebrow }: { children: ReactNode; ti
         <aside
           className={cn(
             "fixed lg:sticky top-0 z-30 h-screen w-72 shrink-0 border-r border-border bg-surface flex flex-col",
-            "transition-transform lg:translate-x-0",
+            "transition-transform duration-300 ease-in-out lg:translate-x-0",
             open ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
           )}
         >
@@ -162,7 +162,7 @@ export function AppShell({ children, title, eyebrow }: { children: ReactNode; ti
 
         {open && (
           <div
-            className="fixed inset-0 z-20 bg-background/60 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-20 bg-background/60 backdrop-blur-sm lg:hidden animate-[entrance_0.2s_ease-out]"
             onClick={() => setOpen(false)}
           />
         )}
