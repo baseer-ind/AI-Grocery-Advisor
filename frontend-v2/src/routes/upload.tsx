@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowRight, FileText, Image as ImageIcon, Upload as UploadIcon, CheckCircle2, ScanLine, BarChart3, Lightbulb } from "lucide-react";
+import { useRef, useState } from "react";
+import { ArrowRight, FileText, Image as ImageIcon, Upload as UploadIcon, CheckCircle2, ScanLine, BarChart3, Lightbulb, AlertTriangle } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { cn } from "@/lib/utils";
 
@@ -9,19 +9,54 @@ export const Route = createFileRoute("/upload")({
   component: UploadPage,
 });
 
+const API_BASE = import.meta.env.VITE_API_URL as string | undefined;
+
+type RealResult = { productsFound: number; categories: number; totalSpend: number };
+
 function UploadPage() {
-  const [stage, setStage] = useState<"idle" | "processing" | "done">("idle");
+  const [stage, setStage] = useState<"idle" | "processing" | "done" | "error">("idle");
   const [drag, setDrag] = useState(false);
+  const [real, setReal] = useState<RealResult | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDrag(false);
-    start();
+    const file = e.dataTransfer.files?.[0];
+    if (file) start(file);
   };
 
-  const start = () => {
+  const start = async (file?: File) => {
     setStage("processing");
-    setTimeout(() => setStage("done"), 1400);
+
+    if (!file || !API_BASE) {
+      // No backend configured yet — be honest instead of faking a real read.
+      setTimeout(() => {
+        setReal(null);
+        setStage("done");
+      }, 1400);
+      return;
+    }
+
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch(`${API_BASE}/api/v1/bills/upload`, { method: "POST", body: form });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      const basket: { total_price: number }[] = data.basket ?? [];
+      const categories = new Set(
+        (data.recommendations ?? []).map((r: any) => r.basket_item?.product_name?.split(" ")[0]),
+      );
+      setReal({
+        productsFound: basket.length,
+        categories: categories.size,
+        totalSpend: basket.reduce((s, b) => s + (b.total_price ?? 0), 0),
+      });
+      setStage("done");
+    } catch {
+      setStage("error");
+    }
   };
 
   return (
@@ -50,8 +85,18 @@ function UploadPage() {
                 Drag and drop a photo, PDF, or screenshot from any grocery app. We read it instantly —
                 and never keep the original image.
               </p>
+              <input
+                ref={fileInput}
+                type="file"
+                accept="image/*,application/pdf"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) start(file);
+                }}
+              />
               <button
-                onClick={start}
+                onClick={() => fileInput.current?.click()}
                 className="mt-6 inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
               >
                 Browse files
@@ -81,26 +126,45 @@ function UploadPage() {
                     <li>· Matching products</li>
                   </ul>
                 </div>
+              ) : stage === "error" ? (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle className="h-5 w-5 text-warning-foreground" />
+                    <span className="font-semibold">We couldn't read that bill</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Something went wrong reaching our bill reader. Try a clearer photo, or try again in a moment —
+                    we won't show you made-up numbers.
+                  </p>
+                  <button
+                    onClick={() => setStage("idle")}
+                    className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-surface-2"
+                  >
+                    Try again
+                  </button>
+                </div>
               ) : (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span className="font-semibold">Sample analysis — demo mode</span>
+                    <span className="font-semibold">{real ? "Bill read" : "Sample analysis — demo mode"}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    We're not yet reading your actual bill in this preview — the numbers below are a sample so you
-                    can see what a real analysis looks like. We'll tell you the moment this is reading real receipts.
-                  </p>
+                  {!real && (
+                    <p className="text-xs text-muted-foreground mb-4">
+                      We're not yet reading your actual bill in this preview — the numbers below are a sample so you
+                      can see what a real analysis looks like. We'll tell you the moment this is reading real receipts.
+                    </p>
+                  )}
                   <div className="grid grid-cols-3 gap-4">
-                    <Stat label="Products Found" value="42" />
-                    <Stat label="Categories" value="6" />
-                    <Stat label="Total Spend" value="₹9,250" />
+                    <Stat label="Products Found" value={String(real?.productsFound ?? 42)} />
+                    <Stat label="Categories" value={String(real?.categories ?? 6)} />
+                    <Stat label="Total Spend" value={`₹${(real?.totalSpend ?? 9250).toLocaleString("en-IN")}`} />
                   </div>
                   <Link
                     to="/bill-check"
                     className="mt-6 inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
                   >
-                    See Sample Analysis
+                    {real ? "Analyze My Spending" : "See Sample Analysis"}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
