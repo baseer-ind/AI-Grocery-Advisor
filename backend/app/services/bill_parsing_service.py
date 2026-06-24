@@ -12,6 +12,13 @@ _LINE_RE = re.compile(
     r"^(?P<name>.+?)\s+x(?P<qty>\d+(?:\.\d+)?)\s+(?:rs\.?\s*)?(?P<price>\d+(?:\.\d+)?)\s*$",
     re.IGNORECASE,
 )
+# Tabular receipt format: "Product Name  Qty  MRP  Rate  Amt" (the layout
+# printed by many in-store/grocery-chain bills, as opposed to the single
+# "Name x2 150.00" line _LINE_RE targets). Qty is the first number, Amt
+# (final column) is the line total — MRP/Rate are read but unused.
+_TABULAR_RE = re.compile(
+    r"^(?P<name>.+?)\s+(?P<qty>\d+(?:\.\d+)?)\s+\d+(?:\.\d+)?\s+\d+(?:\.\d+)?\s+(?P<price>\d+(?:\.\d+)?)\s*$"
+)
 _UNIT_RE = re.compile(r"(\d+(?:\.\d+)?)\s*(kg|g|ml|ltr|l|pcs|pack)\b", re.IGNORECASE)
 _DEFAULT_UNIT = "unit"
 
@@ -36,7 +43,7 @@ def parse_bill_text(raw_text: str) -> list[BillLineItem]:
         if not line:
             continue
 
-        match = _LINE_RE.match(line)
+        match = _LINE_RE.match(line) or _TABULAR_RE.match(line)
         if not match:
             continue
 
