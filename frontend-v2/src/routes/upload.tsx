@@ -1,6 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { ArrowRight, FileText, Image as ImageIcon, Upload as UploadIcon, CheckCircle2, ScanLine, BarChart3, Lightbulb, AlertTriangle } from "lucide-react";
+import {
+  ArrowRight,
+  FileText,
+  Image as ImageIcon,
+  Upload as UploadIcon,
+  CheckCircle2,
+  ScanLine,
+  BarChart3,
+  Lightbulb,
+  AlertTriangle,
+  HelpCircle,
+  Search,
+} from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { cn } from "@/lib/utils";
 
@@ -11,7 +23,26 @@ export const Route = createFileRoute("/upload")({
 
 const API_BASE = import.meta.env.VITE_API_URL as string | undefined;
 
-type RealResult = { productsFound: number; categories: number; totalSpend: number };
+type Suggestion = { product_id: number; product_name: string; confidence: number };
+
+type BasketItem = {
+  basket_item_id: number | null;
+  product_name: string;
+  quantity: number;
+  unit: string;
+  total_price: number;
+  matched_product_id: number | null;
+  match_tier: string | null;
+  match_confidence: number | null;
+  review_status: string;
+};
+
+type RealResult = {
+  productsFound: number;
+  categories: number;
+  totalSpend: number;
+  items: BasketItem[];
+};
 
 function UploadPage() {
   const [stage, setStage] = useState<"idle" | "processing" | "done" | "error">("idle");
@@ -24,6 +55,17 @@ function UploadPage() {
     setDrag(false);
     const file = e.dataTransfer.files?.[0];
     if (file) start(file);
+  };
+
+  const pollStatus = async (billUploadId: number): Promise<any> => {
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const res = await fetch(`${API_BASE}/api/v1/bills/upload-async/${billUploadId}`);
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      if (data.status === "done" || data.status === "failed") return data;
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+    throw new Error("Timed out waiting for bill to process");
   };
 
   const start = async (file?: File) => {
@@ -41,23 +83,30 @@ function UploadPage() {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch(`${API_BASE}/api/v1/bills/upload`, { method: "POST", body: form });
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      const basket: { total_price: number }[] = data.basket ?? [];
-      const categories = new Set(
-        (data.recommendations ?? []).map((r: any) => r.basket_item?.product_name?.split(" ")[0]),
-      );
+      const acceptRes = await fetch(`${API_BASE}/api/v1/bills/upload-async`, { method: "POST", body: form });
+      if (!acceptRes.ok) throw new Error(await acceptRes.text());
+      const accepted = await acceptRes.json();
+
+      const statusData = await pollStatus(accepted.bill_upload_id);
+      if (statusData.status === "failed" || !statusData.result) {
+        throw new Error(statusData.error_message ?? "Bill processing failed");
+      }
+
+      const basket: BasketItem[] = statusData.result.basket ?? [];
+      const categories = new Set(basket.map((b) => b.product_name.split(" ")[0]));
       setReal({
         productsFound: basket.length,
         categories: categories.size,
         totalSpend: basket.reduce((s, b) => s + (b.total_price ?? 0), 0),
+        items: basket,
       });
       setStage("done");
     } catch {
       setStage("error");
     }
   };
+
+  const pendingReview = real?.items.filter((i) => i.review_status === "pending_review") ?? [];
 
   return (
     <AppShell title="Upload your bill" eyebrow="Bills / New Upload">
@@ -171,6 +220,26 @@ function UploadPage() {
               )}
             </div>
           )}
+
+          {stage === "done" && real && pendingReview.length > 0 && (
+            <VerificationPanel
+              items={pendingReview}
+              onResolved={(basketItemId, matchedProductId, reviewStatus) =>
+                setReal((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        items: prev.items.map((i) =>
+                          i.basket_item_id === basketItemId
+                            ? { ...i, matched_product_id: matchedProductId, review_status: reviewStatus }
+                            : i,
+                        ),
+                      }
+                    : prev,
+                )
+              }
+            />
+          )}
         </div>
 
         <aside className="col-span-12 lg:col-span-4 rounded-2xl border border-border bg-surface p-6">
@@ -197,6 +266,203 @@ function UploadPage() {
         </aside>
       </div>
     </AppShell>
+  );
+}
+
+function VerificationPanel({
+  items,
+  onResolved,
+}: {
+  items: BasketItem[];
+  onResolved: (basketItemId: number, matchedProductId: number | null, reviewStatus: string) => void;
+}) {
+  const remaining = items.filter((i) => i.review_status === "pending_review");
+
+  return (
+    <div className="mt-5 rounded-2xl border border-border bg-surface p-6">
+      <div className="flex items-center gap-2 mb-1">
+        <HelpCircle className="h-5 w-5 text-warning-foreground" />
+        <span className="font-semibold">
+          {remaining.length > 0
+            ? `Confirm ${remaining.length} item${remaining.length > 1 ? "s" : ""} we weren't sure about`
+            : "All items confirmed — thank you!"}
+        </span>
+      </div>
+      <p className="text-xs text-muted-foreground mb-4">
+        We couldn't confidently match these to a product. Pick the right one, search manually, or tell us
+        "Not Sure" — every answer makes future bills more accurate.
+      </p>
+      <div className="space-y-3">
+        {items.map((item) =>
+          item.basket_item_id ? (
+            <VerificationRow key={item.basket_item_id} item={item} onResolved={onResolved} />
+          ) : null,
+        )}
+      </div>
+    </div>
+  );
+}
+
+function VerificationRow({
+  item,
+  onResolved,
+}: {
+  item: BasketItem;
+  onResolved: (basketItemId: number, matchedProductId: number | null, reviewStatus: string) => void;
+}) {
+  const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<{ id: number; name: string }[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  const resolved = item.review_status !== "pending_review";
+
+  const loadSuggestions = async () => {
+    if (suggestions !== null || loadingSuggestions || !item.basket_item_id) return;
+    setLoadingSuggestions(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/bills/items/${item.basket_item_id}/suggestions`);
+      const data = await res.json();
+      setSuggestions(data);
+    } catch {
+      setSuggestions([]);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  const confirm = async (action: string, productId: number | null) => {
+    if (!item.basket_item_id || busy) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/bills/items/${item.basket_item_id}/confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, product_id: productId }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      onResolved(item.basket_item_id, data.matched_product_id, data.review_status);
+    } catch {
+      // leave row as pending_review so the user can retry
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const runSearch = async (q: string) => {
+    setQuery(q);
+    if (q.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/search?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      setSearchResults(data.map((p: any) => ({ id: p.product_id, name: p.product_name })));
+    } catch {
+      setSearchResults([]);
+    }
+  };
+
+  if (resolved) {
+    return (
+      <div className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-3">
+        <div className="text-sm">
+          <span className="font-medium">{item.product_name}</span>
+          <span className="text-muted-foreground ml-2 text-xs">
+            {item.review_status === "user_rejected" ? "Marked not sure" : "Confirmed"}
+          </span>
+        </div>
+        <CheckCircle2 className="h-4 w-4 text-accent" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-background p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-medium">{item.product_name}</div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            ₹{item.total_price.toLocaleString("en-IN")} · {item.quantity} {item.unit}
+            {item.match_confidence != null && ` · ${Math.round(item.match_confidence * 100)}% confident`}
+          </div>
+        </div>
+        <button
+          onClick={loadSuggestions}
+          disabled={busy}
+          className="shrink-0 text-xs font-semibold rounded-lg border border-border px-3 py-1.5 hover:bg-surface-2"
+        >
+          {loadingSuggestions ? "Loading…" : suggestions === null ? "Show matches" : "Refresh matches"}
+        </button>
+      </div>
+
+      {suggestions !== null && (
+        <div className="mt-3 space-y-1.5">
+          {suggestions.length === 0 && (
+            <div className="text-xs text-muted-foreground">No close matches found in our catalog.</div>
+          )}
+          {suggestions.map((s) => (
+            <button
+              key={s.product_id}
+              disabled={busy}
+              onClick={() => confirm("select_suggestion", s.product_id)}
+              className="w-full flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm hover:bg-surface-2 text-left"
+            >
+              <span>{s.product_name}</span>
+              <span className="text-xs text-muted-foreground">{Math.round(s.confidence * 100)}%</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-3 flex items-center gap-2">
+        <button
+          disabled={busy}
+          onClick={() => setSearchOpen((v) => !v)}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg border border-border px-3 py-1.5 hover:bg-surface-2"
+        >
+          <Search className="h-3.5 w-3.5" />
+          Search manually
+        </button>
+        <button
+          disabled={busy}
+          onClick={() => confirm("not_sure", null)}
+          className="text-xs font-semibold rounded-lg border border-border px-3 py-1.5 hover:bg-surface-2"
+        >
+          Not Sure
+        </button>
+      </div>
+
+      {searchOpen && (
+        <div className="mt-3">
+          <input
+            autoFocus
+            value={query}
+            onChange={(e) => runSearch(e.target.value)}
+            placeholder="Search products…"
+            className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm"
+          />
+          {searchResults.length > 0 && (
+            <div className="mt-1.5 space-y-1.5">
+              {searchResults.map((p) => (
+                <button
+                  key={p.id}
+                  disabled={busy}
+                  onClick={() => confirm("manual_match", p.id)}
+                  className="w-full text-left rounded-lg border border-border px-3 py-2 text-sm hover:bg-surface-2"
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
