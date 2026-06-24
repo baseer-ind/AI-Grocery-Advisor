@@ -107,7 +107,9 @@ const fiveredAlert: AlertItem = { name: "Surf Excel", size: "2kg", current: 520,
 
 function Today() {
   const [showDetails, setShowDetails] = useState(false);
+  const [eventFlag, setEventFlag] = useState<"normal" | "event" | null>(null);
   const firstName = household.name.split(" ")[0] ?? household.name;
+  const isEventMonth = eventFlag === "event";
 
   return (
     <AppShell title="Today" eyebrow="Household Advisor">
@@ -120,13 +122,34 @@ function Today() {
               <Sparkles className="h-3 w-3" />
               Good to see you, {firstName}
             </div>
-            <h1 className="mt-3 text-2xl lg:text-3xl font-semibold tracking-tight text-balance">
-              Split this shop between <span className="text-accent">BigBasket</span> and{" "}
-              <span className="text-accent">DMart</span>, and skip cooking oil — saves ₹540 with no quality loss.
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Your pantry shows 1.6× normal oil stock. Rice is trending up before harvest — wait one more week.
-            </p>
+
+            {isEventMonth ? (
+              <>
+                <h1 className="mt-3 text-2xl lg:text-3xl font-semibold tracking-tight text-balance">
+                  Got it — you flagged something different this month, so I've paused my usual "skip it" calls on
+                  staples like oil and atta.
+                </h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  I'll still flag genuine price drops and target hits below — just nothing that assumes a normal
+                  week.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="mt-3 text-2xl lg:text-3xl font-semibold tracking-tight text-balance">
+                  Split this shop between <span className="text-accent">BigBasket</span> and{" "}
+                  <span className="text-accent">DMart</span> — saves ₹540 with no quality loss.
+                </h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Based on your last 3 bills, oil stock looks like ~5 weeks of normal use — so I'd skip buying more
+                  this cycle, <span className="font-medium text-foreground">unless you're hosting, traveling, or it's a festival month</span>.
+                  <span className="ml-1.5 inline-flex items-center rounded-md bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    Confidence: medium
+                  </span>
+                </p>
+              </>
+            )}
+
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <Link
                 to="/this-week"
@@ -138,6 +161,35 @@ function Today() {
                 Potential this month: <span className="font-mono font-semibold text-foreground">{fmt(metrics.potentialSavings)}</span>
               </span>
             </div>
+
+            {!isEventMonth && (
+              <div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center gap-2 text-xs">
+                <span className="text-muted-foreground">Is this a normal month?</span>
+                <button
+                  onClick={() => setEventFlag("normal")}
+                  className={cn(
+                    "rounded-md px-2.5 py-1 font-medium border",
+                    eventFlag === "normal" ? "border-foreground bg-foreground text-background" : "border-border hover:bg-surface-2",
+                  )}
+                >
+                  Yes, normal month
+                </button>
+                <button
+                  onClick={() => setEventFlag("event")}
+                  className="rounded-md px-2.5 py-1 font-medium border border-border hover:bg-surface-2"
+                >
+                  No — hosting / travel / festival coming up
+                </button>
+              </div>
+            )}
+            {isEventMonth && (
+              <button
+                onClick={() => setEventFlag(null)}
+                className="mt-4 pt-4 border-t border-border text-xs font-medium text-muted-foreground hover:text-foreground w-full text-left"
+              >
+                ← Actually, it's a normal month
+              </button>
+            )}
           </div>
         </section>
 
@@ -172,16 +224,18 @@ function Today() {
           cta="See alternatives"
         />
 
-        <FeedCard
-          icon={<Clock className="h-4 w-4 text-muted-foreground" />}
-          tag="Can wait"
-          tagClass="bg-surface-2 text-foreground border border-border"
-          title="Hold off on 3 items"
-          body={canWait.map((c) => `${c.name} — ${c.reason}`).join(" · ")}
-          to="/this-week"
-          cta="See why"
-          muted
-        />
+        {!isEventMonth && (
+          <FeedCard
+            icon={<Clock className="h-4 w-4 text-muted-foreground" />}
+            tag="Can wait"
+            tagClass="bg-surface-2 text-foreground border border-border"
+            title="Hold off on 3 items"
+            body={canWait.map((c) => `${c.name} — ${c.reason}`).join(" · ")}
+            to="/this-week"
+            cta="See why"
+            muted
+          />
+        )}
 
         <FeedCard
           icon={<PiggyBank className="h-4 w-4 text-accent" />}
@@ -359,8 +413,8 @@ function Today() {
                     </div>
                   </div>
                 </div>
-                <Link to="/feedback" className="text-xs font-semibold hover:text-accent shrink-0">
-                  Manage →
+                <Link to="/discovery" className="text-xs font-semibold hover:text-accent shrink-0">
+                  Update profile →
                 </Link>
               </div>
             </div>

@@ -83,10 +83,14 @@ function UploadPage() {
                 </div>
               ) : (
                 <div>
-                  <div className="flex items-center gap-2 mb-5">
+                  <div className="flex items-center gap-2 mb-2">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span className="font-semibold">Bill read — BigBasket · 21 Aug 2025</span>
+                    <span className="font-semibold">Sample analysis — demo mode</span>
                   </div>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    We're not yet reading your actual bill in this preview — the numbers below are a sample so you
+                    can see what a real analysis looks like. We'll tell you the moment this is reading real receipts.
+                  </p>
                   <div className="grid grid-cols-3 gap-4">
                     <Stat label="Products Found" value="42" />
                     <Stat label="Categories" value="6" />
@@ -96,7 +100,7 @@ function UploadPage() {
                     to="/bill-check"
                     className="mt-6 inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
                   >
-                    Analyze My Spending
+                    See Sample Analysis
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
