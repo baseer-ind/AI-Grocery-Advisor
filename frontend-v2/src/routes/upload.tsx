@@ -122,7 +122,7 @@ function UploadPage() {
                   </div>
                   <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
                     <li>· Reading the text</li>
-                    <li>· Sorting 42 items</li>
+                    <li>· Sorting line items</li>
                     <li>· Matching products</li>
                   </ul>
                 </div>
