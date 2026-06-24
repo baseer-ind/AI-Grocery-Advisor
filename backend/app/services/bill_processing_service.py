@@ -34,6 +34,11 @@ class BillProcessingResult:
     basket: Basket | None = None
     item_recommendations: list[BasketItemRecommendation] | None = None
     optimization: BasketOptimizationResult | None = None
+    # Populated only when the rule-based parser found zero line items — the
+    # raw text behind every unparsed bill format, kept so we can write new
+    # regex patterns (or, later, an LLM fallback) from real failures instead
+    # of guessing at formats.
+    unparsed_ocr_text: str | None = None
 
 
 def _build_ocr_provider() -> OCRProvider:
@@ -64,6 +69,7 @@ async def process_bill(file_bytes: bytes, content_type: str, location: str | Non
         return BillProcessingResult(
             response=BillUploadResponse(basket=[], recommendations=[], message="No recognizable line items found on this bill."),
             basket=basket,
+            unparsed_ocr_text=ocr_result.raw_text,
         )
 
     item_recommendations = await build_recommendations_for_basket(

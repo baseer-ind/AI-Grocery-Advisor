@@ -35,6 +35,9 @@ async def process_bill_job(ctx, bill_upload_id: int, file_bytes: bytes, content_
             await session.commit()
             return
 
+        if result.unparsed_ocr_text:
+            bill_upload.unparsed_ocr_text = result.unparsed_ocr_text
+
         basket = Basket(
             bill_upload_id=bill_upload.id,
             user_id=bill_upload.user_id,

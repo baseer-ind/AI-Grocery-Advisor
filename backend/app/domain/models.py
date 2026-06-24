@@ -199,6 +199,7 @@ class BillUpload(Base):
     status: Mapped[str] = mapped_column(String(32), default="pending")
     job_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    unparsed_ocr_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     user: Mapped["User | None"] = relationship(back_populates="bill_uploads")

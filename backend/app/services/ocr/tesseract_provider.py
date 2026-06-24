@@ -14,13 +14,26 @@ caller can degrade gracefully instead of crashing.
 
 import io
 
+import pillow_heif
 import pytesseract
 from PIL import Image
 from pypdf import PdfReader
 
 from app.services.ocr.base import OCRProvider, OCRResult, OCRStatus
 
-_IMAGE_CONTENT_TYPES = {"image/jpeg", "image/jpg", "image/png", "image/webp"}
+# Registers HEIC/HEIF as a Pillow-openable format — without this, PIL has no
+# decoder for the format iPhones use by default, and every iPhone-photo
+# upload would fail OCR outright.
+pillow_heif.register_heif_opener()
+
+_IMAGE_CONTENT_TYPES = {
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "image/heic",
+    "image/heif",
+}
 _PDF_CONTENT_TYPE = "application/pdf"
 
 
