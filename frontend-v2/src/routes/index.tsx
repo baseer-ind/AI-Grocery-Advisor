@@ -78,10 +78,10 @@ function Nav() {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <Link
-            to="/upload"
+            to="/discovery"
             className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-foreground text-background px-3.5 py-2 text-sm font-semibold hover:opacity-90"
           >
-            Analyze my bill
+            Get started
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -113,11 +113,11 @@ function Hero() {
             </span>
           </div>
           <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.05] text-balance">
-            Upload your grocery bill. <br />
-            <span className="text-muted-foreground">Discover how much you could have saved.</span>
+            Know what your household could save. <br />
+            <span className="text-muted-foreground">Before you upload a single bill.</span>
           </h1>
           <p className="mt-5 max-w-xl text-muted-foreground text-base lg:text-lg text-pretty">
-            See exactly where your money went — and how to spend smarter next time.
+            Answer a few quick questions and we'll show you personalized savings — then go further with a bill, your grocery spend, or a shopping list.
           </p>
           <ul className="mt-5 flex flex-wrap gap-2 max-w-xl">
             {[
@@ -139,10 +139,10 @@ function Hero() {
           </ul>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
-              to="/upload"
+              to="/discovery"
               className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-3 text-sm font-semibold hover:opacity-90"
             >
-              Analyze my bill
+              Get started
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link

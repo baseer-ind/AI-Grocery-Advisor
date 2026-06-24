@@ -33,6 +33,10 @@ async def dispose_engine() -> None:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins_list,
+    # Vercel mints a new, unique preview URL on every deploy, so an
+    # exact-match allowlist would need updating by hand each time — match
+    # any of our Vercel deployments (prod + previews) by pattern instead.
+    allow_origin_regex=r"https://ai-grocery-advisor.*\.vercel\.app",
     allow_methods=["*"],
     allow_headers=["*"],
 )
