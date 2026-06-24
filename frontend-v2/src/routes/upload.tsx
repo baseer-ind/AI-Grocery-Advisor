@@ -57,17 +57,6 @@ function UploadPage() {
     if (file) start(file);
   };
 
-  const pollStatus = async (billUploadId: number): Promise<any> => {
-    for (let attempt = 0; attempt < 60; attempt++) {
-      const res = await fetch(`${API_BASE}/api/v1/bills/upload-async/${billUploadId}`);
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      if (data.status === "done" || data.status === "failed") return data;
-      await new Promise((r) => setTimeout(r, 1500));
-    }
-    throw new Error("Timed out waiting for bill to process");
-  };
-
   const start = async (file?: File) => {
     setStage("processing");
 
@@ -83,16 +72,13 @@ function UploadPage() {
     try {
       const form = new FormData();
       form.append("file", file);
-      const acceptRes = await fetch(`${API_BASE}/api/v1/bills/upload-async`, { method: "POST", body: form });
-      if (!acceptRes.ok) throw new Error(await acceptRes.text());
-      const accepted = await acceptRes.json();
+      // Processes inline (OCR + matching), typically 5-15s — no queue or
+      // worker required, so this works on free-tier hosting at beta scale.
+      const res = await fetch(`${API_BASE}/api/v1/bills/upload`, { method: "POST", body: form });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
 
-      const statusData = await pollStatus(accepted.bill_upload_id);
-      if (statusData.status === "failed" || !statusData.result) {
-        throw new Error(statusData.error_message ?? "Bill processing failed");
-      }
-
-      const basket: BasketItem[] = statusData.result.basket ?? [];
+      const basket: BasketItem[] = data.basket ?? [];
       const categories = new Set(basket.map((b) => b.product_name.split(" ")[0]));
       setReal({
         productsFound: basket.length,

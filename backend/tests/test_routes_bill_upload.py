@@ -6,16 +6,16 @@ from app.core.config import settings
 from app.main import app
 
 _SAMPLE_DIR = Path(__file__).resolve().parent.parent / "data" / "sample_bills"
-client = TestClient(app)
 
 
 def test_upload_with_mock_ocr_returns_basket_and_recommendations(monkeypatch):
     monkeypatch.setattr(settings, "ocr_engine", "mock")
 
-    response = client.post(
-        "/api/v1/bills/upload",
-        files={"file": ("bill.png", b"irrelevant bytes", "image/png")},
-    )
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/bills/upload",
+            files={"file": ("bill.png", b"irrelevant bytes", "image/png")},
+        )
 
     assert response.status_code == 200
     body = response.json()
@@ -34,10 +34,11 @@ def test_upload_with_real_sample_image_via_tesseract(monkeypatch):
     monkeypatch.setattr(settings, "ocr_engine", "tesseract")
     image_bytes = (_SAMPLE_DIR / "sample_bill_image.png").read_bytes()
 
-    response = client.post(
-        "/api/v1/bills/upload",
-        files={"file": ("bill.png", image_bytes, "image/png")},
-    )
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/bills/upload",
+            files={"file": ("bill.png", image_bytes, "image/png")},
+        )
 
     assert response.status_code == 200
     body = response.json()
@@ -48,9 +49,10 @@ def test_upload_with_real_sample_image_via_tesseract(monkeypatch):
 def test_unsupported_file_type_returns_415(monkeypatch):
     monkeypatch.setattr(settings, "ocr_engine", "tesseract")
 
-    response = client.post(
-        "/api/v1/bills/upload",
-        files={"file": ("bill.txt", b"plain text bill", "text/plain")},
-    )
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/bills/upload",
+            files={"file": ("bill.txt", b"plain text bill", "text/plain")},
+        )
 
     assert response.status_code == 415
