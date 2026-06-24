@@ -23,7 +23,7 @@ async def process_bill_job(ctx, bill_upload_id: int, file_bytes: bytes, content_
             return
 
         try:
-            result = await process_bill(file_bytes, content_type, location=location)
+            result = await process_bill(file_bytes, content_type, location=location, session=session)
         except BillProcessingError as exc:
             bill_upload.status = "failed"
             bill_upload.error_message = exc.message
@@ -57,6 +57,10 @@ async def process_bill_job(ctx, bill_upload_id: int, file_bytes: bytes, content_
                 quantity=item_out.quantity,
                 unit=item_out.unit,
                 total_price=item_out.total_price,
+                matched_product_id=item_out.matched_product_id if item_out.match_tier == "auto" else None,
+                match_confidence=item_out.match_confidence,
+                match_tier=item_out.match_tier,
+                review_status=item_out.review_status,
             )
             session.add(basket_item)
             await session.flush()

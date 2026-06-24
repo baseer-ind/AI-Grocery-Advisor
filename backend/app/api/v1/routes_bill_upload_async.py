@@ -82,11 +82,16 @@ async def get_bill_upload_status(
     result = BillUploadResponse(
         basket=[
             {
+                "basket_item_id": i.id,
                 "product_name": i.product_name,
                 "quantity": float(i.quantity),
                 "unit": i.unit,
                 "total_price": float(i.total_price),
                 "unit_price": float(i.total_price) / float(i.quantity) if float(i.quantity) else 0.0,
+                "matched_product_id": i.matched_product_id,
+                "match_tier": i.match_tier,
+                "match_confidence": float(i.match_confidence) if i.match_confidence is not None else None,
+                "review_status": i.review_status,
             }
             for i in items
         ],

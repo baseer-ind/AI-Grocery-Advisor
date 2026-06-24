@@ -242,6 +242,13 @@ class Basket(Base):
 
 
 class BasketItem(Base):
+    """`matched_product_id`/`match_confidence`/`match_tier` are the output of
+    the alias-matching layer (see `product_alias_service.py`); `review_status`
+    tracks where the item sits in the verification loop. All four are
+    nullable/defaulted because manually-entered baskets (`routes_baskets.py`)
+    never run alias matching against an `Basket.bill_upload_id`-less row.
+    """
+
     __tablename__ = "basket_items"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -251,8 +258,42 @@ class BasketItem(Base):
     unit: Mapped[str] = mapped_column(String(16))
     total_price: Mapped[float] = mapped_column(Numeric(10, 2))
 
+    matched_product_id: Mapped[int | None] = mapped_column(ForeignKey("products.id"), nullable=True)
+    match_confidence: Mapped[float | None] = mapped_column(Numeric(4, 3), nullable=True)
+    match_tier: Mapped[str | None] = mapped_column(String(16), nullable=True)  # 'auto' | 'suggest' | 'manual'
+    review_status: Mapped[str] = mapped_column(String(16), default="auto_confirmed", server_default="auto_confirmed")
+    # 'auto_confirmed' | 'pending_review' | 'user_confirmed' | 'user_edited' | 'user_rejected'
+
     basket: Mapped["Basket"] = relationship(back_populates="items")
     recommendation: Mapped["BasketRecommendation | None"] = relationship(back_populates="basket_item", uselist=False)
+
+
+class ProductAlias(Base):
+    """The product-intelligence learning system's permanent memory: every
+    raw OCR string ever matched (or corrected by a user) to a canonical
+    product, with a confidence score that strengthens every time the same
+    alias gets confirmed again. This table is the data moat — it is the one
+    thing in this pipeline meant to grow forever and never be wiped.
+    """
+
+    __tablename__ = "product_aliases"
+
+    alias_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    raw_text: Mapped[str] = mapped_column(String(255))
+    canonical_product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
+    confidence_score: Mapped[float] = mapped_column(Numeric(4, 3), default=1.0)
+    source_bill_id: Mapped[int | None] = mapped_column(ForeignKey("bill_uploads.id"), nullable=True)
+    user_confirmed: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    times_seen: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    canonical_product: Mapped["Product"] = relationship()
+
+    __table_args__ = (
+        Index("ix_product_aliases_raw_text_trgm", "raw_text", postgresql_using="gin", postgresql_ops={"raw_text": "gin_trgm_ops"}),
+        Index("ix_product_aliases_canonical_product", "canonical_product_id"),
+    )
 
 
 class BasketRecommendation(Base):

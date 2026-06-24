@@ -12,6 +12,8 @@ beautifulsoup4==4.12.3
 pytesseract==0.3.13
 pillow==10.4.0
 pillow-heif==0.18.0
+rapidfuzz==3.10.1
+aiosqlite==0.20.0
 pypdf==4.3.1
 python-multipart==0.0.9
 pytest==8.3.3

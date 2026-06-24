@@ -8,8 +8,10 @@ Pulled out of the route handler so the same logic can run either inline
 
 from dataclasses import dataclass
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import settings
-from app.domain.schemas_bills import BillUploadResponse
+from app.domain.schemas_bills import BillUploadResponse, MatchSuggestionOut
 from app.services.basket_comparison_service import basket_item_out, item_recommendations_to_out
 from app.services.basket_optimization_engine import BasketOptimizationResult, build_basket_optimization
 from app.services.basket_service import Basket, build_basket
@@ -21,6 +23,7 @@ from app.services.llm_fallback_quota import try_consume_fallback_quota
 from app.services.ocr.base import OCRProvider, OCRStatus
 from app.services.ocr.mock_ocr_provider import MockOCRProvider
 from app.services.ocr.tesseract_provider import TesseractOCRProvider
+from app.services.product_alias_service import MatchResult, match_product
 from app.services.providers.registry import build_price_providers
 
 
@@ -43,6 +46,11 @@ class BillProcessingResult:
     # failures instead of guessing at formats.
     unparsed_ocr_text: str | None = None
     used_llm_fallback: bool = False
+    # Parallel to `basket.items` — the alias-matching outcome for each item,
+    # so a persisting caller (the worker) can write `matched_product_id`/
+    # `match_confidence`/`match_tier`/`review_status` onto each `BasketItem`
+    # row without re-running the match.
+    item_matches: list[MatchResult] | None = None
 
 
 def _build_ocr_provider() -> OCRProvider:
@@ -58,7 +66,38 @@ _OCR_ERROR_STATUS_CODE = {
 }
 
 
-async def process_bill(file_bytes: bytes, content_type: str, location: str | None = None) -> BillProcessingResult:
+def _review_status_for_tier(tier: str) -> str:
+    return "auto_confirmed" if tier == "auto" else "pending_review"
+
+
+async def _match_basket_items(session: AsyncSession | None, basket: Basket) -> list[MatchResult] | None:
+    """Returns None (no matching attempted) when no DB session is available
+    — the synchronous upload route doesn't persist baskets at all today, so
+    there's nothing to match against productively yet.
+    """
+    if session is None:
+        return None
+    return [await match_product(session, item.product_name) for item in basket.items]
+
+
+def _basket_item_out_with_match(item, match: MatchResult | None):
+    out = basket_item_out(item)
+    if match is None:
+        return out
+    out.match_tier = match.tier
+    out.match_confidence = match.best.confidence if match.best else None
+    out.matched_product_id = match.best.product_id if match.best else None
+    out.review_status = _review_status_for_tier(match.tier)
+    out.suggestions = [
+        MatchSuggestionOut(product_id=c.product_id, product_name=c.product_name, confidence=c.confidence)
+        for c in match.suggestions
+    ]
+    return out
+
+
+async def process_bill(
+    file_bytes: bytes, content_type: str, location: str | None = None, session: AsyncSession | None = None
+) -> BillProcessingResult:
     ocr_result = _build_ocr_provider().extract_text(file_bytes, content_type)
     if ocr_result.status != OCRStatus.SUCCESS:
         raise BillProcessingError(
@@ -95,7 +134,11 @@ async def process_bill(file_bytes: bytes, content_type: str, location: str | Non
     )
     optimization = build_basket_optimization(item_recommendations)
 
-    basket_out = [basket_item_out(item) for item in basket.items]
+    item_matches = await _match_basket_items(session, basket)
+    matches_iter = item_matches if item_matches is not None else [None] * len(basket.items)
+    basket_out = [
+        _basket_item_out_with_match(item, match) for item, match in zip(basket.items, matches_iter)
+    ]
     recommendations_out = item_recommendations_to_out(item_recommendations)
 
     return BillProcessingResult(
@@ -107,6 +150,7 @@ async def process_bill(file_bytes: bytes, content_type: str, location: str | Non
         item_recommendations=item_recommendations,
         optimization=optimization,
         used_llm_fallback=used_llm_fallback,
+        item_matches=item_matches,
     )
 
 
