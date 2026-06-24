@@ -228,6 +228,9 @@ class Basket(Base):
     bill_upload_id: Mapped[int | None] = mapped_column(ForeignKey("bill_uploads.id"), nullable=True)
     source: Mapped[str] = mapped_column(String(32), default="manual", server_default="manual")
     location_key: Mapped[str | None] = mapped_column(String(64), nullable=True, default=None)
+    store_name: Mapped[str | None] = mapped_column(String(64), nullable=True, default=None)
+    bill_date: Mapped[str | None] = mapped_column(String(32), nullable=True, default=None)
+    used_llm_fallback: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     user: Mapped["User | None"] = relationship(back_populates="baskets")

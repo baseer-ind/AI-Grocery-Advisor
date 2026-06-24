@@ -22,3 +22,5 @@ class BillUploadResponse(BaseModel):
     basket: list[BasketItemOut]
     recommendations: list[BasketItemRecommendationOut]
     message: str = ""
+    store: str | None = None
+    bill_date: str | None = None

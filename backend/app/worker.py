@@ -43,6 +43,9 @@ async def process_bill_job(ctx, bill_upload_id: int, file_bytes: bytes, content_
             user_id=bill_upload.user_id,
             source="bill_upload",
             location_key=location,
+            store_name=result.response.store,
+            bill_date=result.response.bill_date,
+            used_llm_fallback=result.used_llm_fallback,
         )
         session.add(basket)
         await session.flush()

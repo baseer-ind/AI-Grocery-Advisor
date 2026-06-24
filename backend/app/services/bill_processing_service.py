@@ -13,8 +13,11 @@ from app.domain.schemas_bills import BillUploadResponse
 from app.services.basket_comparison_service import basket_item_out, item_recommendations_to_out
 from app.services.basket_optimization_engine import BasketOptimizationResult, build_basket_optimization
 from app.services.basket_service import Basket, build_basket
-from app.services.bill_parsing_service import parse_bill_text
+from app.services.bill_metadata_service import extract_bill_metadata
+from app.services.bill_parsing_service import BillLineItem, parse_bill_text
 from app.services.bill_recommendation_service import BasketItemRecommendation, build_recommendations_for_basket
+from app.services.llm_extraction.registry import build_llm_extraction_provider
+from app.services.llm_fallback_quota import try_consume_fallback_quota
 from app.services.ocr.base import OCRProvider, OCRStatus
 from app.services.ocr.mock_ocr_provider import MockOCRProvider
 from app.services.ocr.tesseract_provider import TesseractOCRProvider
@@ -34,11 +37,12 @@ class BillProcessingResult:
     basket: Basket | None = None
     item_recommendations: list[BasketItemRecommendation] | None = None
     optimization: BasketOptimizationResult | None = None
-    # Populated only when the rule-based parser found zero line items — the
-    # raw text behind every unparsed bill format, kept so we can write new
-    # regex patterns (or, later, an LLM fallback) from real failures instead
-    # of guessing at formats.
+    # Populated only when both the rule-based parser AND the LLM fallback
+    # (if any) found zero line items — the raw text behind every genuinely
+    # unparsed bill, kept so new regex patterns can be written from real
+    # failures instead of guessing at formats.
     unparsed_ocr_text: str | None = None
+    used_llm_fallback: bool = False
 
 
 def _build_ocr_provider() -> OCRProvider:
@@ -62,14 +66,28 @@ async def process_bill(file_bytes: bytes, content_type: str, location: str | Non
             message=ocr_result.message,
         )
 
+    metadata = extract_bill_metadata(ocr_result.raw_text)
+
     line_items = parse_bill_text(ocr_result.raw_text)
+    used_llm_fallback = False
+
+    if not line_items:
+        # The free rule-based parser is always tried first — the LLM
+        # fallback only ever runs on what it couldn't read, so the common
+        # case (a recognized bill format) never costs anything.
+        line_items, used_llm_fallback = await _try_llm_fallback(ocr_result.raw_text)
+
     basket = build_basket(line_items)
 
     if not basket.items:
         return BillProcessingResult(
-            response=BillUploadResponse(basket=[], recommendations=[], message="No recognizable line items found on this bill."),
+            response=BillUploadResponse(
+                basket=[], recommendations=[], message="No recognizable line items found on this bill.",
+                store=metadata.store, bill_date=metadata.bill_date,
+            ),
             basket=basket,
             unparsed_ocr_text=ocr_result.raw_text,
+            used_llm_fallback=used_llm_fallback,
         )
 
     item_recommendations = await build_recommendations_for_basket(
@@ -81,8 +99,29 @@ async def process_bill(file_bytes: bytes, content_type: str, location: str | Non
     recommendations_out = item_recommendations_to_out(item_recommendations)
 
     return BillProcessingResult(
-        response=BillUploadResponse(basket=basket_out, recommendations=recommendations_out),
+        response=BillUploadResponse(
+            basket=basket_out, recommendations=recommendations_out,
+            store=metadata.store, bill_date=metadata.bill_date,
+        ),
         basket=basket,
         item_recommendations=item_recommendations,
         optimization=optimization,
+        used_llm_fallback=used_llm_fallback,
     )
+
+
+async def _try_llm_fallback(raw_text: str) -> tuple[list[BillLineItem], bool]:
+    """Returns (items, used_fallback). Never raises — a disabled fallback,
+    an exhausted daily cap, or a vendor failure all just mean "no extra
+    items," same as if the fallback didn't exist.
+    """
+    if settings.llm_fallback_provider.lower() == "none":
+        return [], False  # skip the quota check entirely — nothing to spend
+
+    if not await try_consume_fallback_quota():
+        return [], False
+
+    result = await build_llm_extraction_provider().extract_line_items(raw_text)
+    if not result.succeeded:
+        return [], False
+    return result.items, True

@@ -93,6 +93,8 @@ async def get_bill_upload_status(
         recommendations=[
             BasketItemRecommendationOut(**recs_by_item_id[i.id]) for i in items if i.id in recs_by_item_id
         ],
+        store=basket.store_name,
+        bill_date=basket.bill_date,
     )
 
     optimization_row = (
