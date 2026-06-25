@@ -34,6 +34,14 @@ export type StoredHouseholdProfile = {
   planningStyle: string;
   pantryReadiness: string;
   confidence: number;
+  // Raw onboarding answers, kept verbatim alongside the derived snapshot above
+  // so screens like Household Memory can render honest observations
+  // ("favourite store", "budget pattern") sourced from what the household
+  // actually told us, not just the summarized style labels.
+  stores?: string[];
+  frequency?: string | null;
+  budget?: number | null;
+  priorities?: string[];
 };
 
 export function saveHouseholdProfile(profile: StoredHouseholdProfile) {

@@ -13,6 +13,7 @@ import { Route as UploadRouteImport } from './routes/upload'
 import { Route as TodayRouteImport } from './routes/today'
 import { Route as ThisWeekRouteImport } from './routes/this-week'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as MemoryRouteImport } from './routes/memory'
 import { Route as HouseholdRouteImport } from './routes/household'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as DiscoveryRouteImport } from './routes/discovery'
@@ -37,6 +38,11 @@ const ThisWeekRoute = ThisWeekRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MemoryRoute = MemoryRouteImport.update({
+  id: '/memory',
+  path: '/memory',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HouseholdRoute = HouseholdRouteImport.update({
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/discovery': typeof DiscoveryRoute
   '/feedback': typeof FeedbackRoute
   '/household': typeof HouseholdRoute
+  '/memory': typeof MemoryRoute
   '/pricing': typeof PricingRoute
   '/this-week': typeof ThisWeekRoute
   '/today': typeof TodayRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/discovery': typeof DiscoveryRoute
   '/feedback': typeof FeedbackRoute
   '/household': typeof HouseholdRoute
+  '/memory': typeof MemoryRoute
   '/pricing': typeof PricingRoute
   '/this-week': typeof ThisWeekRoute
   '/today': typeof TodayRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/discovery': typeof DiscoveryRoute
   '/feedback': typeof FeedbackRoute
   '/household': typeof HouseholdRoute
+  '/memory': typeof MemoryRoute
   '/pricing': typeof PricingRoute
   '/this-week': typeof ThisWeekRoute
   '/today': typeof TodayRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/discovery'
     | '/feedback'
     | '/household'
+    | '/memory'
     | '/pricing'
     | '/this-week'
     | '/today'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/discovery'
     | '/feedback'
     | '/household'
+    | '/memory'
     | '/pricing'
     | '/this-week'
     | '/today'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/discovery'
     | '/feedback'
     | '/household'
+    | '/memory'
     | '/pricing'
     | '/this-week'
     | '/today'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   DiscoveryRoute: typeof DiscoveryRoute
   FeedbackRoute: typeof FeedbackRoute
   HouseholdRoute: typeof HouseholdRoute
+  MemoryRoute: typeof MemoryRoute
   PricingRoute: typeof PricingRoute
   ThisWeekRoute: typeof ThisWeekRoute
   TodayRoute: typeof TodayRoute
@@ -175,6 +188,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/memory': {
+      id: '/memory'
+      path: '/memory'
+      fullPath: '/memory'
+      preLoaderRoute: typeof MemoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/household': {
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoveryRoute: DiscoveryRoute,
   FeedbackRoute: FeedbackRoute,
   HouseholdRoute: HouseholdRoute,
+  MemoryRoute: MemoryRoute,
   PricingRoute: PricingRoute,
   ThisWeekRoute: ThisWeekRoute,
   TodayRoute: TodayRoute,

@@ -11,6 +11,7 @@ import {
   UserCircle2,
   ScanLine,
   TrendingDown,
+  BrainCircuit,
 } from "lucide-react";
 import { FeedbackCta } from "./feedback-cta";
 import { ThemeToggle } from "./theme-toggle";
@@ -24,6 +25,7 @@ const navGroups = [
     items: [
       { to: "/today", label: "Home", icon: HomeIcon },
       { to: "/this-week", label: "Shopping List", icon: ListChecks },
+      { to: "/memory", label: "Household Memory", icon: BrainCircuit },
       { to: "/household", label: "Profile", icon: UserCircle2 },
     ],
   },

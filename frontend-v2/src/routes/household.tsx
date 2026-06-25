@@ -379,6 +379,10 @@ function HouseholdOnboardingPage() {
           planningStyle: snapshot.planningStyle,
           pantryReadiness: snapshot.pantryReadiness,
           confidence: snapshot.confidence,
+          stores: answers.stores,
+          frequency: answers.frequency,
+          budget: answers.budget,
+          priorities: answers.priorities,
         });
       }
     } catch (err) {
