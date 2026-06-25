@@ -1,8 +1,30 @@
+from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
+
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import settings
 
-engine = create_async_engine(settings.database_url, echo=False)
+
+def _build_engine(database_url: str):
+    """Managed Postgres providers (e.g. Render) hand out connection strings
+    with `?sslmode=require`, a libpq/psycopg2 keyword asyncpg's `connect()`
+    doesn't accept — it raises `TypeError: unexpected keyword argument
+    'sslmode'` on every connection attempt. Strip it from the URL and pass
+    the equivalent as a driver-level `ssl` connect arg instead.
+    """
+    parts = urlsplit(database_url)
+    query = parse_qs(parts.query)
+    sslmode = query.pop("sslmode", [None])[0]
+    clean_url = urlunsplit(parts._replace(query=urlencode(query, doseq=True)))
+
+    connect_args = {}
+    if sslmode and sslmode != "disable":
+        connect_args["ssl"] = True
+
+    return create_async_engine(clean_url, echo=False, connect_args=connect_args)
+
+
+engine = _build_engine(settings.database_url)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
