@@ -24,8 +24,6 @@ import {
   PiggyBank,
   Sparkles,
   Store as StoreIcon,
-  TrendingDown,
-  TrendingUp,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { categories, household, metrics, monthlyTrend } from "@/lib/sample-data";
@@ -37,11 +35,11 @@ import {
   type ShoppingEventSummary,
 } from "@/lib/api";
 import {
-  buildDailyBrief,
   buildHouseholdJourney,
   buildWeeklyActionCards,
   computeHouseholdIntelligenceScore,
   computePlanningScore,
+  computeShoppingReadiness,
   type WeeklyActionCard,
 } from "@/lib/household-intelligence";
 import { cn } from "@/lib/utils";
@@ -188,7 +186,6 @@ function Today() {
   return (
     <AppShell title="Household HQ" eyebrow="Household Advisor">
       <div className="space-y-4 max-w-3xl mx-auto">
-        <HouseholdSnapshotStrip profile={profile} />
         {sample && (
           <div className="flex items-center justify-between gap-3 rounded-xl border border-warning bg-warning/10 px-4 py-2.5">
             <span className="font-mono text-[10px] uppercase tracking-widest text-warning-foreground">
@@ -289,27 +286,14 @@ function Today() {
           />
         )}
 
-        {/* Quick actions */}
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-          <ActionCard
-            to="/this-week"
-            icon={<TrendingUp className="h-4 w-4" />}
-            title="This week's list"
-            body="Pantry-aware, ready to shop"
-          />
-          <ActionCard
-            to="/bill-check"
-            icon={<TrendingDown className="h-4 w-4" />}
-            title="Basket alternatives"
-            body="Same items, smarter swaps"
-          />
-          <ActionCard
+        {!sample && (
+          <Link
             to="/upload"
-            icon={<Sparkles className="h-4 w-4" />}
-            title="Improve accuracy"
-            body="Add a bill for sharper recommendations"
-          />
-        </section>
+            className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground py-1"
+          >
+            <Sparkles className="h-3.5 w-3.5" /> Add a shopping event
+          </Link>
+        )}
 
         {/* Progressive disclosure: full breakdown — illustrative charts, sample mode only */}
         {sample && (
@@ -748,9 +732,7 @@ function FeedCard({
           {why && showWhy && (
             <p className="mt-2 text-xs text-muted-foreground border-t border-border pt-2">
               {why}
-              {confidence && (
-                <span className="ml-1 capitalize">· Confidence: {confidence}</span>
-              )}
+              {confidence && <span className="ml-1 capitalize">· Confidence: {confidence}</span>}
             </p>
           )}
         </div>
@@ -774,88 +756,122 @@ function HouseholdHQ({
 }) {
   const planning = computePlanningScore(events);
   const intelligence = computeHouseholdIntelligenceScore(profile, events, pantry);
-  // StoredHouseholdProfile has no name field yet — greeting stays generic for real households
-  const brief = buildDailyBrief(pantry, events, planning, profile, intelligence, null);
+  const readiness = computeShoppingReadiness(pantry, events, planning, profile, null);
   const cards = buildWeeklyActionCards(pantry, events, planning);
   const journey = buildHouseholdJourney(profile, events, pantry, planning);
   const journeyDone = journey.filter((m) => m.done).length;
 
   return (
     <>
-      {/* Daily Household Brief — the one thing this household needs to know right now */}
+      {/* Layer 1 — Shopping Readiness. One sentence, one fact to remember. Everything
+          else on this screen is supporting detail, never competing with this answer. */}
       <section className="rounded-2xl border border-border bg-surface p-6 lg:p-7">
-        <div className="flex items-start justify-between gap-3">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            {brief.greeting}
-          </div>
-          {intelligence && (
-            <button
-              onClick={() => setShowScoreDetail((v) => !v)}
-              className="shrink-0 rounded-md bg-surface-2 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {intelligence.score >= 90
-                ? "We know your household well"
-                : "Still learning about your household"}
-            </button>
-          )}
+        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          {readiness.greeting}
         </div>
 
-        <div className="mt-2 space-y-1.5">
-          {brief.lines.map((line, i) => (
-            <p
-              key={i}
+        {readiness.status !== "unknown" && (
+          <div className="mt-2 flex items-center gap-2">
+            <span
               className={cn(
-                "text-balance",
-                i === 0
-                  ? "text-xl lg:text-2xl font-semibold tracking-tight"
-                  : "text-sm text-muted-foreground",
+                "inline-flex h-2 w-2 rounded-full",
+                readiness.status === "ready" ? "bg-accent" : "bg-warning",
               )}
-            >
-              {line}
-            </p>
-          ))}
-        </div>
-
-        {intelligence && showScoreDetail && (
-          <div className="mt-5 pt-5 border-t border-border grid grid-cols-3 gap-3 text-center">
-            <div>
-              <div className="text-lg font-semibold">{intelligence.profileConfidence}</div>
-              <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-0.5">
-                Profile
-              </div>
-            </div>
-            <div>
-              <div className="text-lg font-semibold">{intelligence.historyDepthScore}</div>
-              <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-0.5">
-                Shopping history
-              </div>
-            </div>
-            <div>
-              <div className="text-lg font-semibold">{intelligence.pantryConfidenceScore}</div>
-              <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-0.5">
-                What you probably have
-              </div>
-            </div>
+            />
+            <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              Shopping readiness — {readiness.status === "ready" ? "Ready" : "Needs attention"}
+            </span>
           </div>
         )}
 
-        {profile && (
-          <div className="mt-5 pt-5 border-t border-border flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              Your shopping style
-            </span>
-            <span className="rounded-md bg-surface-2 px-2 py-0.5 text-xs font-semibold">
-              {profile.shoppingStyle}
-            </span>
-            <span className="text-muted-foreground text-xs">·</span>
-            <span className="rounded-md bg-surface-2 px-2 py-0.5 text-xs font-semibold">
-              {profile.planningStyle}
-            </span>
+        <p className="mt-2 text-xl lg:text-2xl font-semibold tracking-tight text-balance">
+          {readiness.headline}
+        </p>
+
+        {readiness.remember && (
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            One thing to remember: {readiness.remember}
+          </p>
+        )}
+
+        {intelligence && (
+          <button
+            onClick={() => setShowScoreDetail((v) => !v)}
+            className="mt-4 text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+          >
+            We've learned about {intelligence.score}% of your household — details
+          </button>
+        )}
+
+        {/* Layer 3 — exploration, collapsed by default: confidence breakdown, shopping
+            style, progress, and history. Real signals, but none of them is "what to do next." */}
+        {intelligence && showScoreDetail && (
+          <div className="mt-4 pt-4 border-t border-border space-y-4">
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <div className="text-lg font-semibold">{intelligence.profileConfidence}</div>
+                <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-0.5">
+                  Profile
+                </div>
+              </div>
+              <div>
+                <div className="text-lg font-semibold">{intelligence.historyDepthScore}</div>
+                <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-0.5">
+                  Shopping history
+                </div>
+              </div>
+              <div>
+                <div className="text-lg font-semibold">{intelligence.pantryConfidenceScore}</div>
+                <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-0.5">
+                  What you probably have
+                </div>
+              </div>
+            </div>
+
+            {profile && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Your shopping style
+                </span>
+                <span className="rounded-md bg-surface-2 px-2 py-0.5 text-xs font-semibold">
+                  {profile.shoppingStyle}
+                </span>
+                <span className="text-muted-foreground text-xs">·</span>
+                <span className="rounded-md bg-surface-2 px-2 py-0.5 text-xs font-semibold">
+                  {profile.planningStyle}
+                </span>
+              </div>
+            )}
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Your progress
+                </span>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {journeyDone}/{journey.length}
+                </span>
+              </div>
+              <ol className="space-y-1.5">
+                {journey.map((m) => (
+                  <li key={m.id} className="flex items-center gap-2.5 text-sm">
+                    {m.done ? (
+                      <CheckCircle2 className="h-4 w-4 text-accent shrink-0" />
+                    ) : (
+                      <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
+                    )}
+                    <span className={cn(!m.done && "text-muted-foreground")}>{m.label}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <ShoppingTimeline events={events} />
           </div>
         )}
       </section>
 
-      {/* Weekly Action Cards */}
+      {/* Layer 2 — the recommendations themselves */}
       {cards.length > 0 ? (
         <div className="flex gap-3 overflow-x-auto snap-x pb-1 sm:grid sm:grid-cols-1 sm:overflow-visible">
           {cards.map((card) => (
@@ -884,28 +900,6 @@ function HouseholdHQ({
           cta="Add a bill"
         />
       )}
-
-      {/* Household Journey */}
-      <section className="rounded-2xl border border-border bg-surface p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold tracking-tight text-sm">Your progress</h3>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            {journeyDone}/{journey.length}
-          </span>
-        </div>
-        <ol className="space-y-2">
-          {journey.map((m) => (
-            <li key={m.id} className="flex items-center gap-2.5 text-sm">
-              {m.done ? (
-                <CheckCircle2 className="h-4 w-4 text-accent shrink-0" />
-              ) : (
-                <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
-              )}
-              <span className={cn(!m.done && "text-muted-foreground")}>{m.label}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
     </>
   );
 }
@@ -914,14 +908,16 @@ function ShoppingTimeline({ events }: { events: ShoppingEventSummary[] | null })
   if (events == null) return null;
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5">
-      <h3 className="font-semibold tracking-tight text-sm mb-3">Recent shopping</h3>
+    <div>
+      <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        Recent shopping
+      </span>
       {events.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-muted-foreground">
           Your first shopping event will show up here once you add a bill.
         </p>
       ) : (
-        <ol className="space-y-3">
+        <ol className="mt-2 space-y-2.5">
           {events.map((e) => (
             <li
               key={e.shopping_event_id}
@@ -941,32 +937,7 @@ function ShoppingTimeline({ events }: { events: ShoppingEventSummary[] | null })
           ))}
         </ol>
       )}
-    </section>
-  );
-}
-
-function ActionCard({
-  to,
-  icon,
-  title,
-  body,
-}: {
-  to: string;
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
-  return (
-    <Link
-      to={to}
-      className="group rounded-2xl border border-border bg-surface p-4 hover:border-foreground/30 transition-all block"
-    >
-      <div className="h-8 w-8 rounded-lg bg-surface-2 flex items-center justify-center mb-2.5">
-        {icon}
-      </div>
-      <h4 className="font-semibold tracking-tight text-sm">{title}</h4>
-      <p className="text-xs text-muted-foreground mt-0.5">{body}</p>
-    </Link>
+    </div>
   );
 }
 

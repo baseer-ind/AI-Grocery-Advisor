@@ -105,11 +105,6 @@ export function buildHouseholdJourney(
   ];
 }
 
-export type DailyBrief = {
-  greeting: string;
-  lines: string[];
-};
-
 function timeOfDayGreeting(): string {
   const h = new Date().getHours();
   if (h < 12) return "Good morning";
@@ -117,35 +112,35 @@ function timeOfDayGreeting(): string {
   return "Good evening";
 }
 
-// A flowing, personal briefing rather than a stat grid — each sentence maps to one
-// real, already-computed signal. A signal with no data simply contributes no sentence;
-// nothing here is ever invented to fill space.
-export function buildDailyBrief(
+export type ShoppingReadiness = {
+  greeting: string;
+  status: "ready" | "attention" | "unknown";
+  headline: string;
+  remember: string | null;
+};
+
+// The hero of Household HQ. A household doesn't wake up wondering how well the
+// app understands them — they wake up wondering if they need to buy groceries.
+// This answers that one question first; everything else (confidence, history,
+// progress) is supporting detail, never the headline.
+export function computeShoppingReadiness(
   pantry: PredictedPantry | null,
   events: ShoppingEventSummary[] | null,
   planning: PlanningScore | null,
   profile: StoredHouseholdProfile | null,
-  intelligence: HouseholdIntelligence | null,
   firstName: string | null,
-): DailyBrief {
+): ShoppingReadiness {
   const greeting = firstName ? `${timeOfDayGreeting()}, ${firstName}` : timeOfDayGreeting();
-  const lines: string[] = [];
 
-  if (planning && events && events.length > 0) {
-    const lastDateStr = events[0]?.bill_date;
-    const daysSinceLast = lastDateStr
-      ? Math.round((Date.now() - new Date(lastDateStr).getTime()) / (1000 * 60 * 60 * 24))
-      : null;
-    if (daysSinceLast != null) {
-      const daysUntilNext = planning.averageGapDays - daysSinceLast;
-      if (daysUntilNext <= 2) {
-        lines.push(
-          daysUntilNext <= 0
-            ? "Your next shopping trip looks overdue based on how often you usually shop."
-            : `Your next shopping trip is likely due in about ${daysUntilNext} day${daysUntilNext === 1 ? "" : "s"}.`,
-        );
-      }
-    }
+  if (!events || events.length === 0) {
+    return {
+      greeting,
+      status: "unknown",
+      headline: profile
+        ? "Add your first bill to get real shopping readiness here."
+        : "Build your household profile to get started.",
+      remember: null,
+    };
   }
 
   const lowStock = pantry?.items
@@ -155,41 +150,40 @@ export function buildDailyBrief(
     .sort(
       (a, b) =>
         (a.estimated_days_of_stock_remaining ?? 0) - (b.estimated_days_of_stock_remaining ?? 0),
-    )
-    .slice(0, 2);
-  if (lowStock && lowStock.length > 0) {
-    const names = lowStock.map((i) => i.product_name).join(" and ");
-    lines.push(`${names} may need replenishing soon.`);
-  }
-
-  const storeNames = new Set((events ?? []).map((e) => e.store_name).filter(Boolean));
-  if (events && events.length > 0 && storeNames.size === 1) {
-    lines.push(`Your recent shopping has stayed with ${[...storeNames][0]}.`);
-  } else if (storeNames.size >= 2) {
-    lines.push("Comparing your usual stores this week could save you a little.");
-  }
-
-  if (lines.length === 0) {
-    if (events && events.length > 0) {
-      lines.push(
-        "Still learning your household's shopping pattern — a few more bills will sharpen this.",
-      );
-    } else if (profile) {
-      lines.push("Add your first bill to start getting real, personal recommendations here.");
-    } else {
-      lines.push("Build your household profile to get started — it takes about two minutes.");
-    }
-  }
-
-  if (intelligence) {
-    lines.push(
-      intelligence.score >= 90
-        ? "We have a strong picture of your household's shopping habits."
-        : `We understand about ${intelligence.score}% of your household's shopping habits so far.`,
     );
+
+  let daysUntilNext: number | null = null;
+  if (planning) {
+    const lastDateStr = events[0]?.bill_date;
+    const daysSinceLast = lastDateStr
+      ? Math.round((Date.now() - new Date(lastDateStr).getTime()) / (1000 * 60 * 60 * 24))
+      : null;
+    if (daysSinceLast != null) daysUntilNext = planning.averageGapDays - daysSinceLast;
   }
 
-  return { greeting, lines };
+  const overdue = daysUntilNext != null && daysUntilNext <= 0;
+  const needsAttention = (lowStock && lowStock.length > 0) || overdue;
+
+  let headline: string;
+  if (overdue) {
+    headline = "Your next shopping trip looks overdue.";
+  } else if (lowStock && lowStock.length > 0) {
+    headline = "You're mostly stocked, but a few things are running low.";
+  } else if (daysUntilNext != null && daysUntilNext <= 2) {
+    headline = `You're well stocked — your next trip is likely in about ${daysUntilNext} day${daysUntilNext === 1 ? "" : "s"}.`;
+  } else {
+    headline = "You're well stocked for now.";
+  }
+
+  const remember =
+    lowStock && lowStock.length > 0
+      ? `${lowStock
+          .slice(0, 2)
+          .map((i) => i.product_name)
+          .join(" and ")} may run low before your next trip.`
+      : null;
+
+  return { greeting, status: needsAttention ? "attention" : "ready", headline, remember };
 }
 
 export type WeeklyActionCard = {
