@@ -750,37 +750,44 @@ function HouseholdHQ({
 }) {
   const planning = computePlanningScore(events);
   const intelligence = computeHouseholdIntelligenceScore(profile, events, pantry);
-  const brief = buildDailyBrief(pantry, events, planning, profile);
+  // StoredHouseholdProfile has no name field yet — greeting stays generic for real households
+  const brief = buildDailyBrief(pantry, events, planning, profile, intelligence, null);
   const cards = buildWeeklyActionCards(pantry, events, planning);
   const journey = buildHouseholdJourney(profile, events, pantry, planning);
   const journeyDone = journey.filter((m) => m.done).length;
 
   return (
     <>
-      {/* Household Confidence + Daily Brief */}
+      {/* Daily Household Brief — the one thing this household needs to know right now */}
       <section className="rounded-2xl border border-border bg-surface p-6 lg:p-7">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              Daily household brief
-            </div>
-            <h1 className="mt-2 text-xl lg:text-2xl font-semibold tracking-tight text-balance">
-              {brief.headline}
-            </h1>
-            {brief.detail && <p className="mt-1.5 text-sm text-muted-foreground">{brief.detail}</p>}
+        <div className="flex items-start justify-between gap-3">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            {brief.greeting}
           </div>
-
           {intelligence && (
             <button
               onClick={() => setShowScoreDetail((v) => !v)}
-              className="shrink-0 text-right rounded-xl border border-border px-4 py-3 hover:bg-surface-2 transition-colors"
+              className="shrink-0 rounded-md bg-surface-2 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
             >
-              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                Household confidence
-              </div>
-              <div className="text-2xl font-semibold tracking-tight">{intelligence.score}</div>
+              Understands {intelligence.score}%
             </button>
           )}
+        </div>
+
+        <div className="mt-2 space-y-1.5">
+          {brief.lines.map((line, i) => (
+            <p
+              key={i}
+              className={cn(
+                "text-balance",
+                i === 0
+                  ? "text-xl lg:text-2xl font-semibold tracking-tight"
+                  : "text-sm text-muted-foreground",
+              )}
+            >
+              {line}
+            </p>
+          ))}
         </div>
 
         {intelligence && showScoreDetail && (

@@ -106,30 +106,30 @@ export function buildHouseholdJourney(
 }
 
 export type DailyBrief = {
-  headline: string;
-  detail: string | null;
+  greeting: string;
+  lines: string[];
 };
 
-// One sentence, drawn only from real signals already computed elsewhere — never invented.
+function timeOfDayGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+// A flowing, personal briefing rather than a stat grid — each sentence maps to one
+// real, already-computed signal. A signal with no data simply contributes no sentence;
+// nothing here is ever invented to fill space.
 export function buildDailyBrief(
   pantry: PredictedPantry | null,
   events: ShoppingEventSummary[] | null,
   planning: PlanningScore | null,
   profile: StoredHouseholdProfile | null,
+  intelligence: HouseholdIntelligence | null,
+  firstName: string | null,
 ): DailyBrief {
-  const soonestLow = pantry?.items
-    .filter((i) => i.estimated_days_of_stock_remaining != null)
-    .sort(
-      (a, b) =>
-        (a.estimated_days_of_stock_remaining ?? 0) - (b.estimated_days_of_stock_remaining ?? 0),
-    )[0];
-
-  if (soonestLow && (soonestLow.estimated_days_of_stock_remaining ?? 99) < 4) {
-    return {
-      headline: `${soonestLow.product_name} may run out in ${Math.max(0, Math.round(soonestLow.estimated_days_of_stock_remaining ?? 0))} day${Math.round(soonestLow.estimated_days_of_stock_remaining ?? 0) === 1 ? "" : "s"}.`,
-      detail: "Based on your purchase history for this item.",
-    };
-  }
+  const greeting = firstName ? `${timeOfDayGreeting()}, ${firstName}` : timeOfDayGreeting();
+  const lines: string[] = [];
 
   if (planning && events && events.length > 0) {
     const lastDateStr = events[0]?.bill_date;
@@ -137,41 +137,59 @@ export function buildDailyBrief(
       ? Math.round((Date.now() - new Date(lastDateStr).getTime()) / (1000 * 60 * 60 * 24))
       : null;
     if (daysSinceLast != null) {
-      const remaining = planning.averageGapDays - daysSinceLast;
-      if (remaining <= 2) {
-        return {
-          headline: "Your next shopping trip is likely due soon.",
-          detail: `You usually shop every ~${planning.averageGapDays} days — it's been ${daysSinceLast}.`,
-        };
+      const daysUntilNext = planning.averageGapDays - daysSinceLast;
+      if (daysUntilNext <= 2) {
+        lines.push(
+          daysUntilNext <= 0
+            ? "Your next shopping trip looks overdue based on how often you usually shop."
+            : `Your next shopping trip is likely due in about ${daysUntilNext} day${daysUntilNext === 1 ? "" : "s"}.`,
+        );
       }
     }
   }
 
-  if (events && events.length >= 3) {
-    return {
-      headline: "Your shopping habits are becoming more predictable.",
-      detail: `${events.length} shopping events tracked so far.`,
-    };
+  const lowStock = pantry?.items
+    .filter(
+      (i) => i.estimated_days_of_stock_remaining != null && i.estimated_days_of_stock_remaining < 5,
+    )
+    .sort(
+      (a, b) =>
+        (a.estimated_days_of_stock_remaining ?? 0) - (b.estimated_days_of_stock_remaining ?? 0),
+    )
+    .slice(0, 2);
+  if (lowStock && lowStock.length > 0) {
+    const names = lowStock.map((i) => i.product_name).join(" and ");
+    lines.push(`${names} may need replenishing soon.`);
   }
 
-  if (profile && profile.confidence < 0.9) {
-    return {
-      headline: "Your household profile is almost complete.",
-      detail: "A few more details will sharpen every recommendation below.",
-    };
+  const storeNames = new Set((events ?? []).map((e) => e.store_name).filter(Boolean));
+  if (events && events.length > 0 && storeNames.size === 1) {
+    lines.push(`Your recent shopping has stayed with ${[...storeNames][0]}.`);
+  } else if (storeNames.size >= 2) {
+    lines.push("Comparing your usual stores this week could save you a little.");
   }
 
-  if (events && events.length > 0) {
-    return {
-      headline: "Still learning your household's shopping pattern.",
-      detail: "Add a few more shopping events for sharper predictions.",
-    };
+  if (lines.length === 0) {
+    if (events && events.length > 0) {
+      lines.push(
+        "Still learning your household's shopping pattern — a few more bills will sharpen this.",
+      );
+    } else if (profile) {
+      lines.push("Add your first bill to start getting real, personal recommendations here.");
+    } else {
+      lines.push("Build your household profile to get started — it takes about two minutes.");
+    }
   }
 
-  return {
-    headline: "Add your first bill to start building real insights.",
-    detail: null,
-  };
+  if (intelligence) {
+    lines.push(
+      intelligence.score >= 90
+        ? "We have a strong picture of your household's shopping habits."
+        : `We understand about ${intelligence.score}% of your household's shopping habits so far.`,
+    );
+  }
+
+  return { greeting, lines };
 }
 
 export type WeeklyActionCard = {
