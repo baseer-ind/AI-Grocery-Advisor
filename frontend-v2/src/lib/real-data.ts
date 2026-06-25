@@ -172,3 +172,51 @@ export function removePlannerAddedItem(name: string) {
     // localStorage unavailable (e.g. private browsing) — non-critical, skip persisting
   }
 }
+
+// Taught Household Facts — things a household tells the assistant directly
+// because they can't yet be inferred from history ("we never buy soft
+// drinks", "we always shop on salary day"). Deliberately household-centric,
+// not grocery-specific — the category is free text, not a fixed grocery
+// taxonomy, so this same store works for pharmacy/pet/baby facts later
+// without a schema change.
+const TAUGHT_FACTS_KEY = "hb_taught_facts";
+
+export type TaughtFact = {
+  id: string;
+  text: string;
+  category: string;
+  taughtAt: string;
+};
+
+export function getTaughtFacts(): TaughtFact[] {
+  try {
+    const raw = localStorage.getItem(TAUGHT_FACTS_KEY);
+    return raw ? (JSON.parse(raw) as TaughtFact[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addTaughtFact(text: string, category: string) {
+  try {
+    const current = getTaughtFacts();
+    const fact: TaughtFact = {
+      id: `${Date.now()}-${Math.round(Math.random() * 1e6)}`,
+      text,
+      category,
+      taughtAt: new Date().toISOString(),
+    };
+    localStorage.setItem(TAUGHT_FACTS_KEY, JSON.stringify([fact, ...current]));
+  } catch {
+    // localStorage unavailable (e.g. private browsing) — non-critical, skip persisting
+  }
+}
+
+export function removeTaughtFact(id: string) {
+  try {
+    const current = getTaughtFacts().filter((f) => f.id !== id);
+    localStorage.setItem(TAUGHT_FACTS_KEY, JSON.stringify(current));
+  } catch {
+    // localStorage unavailable (e.g. private browsing) — non-critical, skip persisting
+  }
+}
