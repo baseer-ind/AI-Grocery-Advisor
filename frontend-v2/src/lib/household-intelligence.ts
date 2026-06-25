@@ -199,6 +199,8 @@ export type WeeklyActionCard = {
   body: string;
   to: string;
   cta: string;
+  why: string;
+  confidence: "low" | "medium" | "high";
 };
 
 export function buildWeeklyActionCards(
@@ -212,6 +214,7 @@ export function buildWeeklyActionCards(
     (i) => i.estimated_days_of_stock_remaining != null && i.estimated_days_of_stock_remaining < 7,
   );
   if (runningLow && runningLow.length > 0) {
+    const worst = runningLow[0];
     cards.push({
       id: "running-low",
       tag: "Likely running low",
@@ -219,6 +222,8 @@ export function buildWeeklyActionCards(
       body: runningLow.map((i) => i.product_name).join(" · "),
       to: "/this-week",
       cta: "Add to list",
+      why: `Because: ${worst.product_name} usually lasts about ${worst.estimated_days_of_stock_remaining} more day${worst.estimated_days_of_stock_remaining === 1 ? "" : "s"} based on how often you buy it.`,
+      confidence: pantry?.confidence ?? "low",
     });
   }
 
@@ -235,6 +240,8 @@ export function buildWeeklyActionCards(
         body: "Based on your real shopping history, not a guess.",
         to: "/this-week",
         cta: "Plan this week's list",
+        why: `Because: your last ${events.length} shopping trips averaged ${planning.averageGapDays} days apart, and it's been ${daysSinceLast} since your last one.`,
+        confidence: planning.score >= 70 ? "high" : planning.score >= 40 ? "medium" : "low",
       });
     }
   }
@@ -248,6 +255,8 @@ export function buildWeeklyActionCards(
       body: "Compare your basket across them to see where it's cheaper this week.",
       to: "/bill-check",
       cta: "Compare stores",
+      why: `Because: your shopping history includes ${distinctStores.size} different stores, so we can compare prices across them.`,
+      confidence: "medium",
     });
   }
 

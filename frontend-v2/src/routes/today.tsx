@@ -146,7 +146,7 @@ function Today() {
   if (!sample && !hasRealData()) {
     const profile = getHouseholdProfile();
     return (
-      <AppShell title="Home" eyebrow="Household Advisor">
+      <AppShell title="Household HQ" eyebrow="Household Advisor">
         <div className="max-w-xl mx-auto space-y-4">
           <HouseholdSnapshotStrip profile={profile} />
           <div className="text-center rounded-2xl border border-border bg-surface p-10">
@@ -186,7 +186,7 @@ function Today() {
   const profile = getHouseholdProfile();
 
   return (
-    <AppShell title="Home" eyebrow="Household Advisor">
+    <AppShell title="Household HQ" eyebrow="Household Advisor">
       <div className="space-y-4 max-w-3xl mx-auto">
         <HouseholdSnapshotStrip profile={profile} />
         {sample && (
@@ -692,6 +692,8 @@ function FeedCard({
   to,
   cta,
   muted,
+  why,
+  confidence,
 }: {
   icon?: React.ReactNode;
   tag: string;
@@ -701,7 +703,11 @@ function FeedCard({
   to: string;
   cta: string;
   muted?: boolean;
+  why?: string;
+  confidence?: "low" | "medium" | "high";
 }) {
+  const [showWhy, setShowWhy] = useState(false);
+
   return (
     <section
       className={cn("rounded-2xl border border-border bg-surface p-5", muted && "opacity-90")}
@@ -723,12 +729,30 @@ function FeedCard({
           </span>
           <h3 className="mt-2 font-semibold tracking-tight text-balance">{title}</h3>
           <p className="mt-1 text-sm text-muted-foreground text-pretty">{body}</p>
-          <Link
-            to={to}
-            className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold hover:text-accent"
-          >
-            {cta} <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+          <div className="mt-3 flex items-center gap-3 flex-wrap">
+            <Link
+              to={to}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold hover:text-accent"
+            >
+              {cta} <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+            {why && (
+              <button
+                onClick={() => setShowWhy((v) => !v)}
+                className="text-xs font-medium text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+              >
+                Why?
+              </button>
+            )}
+          </div>
+          {why && showWhy && (
+            <p className="mt-2 text-xs text-muted-foreground border-t border-border pt-2">
+              {why}
+              {confidence && (
+                <span className="ml-1 capitalize">· Confidence: {confidence}</span>
+              )}
+            </p>
+          )}
         </div>
       </div>
     </section>
@@ -843,6 +867,8 @@ function HouseholdHQ({
                 body={card.body}
                 to={card.to}
                 cta={card.cta}
+                why={card.why}
+                confidence={card.confidence}
               />
             </div>
           ))}
