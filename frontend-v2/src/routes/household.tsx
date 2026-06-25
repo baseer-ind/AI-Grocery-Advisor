@@ -55,10 +55,7 @@ const initialAnswers: Answers = {
   priorities: [],
 };
 
-type Chip = { label: string; tone: "neutral" | "accent" | "warning" };
-
 function deriveProfile(answers: Answers) {
-  const chips: Chip[] = [];
   let householdType = "Unknown Household";
   let shoppingStyle = "Not Enough Data";
   let planningStyle = "Not Enough Data";
@@ -70,17 +67,10 @@ function deriveProfile(answers: Answers) {
     if (answers.size === 1) householdType = "Single Household";
     else if (answers.size === 2 && answers.children === 0) householdType = "Couple Household";
     else householdType = "Family Household";
-    chips.push({ label: householdType, tone: "neutral" });
   }
 
   if (answers.budget != null && answers.size) {
     confidence += 15;
-    const perPerson = answers.budget / answers.size;
-    if (perPerson < 2500) {
-      chips.push({ label: "Budget Conscious", tone: "accent" });
-    } else if (perPerson > 6000) {
-      chips.push({ label: "Spacious Budget", tone: "neutral" });
-    }
   }
 
   if (answers.stores.length > 0) {
@@ -90,13 +80,10 @@ function deriveProfile(answers: Answers) {
     const anyValue = lower.some((s) => _VALUE_STORES.has(s));
     if (allQuick) {
       shoppingStyle = "Convenience Shopper";
-      chips.push({ label: "Convenience Shopper", tone: "neutral" });
     } else if (anyValue) {
       shoppingStyle = "Value Shopper";
-      chips.push({ label: "Value Shopper", tone: "accent" });
     } else {
       shoppingStyle = "Mixed Shopper";
-      chips.push({ label: "Mixed Shopper", tone: "neutral" });
     }
   }
 
@@ -106,115 +93,24 @@ function deriveProfile(answers: Answers) {
       planningStyle = "Structured Planner";
     } else if (answers.frequency === "monthly") {
       planningStyle = "Bulk Planner";
-      chips.push({ label: "Likely bulk purchaser", tone: "neutral" });
     } else {
       planningStyle = "Reactive Shopper";
-      chips.push({ label: "Planning opportunity detected", tone: "warning" });
     }
   }
 
   if (answers.priorities.length > 0) {
     confidence += 30;
-    const set = new Set(answers.priorities);
-    if (set.has("save_money") || set.has("offer_seeker")) {
-      chips.push({ label: "Value-conscious shopper", tone: "accent" });
-    }
-    if (set.has("premium_brands") || set.has("quality")) {
-      chips.push({ label: "Quality-focused shopper", tone: "neutral" });
-    }
-    if (set.has("health_focused")) {
-      chips.push({ label: "Health-focused shopper", tone: "neutral" });
-    }
-    if (set.has("convenience_first")) {
-      chips.push({ label: "Convenience-first shopper", tone: "neutral" });
-    }
   }
 
   confidence = Math.min(confidence, 90);
 
-  return { householdType, shoppingStyle, planningStyle, pantryReadiness, confidence, chips };
-}
-
-function confidenceLabel(score: number) {
-  if (score === 0) return "Unknown";
-  if (score < 40) return "Low";
-  if (score < 70) return "Moderate";
-  return "Good";
-}
-
-const chipTone: Record<Chip["tone"], string> = {
-  neutral: "bg-surface-2 text-foreground border border-border",
-  accent: "bg-accent/15 text-accent-foreground border border-accent/30",
-  warning: "bg-warning/15 text-warning-foreground border border-warning/30",
-};
-
-function ProfilePanel({ answers, started }: { answers: Answers; started: boolean }) {
-  const profile = deriveProfile(answers);
-
-  return (
-    <div className="rounded-2xl border border-border bg-surface p-5 sm:p-6">
-      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
-        Household Profile
-      </div>
-
-      {!started ? (
-        <div className="text-sm text-muted-foreground">
-          Answer a few questions and we'll build your profile live, right here.
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <div>
-            <div className="text-lg font-semibold tracking-tight">{profile.householdType}</div>
-            <div className="text-sm text-muted-foreground mt-0.5">{profile.shoppingStyle}</div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <Field label="Planning Style" value={profile.planningStyle} />
-            <Field label="Pantry Readiness" value={profile.pantryReadiness} />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="font-mono uppercase tracking-widest text-muted-foreground">
-                Confidence
-              </span>
-              <span className="font-mono font-semibold">{confidenceLabel(profile.confidence)}</span>
-            </div>
-            <div className="h-1.5 w-full bg-surface-2 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-foreground transition-all duration-500"
-                style={{ width: `${profile.confidence}%` }}
-              />
-            </div>
-          </div>
-
-          {profile.chips.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {profile.chips.map((chip, i) => (
-                <span
-                  key={`${chip.label}-${i}`}
-                  className={cn(
-                    "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
-                    chipTone[chip.tone],
-                  )}
-                >
-                  {chip.label}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
+  return { householdType, shoppingStyle, planningStyle, pantryReadiness, confidence };
 }
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-background border border-border px-3 py-2">
-      <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-        {label}
-      </div>
+    <div className="rounded-2xl bg-surface-2 px-4 py-3">
+      <div className="text-xs text-muted-foreground">{label}</div>
       <div className="font-medium mt-0.5">{value}</div>
     </div>
   );
@@ -223,10 +119,10 @@ function Field({ label, value }: { label: string; value: string }) {
 function InsightStrip({ text }: { text: string | null }) {
   if (!text) return null;
   return (
-    <div className="mt-3 flex items-start gap-2 rounded-xl bg-surface-2 px-3.5 py-2.5 text-sm">
+    <p className="mt-3 text-sm text-muted-foreground flex items-start gap-2">
       <Sparkles className="h-4 w-4 shrink-0 mt-0.5 text-accent" />
-      <span className="text-foreground/90">{text}</span>
-    </div>
+      <span>{text}</span>
+    </p>
   );
 }
 
@@ -243,10 +139,8 @@ function OptionButton({
     <button
       onClick={onClick}
       className={cn(
-        "rounded-xl border px-4 py-3 text-sm font-medium text-left transition-colors",
-        selected
-          ? "border-foreground bg-foreground text-background"
-          : "border-border bg-surface hover:bg-surface-2",
+        "rounded-2xl px-4 py-3 text-sm font-medium text-left transition-colors",
+        selected ? "bg-foreground text-background" : "bg-surface-2 hover:opacity-80",
       )}
     >
       {children}
@@ -270,7 +164,7 @@ function PrimaryButton({
       onClick={onClick}
       disabled={disabled || busy}
       className={cn(
-        "inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-opacity",
+        "inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-opacity",
         disabled || busy
           ? "bg-surface-2 text-muted-foreground cursor-not-allowed"
           : "bg-foreground text-background hover:opacity-90",
@@ -399,8 +293,8 @@ function HouseholdOnboardingPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-        <div className="flex items-center justify-between mb-6">
+      <div className="max-w-xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div className="flex items-center justify-between mb-8">
           <Link
             to="/today"
             className="text-sm font-medium text-muted-foreground hover:text-foreground"
@@ -410,228 +304,217 @@ function HouseholdOnboardingPage() {
           {started && step !== "snapshot" && <StepDots step={step} />}
         </div>
 
-        <div className="grid grid-cols-12 gap-5">
-          <div className="col-span-12 lg:col-span-7">
-            {step === "intro" && (
-              <div className="rounded-2xl border border-border bg-surface p-6 sm:p-10 text-center sm:text-left">
-                <div className="h-12 w-12 rounded-2xl bg-foreground text-background flex items-center justify-center mb-5 mx-auto sm:mx-0">
-                  <Sparkles className="h-6 w-6" />
-                </div>
-                <h1 className="text-2xl font-semibold tracking-tight">
-                  Let's get to know your household
-                </h1>
-                <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto sm:mx-0">
-                  A few quick questions. Your profile builds itself as you answer — no forms, no
-                  waiting.
-                </p>
-                <div className="mt-6 flex justify-center sm:justify-start">
-                  <PrimaryButton onClick={() => setStep("profile")}>Start</PrimaryButton>
+        <div>
+          {step === "intro" && (
+            <div className="text-center sm:text-left">
+              <h1 className="text-3xl font-semibold tracking-tight">
+                Let's get to know your household
+              </h1>
+              <p className="text-base text-muted-foreground mt-3 max-w-md mx-auto sm:mx-0">
+                A few quick questions. Nothing to set up, nothing to track — just tell us about your
+                household and we'll take it from there.
+              </p>
+              <div className="mt-7 flex justify-center sm:justify-start">
+                <PrimaryButton onClick={() => setStep("profile")}>Start</PrimaryButton>
+              </div>
+            </div>
+          )}
+
+          {step === "profile" && (
+            <StepCard title="Tell us about your household">
+              <div>
+                <Label>Household size</Label>
+                <div className="grid grid-cols-4 gap-2 mt-2">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <OptionButton
+                      key={n}
+                      selected={answers.size === n}
+                      onClick={() =>
+                        setAnswers((a) => ({
+                          ...a,
+                          size: n,
+                          adults: Math.min(a.adults, n) || 1,
+                        }))
+                      }
+                    >
+                      {n}
+                      {n === 5 ? "+" : ""}
+                    </OptionButton>
+                  ))}
                 </div>
               </div>
-            )}
 
-            {step === "profile" && (
-              <StepCard title="Tell us about your household">
+              {answers.size != null && (
+                <div className="grid grid-cols-3 gap-3">
+                  <Counter
+                    label="Adults"
+                    value={answers.adults}
+                    onChange={(v) => setAnswers((a) => ({ ...a, adults: v }))}
+                  />
+                  <Counter
+                    label="Children"
+                    value={answers.children}
+                    onChange={(v) => setAnswers((a) => ({ ...a, children: v }))}
+                  />
+                  <Counter
+                    label="Seniors"
+                    value={answers.seniors}
+                    onChange={(v) => setAnswers((a) => ({ ...a, seniors: v }))}
+                  />
+                </div>
+              )}
+
+              {answers.size != null && (
                 <div>
-                  <Label>Household size</Label>
-                  <div className="grid grid-cols-4 gap-2 mt-2">
-                    {[1, 2, 3, 4, 5].map((n) => (
+                  <Label>City</Label>
+                  <input
+                    value={answers.city}
+                    onChange={(e) => setAnswers((a) => ({ ...a, city: e.target.value }))}
+                    placeholder="e.g. Mumbai"
+                    className="mt-2 w-full rounded-2xl bg-surface-2 px-4 py-3 text-sm"
+                  />
+                </div>
+              )}
+
+              {answers.size != null && answers.city.trim() && (
+                <div>
+                  <Label>Monthly grocery budget (optional)</Label>
+                  <div className="relative mt-2">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                      ₹
+                    </span>
+                    <input
+                      type="number"
+                      value={answers.budget ?? ""}
+                      onChange={(e) =>
+                        setAnswers((a) => ({
+                          ...a,
+                          budget: e.target.value ? Number(e.target.value) : null,
+                        }))
+                      }
+                      placeholder="12000"
+                      className="w-full rounded-2xl bg-surface-2 pl-8 pr-4 py-3 text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {error && <p className="text-xs text-destructive">{error}</p>}
+
+              <div className="pt-2">
+                <PrimaryButton
+                  onClick={submitProfile}
+                  busy={busy}
+                  disabled={answers.size == null || !answers.city.trim()}
+                >
+                  Continue
+                </PrimaryButton>
+              </div>
+            </StepCard>
+          )}
+
+          {step === "behavior" && (
+            <StepCard title="Where and how often do you shop?">
+              <InsightStrip text={insight} />
+              <div>
+                <Label>Where do you usually shop? (Select all that apply)</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {STORE_OPTIONS.map((store) => {
+                    const selected = answers.stores.includes(store);
+                    return (
                       <OptionButton
-                        key={n}
-                        selected={answers.size === n}
+                        key={store}
+                        selected={selected}
                         onClick={() =>
                           setAnswers((a) => ({
                             ...a,
-                            size: n,
-                            adults: Math.min(a.adults, n) || 1,
+                            stores: selected
+                              ? a.stores.filter((s) => s !== store)
+                              : [...a.stores, store],
                           }))
                         }
                       >
-                        {n}
-                        {n === 5 ? "+" : ""}
+                        {store}
+                      </OptionButton>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {answers.stores.length > 0 && (
+                <div>
+                  <Label>How often do you shop?</Label>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {FREQUENCY_OPTIONS.map((f) => (
+                      <OptionButton
+                        key={f.value}
+                        selected={answers.frequency === f.value}
+                        onClick={() => setAnswers((a) => ({ ...a, frequency: f.value }))}
+                      >
+                        {f.label}
                       </OptionButton>
                     ))}
                   </div>
                 </div>
+              )}
 
-                {answers.size != null && (
-                  <div className="grid grid-cols-3 gap-3">
-                    <Counter
-                      label="Adults"
-                      value={answers.adults}
-                      onChange={(v) => setAnswers((a) => ({ ...a, adults: v }))}
-                    />
-                    <Counter
-                      label="Children"
-                      value={answers.children}
-                      onChange={(v) => setAnswers((a) => ({ ...a, children: v }))}
-                    />
-                    <Counter
-                      label="Seniors"
-                      value={answers.seniors}
-                      onChange={(v) => setAnswers((a) => ({ ...a, seniors: v }))}
-                    />
-                  </div>
-                )}
+              {error && <p className="text-xs text-destructive">{error}</p>}
 
-                {answers.size != null && (
-                  <div>
-                    <Label>City</Label>
-                    <input
-                      value={answers.city}
-                      onChange={(e) => setAnswers((a) => ({ ...a, city: e.target.value }))}
-                      placeholder="e.g. Mumbai"
-                      className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm"
-                    />
-                  </div>
-                )}
+              <div className="pt-2">
+                <PrimaryButton
+                  onClick={submitBehavior}
+                  busy={busy}
+                  disabled={answers.stores.length === 0 || !answers.frequency}
+                >
+                  Continue
+                </PrimaryButton>
+              </div>
+            </StepCard>
+          )}
 
-                {answers.size != null && answers.city.trim() && (
-                  <div>
-                    <Label>Monthly grocery budget (optional)</Label>
-                    <div className="relative mt-2">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                        ₹
-                      </span>
-                      <input
-                        type="number"
-                        value={answers.budget ?? ""}
-                        onChange={(e) =>
+          {step === "style" && (
+            <StepCard title="What matters most when you shop?">
+              <InsightStrip text={insight} />
+              <div>
+                <Label>Pick what fits (select all that apply)</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {PRIORITY_OPTIONS.map((p) => {
+                    const selected = answers.priorities.includes(p.value);
+                    return (
+                      <OptionButton
+                        key={p.value}
+                        selected={selected}
+                        onClick={() =>
                           setAnswers((a) => ({
                             ...a,
-                            budget: e.target.value ? Number(e.target.value) : null,
+                            priorities: selected
+                              ? a.priorities.filter((x) => x !== p.value)
+                              : [...a.priorities, p.value],
                           }))
                         }
-                        placeholder="12000"
-                        className="w-full rounded-xl border border-border bg-background pl-8 pr-4 py-3 text-sm"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {error && <p className="text-xs text-destructive">{error}</p>}
-
-                <div className="pt-2">
-                  <PrimaryButton
-                    onClick={submitProfile}
-                    busy={busy}
-                    disabled={answers.size == null || !answers.city.trim()}
-                  >
-                    Continue
-                  </PrimaryButton>
+                      >
+                        {p.label}
+                      </OptionButton>
+                    );
+                  })}
                 </div>
-              </StepCard>
-            )}
+              </div>
 
-            {step === "behavior" && (
-              <StepCard title="Where and how often do you shop?">
-                <InsightStrip text={insight} />
-                <div>
-                  <Label>Where do you usually shop? (Select all that apply)</Label>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    {STORE_OPTIONS.map((store) => {
-                      const selected = answers.stores.includes(store);
-                      return (
-                        <OptionButton
-                          key={store}
-                          selected={selected}
-                          onClick={() =>
-                            setAnswers((a) => ({
-                              ...a,
-                              stores: selected
-                                ? a.stores.filter((s) => s !== store)
-                                : [...a.stores, store],
-                            }))
-                          }
-                        >
-                          {store}
-                        </OptionButton>
-                      );
-                    })}
-                  </div>
-                </div>
+              {error && <p className="text-xs text-destructive">{error}</p>}
 
-                {answers.stores.length > 0 && (
-                  <div>
-                    <Label>How often do you shop?</Label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      {FREQUENCY_OPTIONS.map((f) => (
-                        <OptionButton
-                          key={f.value}
-                          selected={answers.frequency === f.value}
-                          onClick={() => setAnswers((a) => ({ ...a, frequency: f.value }))}
-                        >
-                          {f.label}
-                        </OptionButton>
-                      ))}
-                    </div>
-                  </div>
-                )}
+              <div className="pt-2">
+                <PrimaryButton
+                  onClick={submitStyle}
+                  busy={busy}
+                  disabled={answers.priorities.length === 0}
+                >
+                  Finish
+                </PrimaryButton>
+              </div>
+            </StepCard>
+          )}
 
-                {error && <p className="text-xs text-destructive">{error}</p>}
-
-                <div className="pt-2">
-                  <PrimaryButton
-                    onClick={submitBehavior}
-                    busy={busy}
-                    disabled={answers.stores.length === 0 || !answers.frequency}
-                  >
-                    Continue
-                  </PrimaryButton>
-                </div>
-              </StepCard>
-            )}
-
-            {step === "style" && (
-              <StepCard title="What matters most when you shop?">
-                <InsightStrip text={insight} />
-                <div>
-                  <Label>Pick what fits (select all that apply)</Label>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    {PRIORITY_OPTIONS.map((p) => {
-                      const selected = answers.priorities.includes(p.value);
-                      return (
-                        <OptionButton
-                          key={p.value}
-                          selected={selected}
-                          onClick={() =>
-                            setAnswers((a) => ({
-                              ...a,
-                              priorities: selected
-                                ? a.priorities.filter((x) => x !== p.value)
-                                : [...a.priorities, p.value],
-                            }))
-                          }
-                        >
-                          {p.label}
-                        </OptionButton>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {error && <p className="text-xs text-destructive">{error}</p>}
-
-                <div className="pt-2">
-                  <PrimaryButton
-                    onClick={submitStyle}
-                    busy={busy}
-                    disabled={answers.priorities.length === 0}
-                  >
-                    Finish
-                  </PrimaryButton>
-                </div>
-              </StepCard>
-            )}
-
-            {step === "snapshot" && <SnapshotCard profile={profile} insight={insight} />}
-          </div>
-
-          <div className="col-span-12 lg:col-span-5">
-            <div className="lg:sticky lg:top-10">
-              <ProfilePanel answers={answers} started={started} />
-            </div>
-          </div>
+          {step === "snapshot" && <SnapshotCard profile={profile} insight={insight} />}
         </div>
       </div>
     </div>
@@ -658,19 +541,15 @@ function StepDots({ step }: { step: StepKey }) {
 
 function StepCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 sm:p-7 space-y-5">
-      <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
       {children}
     </div>
   );
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-      {children}
-    </div>
-  );
+  return <div className="text-sm font-medium text-foreground">{children}</div>;
 }
 
 function Counter({
@@ -683,21 +562,19 @@ function Counter({
   onChange: (v: number) => void;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-background p-3">
-      <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">
-        {label}
-      </div>
+    <div className="rounded-2xl bg-surface-2 p-3.5">
+      <div className="text-xs text-muted-foreground mb-2">{label}</div>
       <div className="flex items-center justify-between">
         <button
           onClick={() => onChange(Math.max(0, value - 1))}
-          className="h-7 w-7 rounded-lg border border-border flex items-center justify-center hover:bg-surface-2"
+          className="h-7 w-7 rounded-full bg-surface flex items-center justify-center hover:opacity-80"
         >
           −
         </button>
-        <span className="font-mono font-semibold">{value}</span>
+        <span className="font-semibold">{value}</span>
         <button
           onClick={() => onChange(value + 1)}
-          className="h-7 w-7 rounded-lg border border-border flex items-center justify-center hover:bg-surface-2"
+          className="h-7 w-7 rounded-full bg-surface flex items-center justify-center hover:opacity-80"
         >
           +
         </button>
@@ -714,7 +591,7 @@ function SnapshotCard({
   insight: string | null;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
+    <div className="p-1">
       <div className="flex items-center gap-2 mb-1">
         <CheckCircle2 className="h-5 w-5 text-accent" />
         <span className="font-semibold">Household Snapshot</span>
@@ -734,12 +611,12 @@ function SnapshotCard({
       <InsightStrip text={insight} />
 
       <div className="mt-7 space-y-2">
-        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+        <div className="text-sm font-medium text-muted-foreground mb-2">
           Continue building your profile
         </div>
         <Link
           to="/upload"
-          className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-3.5 hover:bg-surface-2"
+          className="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3.5 hover:opacity-80"
         >
           <span className="flex items-center gap-2.5 text-sm font-medium">
             <UploadIcon className="h-4 w-4" /> Upload a Bill
@@ -748,7 +625,7 @@ function SnapshotCard({
         </Link>
         <Link
           to="/this-week"
-          className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-3.5 hover:bg-surface-2"
+          className="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3.5 hover:opacity-80"
         >
           <span className="flex items-center gap-2.5 text-sm font-medium">
             <ListChecks className="h-4 w-4" /> Create a Shopping List
@@ -757,7 +634,7 @@ function SnapshotCard({
         </Link>
         <Link
           to="/today"
-          className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-3.5 hover:bg-surface-2"
+          className="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3.5 hover:opacity-80"
         >
           <span className="flex items-center gap-2.5 text-sm font-medium">
             <Sparkles className="h-4 w-4" /> Go to Home
