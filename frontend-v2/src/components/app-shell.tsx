@@ -9,6 +9,8 @@ import {
   ListChecks,
   Heart,
   UserCircle2,
+  ScanLine,
+  TrendingDown,
 } from "lucide-react";
 import { FeedbackCta } from "./feedback-cta";
 import { ThemeToggle } from "./theme-toggle";
@@ -23,6 +25,13 @@ const navGroups = [
       { to: "/today", label: "Home", icon: HomeIcon },
       { to: "/this-week", label: "Shopping List", icon: ListChecks },
       { to: "/household", label: "Profile", icon: UserCircle2 },
+    ],
+  },
+  {
+    label: "Improve Your Recommendations",
+    items: [
+      { to: "/upload", label: "Add a Bill", icon: ScanLine },
+      { to: "/bill-check", label: "Compare My Basket", icon: TrendingDown },
     ],
   },
   {
