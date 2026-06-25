@@ -20,7 +20,9 @@ export function FeedbackCta() {
     let visited: string[] = [];
     try {
       visited = JSON.parse(localStorage.getItem(VISIT_KEY) ?? "[]");
-    } catch {}
+    } catch {
+      visited = [];
+    }
     if (!visited.includes(pathname)) {
       visited.push(pathname);
       localStorage.setItem(VISIT_KEY, JSON.stringify(visited));
@@ -40,7 +42,7 @@ export function FeedbackCta() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 max-w-sm w-[calc(100%-2rem)] sm:w-auto rounded-2xl border border-border bg-surface shadow-2xl p-4 animate-in slide-in-from-bottom-4">
+    <div className="fixed bottom-20 right-4 lg:bottom-4 max-w-sm w-[calc(100%-2rem)] sm:w-auto rounded-2xl border border-border bg-surface shadow-2xl p-4 animate-in slide-in-from-bottom-4 z-40">
       <div className="flex items-start gap-3">
         <div className="h-9 w-9 shrink-0 rounded-full bg-foreground text-background flex items-center justify-center">
           <Heart className="h-4 w-4" />

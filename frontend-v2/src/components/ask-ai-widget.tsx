@@ -12,7 +12,11 @@ const seed: Msg[] = [
   },
 ];
 
-const prompts = ["How can I save ₹1,000 this month?", "What should I buy this week?", "Should I buy basmati rice now or wait?"];
+const prompts = [
+  "How can I save ₹1,000 this month?",
+  "What should I buy this week?",
+  "Should I buy basmati rice now or wait?",
+];
 
 function sampleReply(q: string): Msg {
   const lower = q.toLowerCase();
@@ -64,7 +68,7 @@ export function AskAiWidget() {
       <button
         onClick={() => setOpen(true)}
         className={cn(
-          "fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full bg-foreground text-background px-4 py-3 text-sm font-semibold shadow-lg hover:opacity-90 transition-all",
+          "fixed bottom-20 right-4 lg:bottom-5 lg:right-5 z-40 inline-flex items-center gap-2 rounded-full bg-foreground text-background px-4 py-3 text-sm font-semibold shadow-lg hover:opacity-90 transition-all",
           open && "scale-0 opacity-0 pointer-events-none",
         )}
         aria-label="Ask AI"
@@ -74,13 +78,16 @@ export function AskAiWidget() {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 bg-background/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
+        <div
+          className="fixed inset-0 z-50 bg-background/60 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        />
       )}
 
       <div
         className={cn(
-          "fixed bottom-5 right-5 z-50 w-[calc(100vw-2.5rem)] sm:w-[400px] rounded-2xl border border-border bg-surface shadow-2xl flex flex-col transition-all duration-200 ease-out",
-          "h-[min(640px,calc(100vh-2.5rem))]",
+          "fixed bottom-20 right-4 lg:bottom-5 lg:right-5 z-50 w-[calc(100vw-2rem)] sm:w-[400px] rounded-2xl border border-border bg-surface shadow-2xl flex flex-col transition-all duration-200 ease-out",
+          "h-[min(640px,calc(100vh-7rem))] lg:h-[min(640px,calc(100vh-2.5rem))]",
           open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none",
         )}
       >
@@ -94,7 +101,11 @@ export function AskAiWidget() {
               <div className="text-xs text-muted-foreground">Tuned to your household</div>
             </div>
           </div>
-          <button onClick={() => setOpen(false)} className="h-8 w-8 inline-flex items-center justify-center rounded-lg hover:bg-surface-2" aria-label="Close">
+          <button
+            onClick={() => setOpen(false)}
+            className="h-8 w-8 inline-flex items-center justify-center rounded-lg hover:bg-surface-2"
+            aria-label="Close"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -111,7 +122,11 @@ export function AskAiWidget() {
           {msgs.length === 1 && (
             <div className="space-y-2 pt-2">
               {prompts.map((p) => (
-                <button key={p} onClick={() => send(p)} className="block w-full text-left rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm hover:border-foreground/30 transition">
+                <button
+                  key={p}
+                  onClick={() => send(p)}
+                  className="block w-full text-left rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm hover:border-foreground/30 transition"
+                >
                   {p}
                 </button>
               ))}
@@ -133,7 +148,11 @@ export function AskAiWidget() {
               placeholder="Ask about your spending…"
               className="w-full rounded-xl border border-border bg-background px-3.5 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/20"
             />
-            <button type="submit" className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg bg-foreground text-background flex items-center justify-center hover:opacity-90" aria-label="Send">
+            <button
+              type="submit"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg bg-foreground text-background flex items-center justify-center hover:opacity-90"
+              aria-label="Send"
+            >
               <ArrowUp className="h-4 w-4" />
             </button>
           </form>
@@ -147,10 +166,24 @@ function Bubble({ m }: { m: Msg }) {
   const isUser = m.role === "user";
   return (
     <div className={cn("flex gap-2.5 max-w-[90%]", isUser ? "ml-auto flex-row-reverse" : "")}>
-      <div className={cn("h-7 w-7 shrink-0 rounded-lg flex items-center justify-center text-xs font-semibold", isUser ? "bg-surface-2 text-foreground border border-border" : "bg-foreground text-background")}>
+      <div
+        className={cn(
+          "h-7 w-7 shrink-0 rounded-lg flex items-center justify-center text-xs font-semibold",
+          isUser
+            ? "bg-surface-2 text-foreground border border-border"
+            : "bg-foreground text-background",
+        )}
+      >
         {isUser ? "B" : <Sparkles className="h-3.5 w-3.5" />}
       </div>
-      <div className={cn("rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap", isUser ? "bg-foreground text-background" : "bg-background text-foreground border border-border")}>
+      <div
+        className={cn(
+          "rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap",
+          isUser
+            ? "bg-foreground text-background"
+            : "bg-background text-foreground border border-border",
+        )}
+      >
         {m.text}
       </div>
     </div>
@@ -158,5 +191,10 @@ function Bubble({ m }: { m: Msg }) {
 }
 
 function Dot({ delay = 0 }: { delay?: number }) {
-  return <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-pulse" style={{ animationDelay: `${delay}ms` }} />;
+  return (
+    <span
+      className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-pulse"
+      style={{ animationDelay: `${delay}ms` }}
+    />
+  );
 }
