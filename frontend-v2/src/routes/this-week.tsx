@@ -747,6 +747,14 @@ function RealPantryCard({ item }: { item: PredictedPantryItem }) {
           <span>Cycle ~{item.typical_repurchase_interval_days}d</span>
         )}
       </div>
+      {item.confidence !== "high" && (
+        <div className="mt-2 pt-2 border-t border-border text-xs text-muted-foreground">
+          To improve this:{" "}
+          {item.purchase_count <= 1
+            ? "we need to see this purchased again."
+            : `${Math.max(1, 3 - item.purchase_count)} more purchase${Math.max(1, 3 - item.purchase_count) === 1 ? "" : "s"} would make this more reliable.`}
+        </div>
+      )}
     </article>
   );
 }
