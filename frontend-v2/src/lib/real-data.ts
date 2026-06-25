@@ -42,11 +42,17 @@ export type StoredHouseholdProfile = {
   frequency?: string | null;
   budget?: number | null;
   priorities?: string[];
+  // When this profile was first saved — the one genuinely real timestamp we
+  // have for "household created", used by the Household Memory Timeline.
+  // Preserved across re-saves rather than overwritten, so it never drifts.
+  createdAt?: string;
 };
 
 export function saveHouseholdProfile(profile: StoredHouseholdProfile) {
   try {
-    localStorage.setItem(HOUSEHOLD_PROFILE_KEY, JSON.stringify(profile));
+    const existing = getHouseholdProfile();
+    const createdAt = existing?.createdAt ?? new Date().toISOString();
+    localStorage.setItem(HOUSEHOLD_PROFILE_KEY, JSON.stringify({ ...profile, createdAt }));
   } catch {
     // localStorage unavailable (e.g. private browsing) — non-critical, skip persisting
   }
@@ -72,9 +78,12 @@ export type FrequentProduct = {
   preferredBrand?: string;
 };
 
+const FREQUENT_PRODUCTS_SAVED_AT_KEY = "hb_frequent_products_saved_at";
+
 export function saveFrequentProducts(products: FrequentProduct[]) {
   try {
     localStorage.setItem(FREQUENT_PRODUCTS_KEY, JSON.stringify(products));
+    localStorage.setItem(FREQUENT_PRODUCTS_SAVED_AT_KEY, new Date().toISOString());
   } catch {
     // localStorage unavailable (e.g. private browsing) — non-critical, skip persisting
   }
@@ -86,5 +95,13 @@ export function getFrequentProducts(): FrequentProduct[] {
     return raw ? (JSON.parse(raw) as FrequentProduct[]) : [];
   } catch {
     return [];
+  }
+}
+
+export function getFrequentProductsSavedAt(): string | null {
+  try {
+    return localStorage.getItem(FREQUENT_PRODUCTS_SAVED_AT_KEY);
+  } catch {
+    return null;
   }
 }

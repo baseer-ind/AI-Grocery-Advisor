@@ -1,10 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowRight, BrainCircuit, Lock } from "lucide-react";
+import { ArrowRight, BrainCircuit, Clock, Lock } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { getFrequentProducts, getHouseholdProfile } from "@/lib/real-data";
+import {
+  getFrequentProducts,
+  getFrequentProductsSavedAt,
+  getHouseholdProfile,
+} from "@/lib/real-data";
 import { getShoppingEvents, type ShoppingEventSummary } from "@/lib/api";
 import { buildHouseholdMemory } from "@/lib/household-memory";
+import { buildHouseholdTimeline } from "@/lib/household-timeline";
 
 export const Route = createFileRoute("/memory")({
   head: () => ({ meta: [{ title: "Household Memory — Household Advisor AI" }] }),
@@ -48,6 +53,7 @@ function HouseholdMemoryPage() {
   }
 
   const observations = buildHouseholdMemory(profile, events, getFrequentProducts());
+  const timeline = buildHouseholdTimeline(profile, events, getFrequentProductsSavedAt());
 
   return (
     <AppShell title="Household Memory" eyebrow="Household Advisor">
@@ -92,6 +98,29 @@ function HouseholdMemoryPage() {
             </div>
           ))}
         </div>
+
+        <section className="rounded-xl border border-border bg-surface p-4">
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
+            <Clock className="h-3.5 w-3.5" /> Household Memory Timeline
+          </div>
+          {timeline.length > 0 ? (
+            <ul className="space-y-3">
+              {timeline.map((entry) => (
+                <li key={entry.id} className="flex items-start gap-3 text-sm">
+                  <span className="shrink-0 w-20 font-mono text-xs text-muted-foreground pt-0.5">
+                    {entry.date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
+                  </span>
+                  <span className="font-medium">{entry.label}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="flex items-start gap-1.5 text-sm text-muted-foreground">
+              <Lock className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+              <span>Your real milestones will show up here as they happen.</span>
+            </div>
+          )}
+        </section>
 
         <div className="flex items-center justify-center gap-4">
           <Link
