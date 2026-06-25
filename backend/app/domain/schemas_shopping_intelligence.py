@@ -45,3 +45,11 @@ class PredictedPantryOut(BaseModel):
     items: list[PredictedPantryItemOut]
     confidence: str
     """Overall confidence for the household: 'low' below 2 shopping events, else the items' own confidence applies."""
+
+
+class ShoppingEventSummaryOut(BaseModel):
+    shopping_event_id: int
+    bill_date: str | None = None
+    store_name: str | None = None
+    total_spend: float | None = None
+    purchase_method: str | None = None

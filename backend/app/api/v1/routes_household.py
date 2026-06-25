@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.deps import get_current_user_optional
 from app.db.session import get_session
-from app.domain.models import Household, ShoppingBehavior, ShoppingStyle, User
+from app.domain.models import Household, ShoppingBehavior, ShoppingEvent, ShoppingStyle, User
 from app.domain.schemas_household import (
     HouseholdProfileIn,
     HouseholdProfileOut,
@@ -19,7 +19,7 @@ from app.domain.schemas_household import (
     ShoppingStyleIn,
     ShoppingStyleOut,
 )
-from app.domain.schemas_shopping_intelligence import PredictedPantryOut
+from app.domain.schemas_shopping_intelligence import PredictedPantryOut, ShoppingEventSummaryOut
 from app.services import household_insight_service
 from app.services.pantry_prediction_service import predict_pantry
 
@@ -113,3 +113,31 @@ async def set_shopping_style(
 async def get_predicted_pantry(household_id: int, session: AsyncSession = Depends(get_session)) -> PredictedPantryOut:
     await _get_household_or_404(household_id, session)
     return await predict_pantry(session, household_id)
+
+
+@router.get("/{household_id}/shopping-events", response_model=list[ShoppingEventSummaryOut])
+async def list_shopping_events(
+    household_id: int, session: AsyncSession = Depends(get_session)
+) -> list[ShoppingEventSummaryOut]:
+    await _get_household_or_404(household_id, session)
+    events = (
+        (
+            await session.execute(
+                select(ShoppingEvent)
+                .where(ShoppingEvent.household_id == household_id)
+                .order_by(ShoppingEvent.created_at.desc())
+            )
+        )
+        .scalars()
+        .all()
+    )
+    return [
+        ShoppingEventSummaryOut(
+            shopping_event_id=e.id,
+            bill_date=e.bill_date,
+            store_name=e.store_name,
+            total_spend=float(e.total_spend) if e.total_spend is not None else None,
+            purchase_method=e.purchase_method,
+        )
+        for e in events
+    ]
