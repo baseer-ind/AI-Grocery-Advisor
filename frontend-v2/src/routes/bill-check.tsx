@@ -1,6 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Area, AreaChart } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  Area,
+  AreaChart,
+} from "recharts";
 import {
   AlertTriangle,
   ArrowRight,
@@ -20,7 +30,14 @@ import {
   Users,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { aiFindings, basketOptions, categories, products, samplePriceList, stores } from "@/lib/sample-data";
+import {
+  aiFindings,
+  basketOptions,
+  categories,
+  products,
+  samplePriceList,
+  stores,
+} from "@/lib/sample-data";
 import { hasRealData } from "@/lib/real-data";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +50,11 @@ export const Route = createFileRoute("/bill-check")({
 });
 
 const toneStyles = {
-  warning: { ring: "border-warning/40 bg-warning/10", icon: AlertTriangle, color: "text-warning-foreground" },
+  warning: {
+    ring: "border-warning/40 bg-warning/10",
+    icon: AlertTriangle,
+    color: "text-warning-foreground",
+  },
   info: { ring: "border-border bg-surface", icon: Info, color: "text-muted-foreground" },
   success: { ring: "border-accent/40 bg-accent/10", icon: TrendingUp, color: "text-accent" },
 } as const;
@@ -45,9 +66,36 @@ const badgeStyles: Record<string, string> = {
 };
 
 const storeCards = [
-  { name: "BigBasket", logo: "BB", color: "bg-[#84B135] text-white", basket: 8250, availability: 96, delivery: "Same day", rating: 4.6, badge: "BEST VALUE" as const },
-  { name: "Zepto", logo: "Z", color: "bg-[#5C2D91] text-white", basket: 8920, availability: 88, delivery: "10 min", rating: 4.4, badge: "FASTEST" as const },
-  { name: "Blinkit", logo: "B", color: "bg-[#F8CB46] text-black", basket: 8780, availability: 82, delivery: "15 min", rating: 4.5, badge: "FASTEST" as const },
+  {
+    name: "BigBasket",
+    logo: "BB",
+    color: "bg-[#84B135] text-white",
+    basket: 8250,
+    availability: 96,
+    delivery: "Same day",
+    rating: 4.6,
+    badge: "BEST VALUE" as const,
+  },
+  {
+    name: "Zepto",
+    logo: "Z",
+    color: "bg-[#5C2D91] text-white",
+    basket: 8920,
+    availability: 88,
+    delivery: "10 min",
+    rating: 4.4,
+    badge: "FASTEST" as const,
+  },
+  {
+    name: "Blinkit",
+    logo: "B",
+    color: "bg-[#F8CB46] text-black",
+    basket: 8780,
+    availability: 82,
+    delivery: "15 min",
+    rating: 4.5,
+    badge: "FASTEST" as const,
+  },
 ];
 
 const storeBadgeStyles: Record<string, string> = {
@@ -74,15 +122,25 @@ function BillCheck() {
           <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
             Not enough data yet
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Upload your first bill to see your analysis</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Upload your first bill to see your analysis
+          </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            We don't show bill insights until we've actually read one of your bills — never invented numbers.
+            We don't show bill insights until we've actually read one of your bills — never invented
+            numbers.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <Link to="/upload" className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90">
+            <Link
+              to="/upload"
+              className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
+            >
               Upload a bill <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link to="/bill-check" search={{ sample: true }} className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-semibold hover:bg-surface-2">
+            <Link
+              to="/bill-check"
+              search={{ sample: true }}
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-semibold hover:bg-surface-2"
+            >
               Explore a sample bill
             </Link>
           </div>
@@ -110,7 +168,9 @@ function BillCheck() {
             onClick={() => setTab(t)}
             className={cn(
               "shrink-0 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors",
-              tab === t ? "bg-foreground text-background" : "bg-surface border border-border text-muted-foreground hover:text-foreground",
+              tab === t
+                ? "bg-foreground text-background"
+                : "bg-surface border border-border text-muted-foreground hover:text-foreground",
             )}
           >
             {t}
@@ -128,12 +188,13 @@ function BillCheck() {
                 AI Summary · high confidence
               </div>
               <h2 className="mt-4 text-3xl lg:text-4xl font-semibold tracking-tight text-balance max-w-3xl leading-tight">
-                Your household spent <span className="font-mono">₹9,250</span> last month.
-                A balanced shop — but <span className="text-accent">~₹1,100 of it was avoidable</span> without changing what you eat.
+                Your household spent <span className="font-mono">₹9,250</span> last month. A
+                balanced shop — but <span className="text-accent">~₹1,100 of it was avoidable</span>{" "}
+                without changing what you eat.
               </h2>
               <p className="mt-4 text-muted-foreground max-w-2xl text-pretty">
-                We OCR-read every line item, then AI weighted price, quality, reviews, and timing across 42 products.
-                Here are the four signals that matter most this month.
+                We OCR-read every line item, then AI weighted price, quality, reviews, and timing
+                across 42 products. Here are the four signals that matter most this month.
               </p>
             </div>
           </div>
@@ -146,7 +207,9 @@ function BillCheck() {
                 <article key={f.label} className={"rounded-2xl border p-6 " + t.ring}>
                   <div className="flex items-center gap-2 mb-3">
                     <Icon className={"h-4 w-4 " + t.color} />
-                    <span className="font-mono text-[11px] uppercase tracking-widest font-semibold">{f.label}</span>
+                    <span className="font-mono text-[11px] uppercase tracking-widest font-semibold">
+                      {f.label}
+                    </span>
                   </div>
                   <p className="text-base leading-relaxed">{f.body}</p>
                 </article>
@@ -161,12 +224,33 @@ function BillCheck() {
               <div className="h-72 mt-4 -ml-3">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={categories}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                    <XAxis dataKey="name" stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v / 1000}k`} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="var(--color-border)"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="name"
+                      stroke="var(--color-muted-foreground)"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      stroke="var(--color-muted-foreground)"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(v) => `₹${v / 1000}k`}
+                    />
                     <Tooltip
                       cursor={{ fill: "var(--color-surface-2)" }}
-                      contentStyle={{ background: "var(--color-background)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }}
+                      contentStyle={{
+                        background: "var(--color-background)",
+                        border: "1px solid var(--color-border)",
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
                       formatter={(v: any) => [`₹${v.toLocaleString("en-IN")}`, "Spend"]}
                     />
                     <Bar dataKey="value" radius={[6, 6, 0, 0]} fill="var(--color-foreground)" />
@@ -180,20 +264,43 @@ function BillCheck() {
               <p className="text-sm text-muted-foreground">Biggest impact, lowest effort</p>
               <ol className="mt-4 space-y-3">
                 {[
-                  { n: "01", action: "Buy oil from BigBasket", save: 220, why: "Same brand, 6% cheaper this week." },
-                  { n: "02", action: "Switch snack brand", save: 150, why: "Yippee matches Maggi on reviews." },
-                  { n: "03", action: "Delay rice purchase", save: 180, why: "Harvest price drop forecast in 7 days." },
+                  {
+                    n: "01",
+                    action: "Buy oil from BigBasket",
+                    save: 220,
+                    why: "Same brand, 6% cheaper this week.",
+                  },
+                  {
+                    n: "02",
+                    action: "Switch snack brand",
+                    save: 150,
+                    why: "Yippee matches Maggi on reviews.",
+                  },
+                  {
+                    n: "03",
+                    action: "Delay rice purchase",
+                    save: 180,
+                    why: "Harvest price drop forecast in 7 days.",
+                  },
                 ].map((a) => (
-                  <li key={a.n} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background p-3">
+                  <li
+                    key={a.n}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background p-3"
+                  >
                     <div className="min-w-0">
                       <div className="font-medium text-sm">{a.action}</div>
                       <div className="text-xs text-muted-foreground truncate">{a.why}</div>
                     </div>
-                    <div className="font-mono font-semibold text-accent text-sm shrink-0">−₹{a.save}</div>
+                    <div className="font-mono font-semibold text-accent text-sm shrink-0">
+                      −₹{a.save}
+                    </div>
                   </li>
                 ))}
               </ol>
-              <button onClick={() => setTab("Basket Swaps")} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-foreground text-background px-4 py-2.5 text-sm font-semibold hover:opacity-90">
+              <button
+                onClick={() => setTab("Basket Swaps")}
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-foreground text-background px-4 py-2.5 text-sm font-semibold hover:opacity-90"
+              >
                 See basket alternatives <ArrowRight className="h-4 w-4" />
               </button>
             </div>
@@ -203,19 +310,28 @@ function BillCheck() {
             <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
             <div className="relative grid lg:grid-cols-3 gap-6 items-center">
               <div className="lg:col-span-2">
-                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Potential annual savings</div>
+                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Potential annual savings
+                </div>
                 <h3 className="mt-2 text-2xl lg:text-3xl font-semibold tracking-tight text-balance">
-                  Small, calm changes compound to <span className="text-accent font-mono">₹14,400</span> over a year.
+                  Small, calm changes compound to{" "}
+                  <span className="text-accent font-mono">₹14,400</span> over a year.
                 </h3>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-border bg-background p-4">
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Monthly</div>
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    Monthly
+                  </div>
                   <div className="mt-1 text-2xl font-semibold font-mono tracking-tight">₹1,200</div>
                 </div>
                 <div className="rounded-xl border border-border bg-background p-4">
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Annual</div>
-                  <div className="mt-1 text-2xl font-semibold font-mono tracking-tight text-accent">₹14,400</div>
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    Annual
+                  </div>
+                  <div className="mt-1 text-2xl font-semibold font-mono tracking-tight text-accent">
+                    ₹14,400
+                  </div>
                 </div>
               </div>
             </div>
@@ -225,7 +341,9 @@ function BillCheck() {
             <div className="col-span-12 lg:col-span-6 rounded-2xl border border-accent/30 bg-accent/5 p-6">
               <div className="flex items-center gap-2 mb-3">
                 <CheckCircle2 className="h-4 w-4 text-accent" />
-                <span className="font-mono text-[11px] uppercase tracking-widest font-semibold text-accent">Good decisions this month</span>
+                <span className="font-mono text-[11px] uppercase tracking-widest font-semibold text-accent">
+                  Good decisions this month
+                </span>
               </div>
               <ul className="mt-2 space-y-3">
                 {[
@@ -244,7 +362,9 @@ function BillCheck() {
             <div className="col-span-12 lg:col-span-6 rounded-2xl border border-border bg-surface p-6">
               <div className="flex items-center gap-2 mb-3">
                 <Heart className="h-4 w-4 text-foreground" />
-                <span className="font-mono text-[11px] uppercase tracking-widest font-semibold">Healthy spending insights</span>
+                <span className="font-mono text-[11px] uppercase tracking-widest font-semibold">
+                  Healthy spending insights
+                </span>
               </div>
               <ul className="mt-2 space-y-3 text-sm">
                 {[
@@ -252,31 +372,19 @@ function BillCheck() {
                   { l: "Sugary beverages above your usual baseline", v: "+22%" },
                   { l: "Fresh produce purchases below average", v: "−18%" },
                 ].map((i) => (
-                  <li key={i.l} className="flex items-center justify-between border-t border-border pt-3 first:border-t-0 first:pt-0">
+                  <li
+                    key={i.l}
+                    className="flex items-center justify-between border-t border-border pt-3 first:border-t-0 first:pt-0"
+                  >
                     <span className="text-muted-foreground">{i.l}</span>
                     <span className="font-mono font-semibold">{i.v}</span>
                   </li>
                 ))}
               </ul>
               <p className="mt-4 text-xs text-muted-foreground">
-                Not a health app — just a quieter signal so spending matches what your household actually values.
+                Not a health app — just a quieter signal so spending matches what your household
+                actually values.
               </p>
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-dashed border-border bg-surface p-6 lg:p-8">
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="h-4 w-4" />
-              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Coming soon · Roadmap</div>
-            </div>
-            <h3 className="text-lg font-semibold tracking-tight mb-5">What your advisor will quietly do next.</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {["Historical price intelligence", "Community pricing", "Local kirana intelligence", "Pantry photo recognition", "Household intelligence", "Grocery inflation tracking"].map((r) => (
-                <div key={r} className="flex items-center gap-3 rounded-xl border border-border bg-background p-4">
-                  <CheckCircle2 className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="text-sm font-medium">{r}</span>
-                </div>
-              ))}
             </div>
           </section>
         </div>
@@ -285,10 +393,16 @@ function BillCheck() {
       {tab === "Basket Swaps" && (
         <div className="mt-5 space-y-5">
           <div className="rounded-2xl border border-border bg-surface p-6">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Current Basket</div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              Current Basket
+            </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-semibold tracking-tight font-mono">₹{current.cost.toLocaleString("en-IN")}</span>
-              <span className="text-sm text-muted-foreground">{current.items} items · {current.note}</span>
+              <span className="text-3xl font-semibold tracking-tight font-mono">
+                ₹{current.cost.toLocaleString("en-IN")}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {current.items} items · {current.note}
+              </span>
             </div>
           </div>
 
@@ -299,18 +413,29 @@ function BillCheck() {
                 onClick={() => setSelected(o.id)}
                 className={cn(
                   "text-left rounded-2xl border p-5 transition-all",
-                  selected === o.id ? "border-foreground bg-surface" : "border-border bg-surface hover:border-foreground/30",
+                  selected === o.id
+                    ? "border-foreground bg-surface"
+                    : "border-border bg-surface hover:border-foreground/30",
                 )}
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-semibold tracking-tight">{o.label}</span>
                   {o.badge && (
-                    <span className={cn("rounded-md px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest font-semibold", o.recommended ? "bg-accent text-accent-foreground" : "bg-surface-2 text-foreground border border-border")}>
+                    <span
+                      className={cn(
+                        "rounded-md px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest font-semibold",
+                        o.recommended
+                          ? "bg-accent text-accent-foreground"
+                          : "bg-surface-2 text-foreground border border-border",
+                      )}
+                    >
                       {o.badge}
                     </span>
                   )}
                 </div>
-                <div className="text-2xl font-semibold tracking-tight font-mono">₹{o.cost.toLocaleString("en-IN")}</div>
+                <div className="text-2xl font-semibold tracking-tight font-mono">
+                  ₹{o.cost.toLocaleString("en-IN")}
+                </div>
                 <div className="mt-1 text-xs font-semibold text-accent">Save ₹{o.savings}</div>
                 <p className="mt-3 text-xs text-muted-foreground">{o.note}</p>
               </button>
@@ -318,9 +443,12 @@ function BillCheck() {
           </div>
 
           <div className="rounded-2xl border border-border bg-surface p-6">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Why we recommend this</div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+              Why we recommend this
+            </div>
             <p className="text-sm leading-relaxed max-w-3xl">
-              Equal-quality brand swaps and a split across BigBasket and DMart save ₹1,300/month with no drop in your household's quality scores.
+              Equal-quality brand swaps and a split across BigBasket and DMart save ₹1,300/month
+              with no drop in your household's quality scores.
             </p>
             <button className="mt-4 inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-4 py-2.5 text-sm font-semibold hover:opacity-90">
               Apply this basket
@@ -332,21 +460,30 @@ function BillCheck() {
       {tab === "Product Picks" && (
         <div className="mt-5 grid grid-cols-12 gap-5">
           <aside className="col-span-12 lg:col-span-4 space-y-2">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground px-1 mb-2">Tracked products · {products.length}</div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground px-1 mb-2">
+              Tracked products · {products.length}
+            </div>
             {products.map((p, i) => (
               <button
                 key={p.name}
                 onClick={() => setActiveProductIdx(i)}
                 className={cn(
                   "w-full text-left rounded-xl border p-4 transition-all flex items-center justify-between gap-3",
-                  activeProductIdx === i ? "border-foreground bg-surface" : "border-border bg-surface hover:border-foreground/30",
+                  activeProductIdx === i
+                    ? "border-foreground bg-surface"
+                    : "border-border bg-surface hover:border-foreground/30",
                 )}
               >
                 <div>
                   <div className="font-medium text-sm">{p.name}</div>
                   <div className="text-xs text-muted-foreground">{p.size}</div>
                 </div>
-                <span className={cn("rounded-md px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest font-semibold", badgeStyles[p.recommendation])}>
+                <span
+                  className={cn(
+                    "rounded-md px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest font-semibold",
+                    badgeStyles[p.recommendation],
+                  )}
+                >
                   {p.recommendation}
                 </span>
               </button>
@@ -359,7 +496,12 @@ function BillCheck() {
                 <h2 className="text-2xl font-semibold tracking-tight mt-1">{activeProduct.name}</h2>
                 <div className="text-sm text-muted-foreground">{activeProduct.size}</div>
               </div>
-              <span className={cn("rounded-lg px-3 py-1.5 font-mono text-xs uppercase tracking-widest font-semibold", badgeStyles[activeProduct.recommendation])}>
+              <span
+                className={cn(
+                  "rounded-lg px-3 py-1.5 font-mono text-xs uppercase tracking-widest font-semibold",
+                  badgeStyles[activeProduct.recommendation],
+                )}
+              >
                 {activeProduct.recommendation}
               </span>
             </div>
@@ -382,17 +524,45 @@ function BillCheck() {
                         <stop offset="100%" stopColor="var(--color-foreground)" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <XAxis dataKey="d" stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v}`} />
-                    <Tooltip contentStyle={{ background: "var(--color-background)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} formatter={(v: any) => [`₹${v}`, "Price"]} />
-                    <Area type="monotone" dataKey="p" stroke="var(--color-foreground)" strokeWidth={2} fill="url(#prodG)" />
+                    <XAxis
+                      dataKey="d"
+                      stroke="var(--color-muted-foreground)"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      stroke="var(--color-muted-foreground)"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(v) => `₹${v}`}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: "var(--color-background)",
+                        border: "1px solid var(--color-border)",
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
+                      formatter={(v: any) => [`₹${v}`, "Price"]}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="p"
+                      stroke="var(--color-foreground)"
+                      strokeWidth={2}
+                      fill="url(#prodG)"
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
             <div className="mt-5 rounded-xl border border-border bg-surface-2 p-5">
-              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Why this recommendation</div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+                Why this recommendation
+              </div>
               <p className="text-sm leading-relaxed">{activeProduct.reason}</p>
             </div>
           </section>
@@ -403,16 +573,33 @@ function BillCheck() {
         <div className="mt-5 space-y-5">
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {storeCards.map((s) => (
-              <article key={s.name} className="rounded-2xl border border-border bg-surface p-5 flex flex-col">
+              <article
+                key={s.name}
+                className="rounded-2xl border border-border bg-surface p-5 flex flex-col"
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center font-bold text-base", s.color)}>{s.logo}</div>
+                    <div
+                      className={cn(
+                        "h-12 w-12 rounded-xl flex items-center justify-center font-bold text-base",
+                        s.color,
+                      )}
+                    >
+                      {s.logo}
+                    </div>
                     <div>
                       <h3 className="font-semibold tracking-tight">{s.name}</h3>
-                      <div className="text-xs text-muted-foreground">★ {s.rating} · {s.delivery}</div>
+                      <div className="text-xs text-muted-foreground">
+                        ★ {s.rating} · {s.delivery}
+                      </div>
                     </div>
                   </div>
-                  <span className={cn("rounded-md px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest font-semibold whitespace-nowrap", storeBadgeStyles[s.badge])}>
+                  <span
+                    className={cn(
+                      "rounded-md px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest font-semibold whitespace-nowrap",
+                      storeBadgeStyles[s.badge],
+                    )}
+                  >
                     {s.badge}
                   </span>
                 </div>
@@ -439,14 +626,20 @@ function BillCheck() {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                      {s.type === "Online" ? <Truck className="h-3 w-3 inline mr-1" /> : <MapPin className="h-3 w-3 inline mr-1" />}
+                      {s.type === "Online" ? (
+                        <Truck className="h-3 w-3 inline mr-1" />
+                      ) : (
+                        <MapPin className="h-3 w-3 inline mr-1" />
+                      )}
                       {s.type}
                     </div>
                     <h3 className="mt-1 font-semibold tracking-tight">{s.name}</h3>
                   </div>
                 </div>
                 <div className="mt-5 flex items-baseline gap-2">
-                  <span className="text-2xl font-semibold font-mono tracking-tight">₹{s.basket.toLocaleString("en-IN")}</span>
+                  <span className="text-2xl font-semibold font-mono tracking-tight">
+                    ₹{s.basket.toLocaleString("en-IN")}
+                  </span>
                   <span className="text-xs text-muted-foreground">for your basket</span>
                 </div>
                 <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
@@ -461,11 +654,17 @@ function BillCheck() {
             <header className="flex items-center justify-between border-b border-border px-6 py-4">
               <div>
                 <h3 className="font-semibold tracking-tight">Price comparison · core staples</h3>
-                <p className="text-sm text-muted-foreground">Live online · validated by 1,240 nearby households</p>
+                <p className="text-sm text-muted-foreground">
+                  Live online · validated by 1,240 nearby households
+                </p>
               </div>
               <div className="hidden md:flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3 w-3" /> Verified</span>
-                <span className="inline-flex items-center gap-1.5"><Users className="h-3 w-3" /> Community</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <ShieldCheck className="h-3 w-3" /> Verified
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Users className="h-3 w-3" /> Community
+                </span>
               </div>
             </header>
             <div className="overflow-x-auto">
@@ -487,7 +686,14 @@ function BillCheck() {
                       <tr key={row.product} className="border-t border-border">
                         <td className="py-3 px-6 font-medium">{row.product}</td>
                         {prices.map((p, idx) => (
-                          <td key={idx} className={cn("py-3 px-4 text-right font-mono", idx === 3 && "pr-6", p === min ? "text-accent font-semibold" : "text-foreground")}>
+                          <td
+                            key={idx}
+                            className={cn(
+                              "py-3 px-4 text-right font-mono",
+                              idx === 3 && "pr-6",
+                              p === min ? "text-accent font-semibold" : "text-foreground",
+                            )}
+                          >
                             ₹{p}
                           </td>
                         ))}
@@ -500,10 +706,13 @@ function BillCheck() {
           </section>
 
           <section className="rounded-2xl border border-border bg-surface p-6">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Why split your shop</div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+              Why split your shop
+            </div>
             <p className="text-sm leading-relaxed max-w-3xl">
-              The cheapest store rarely wins on every product. For your basket, splitting between BigBasket and DMart saves
-              ₹840/month with no quality loss and adds only 6 minutes of pickup time.
+              The cheapest store rarely wins on every product. For your basket, splitting between
+              BigBasket and DMart saves ₹840/month with no quality loss and adds only 6 minutes of
+              pickup time.
             </p>
           </section>
         </div>
@@ -512,11 +721,35 @@ function BillCheck() {
   );
 }
 
-function Price({ label, value, accent, subtle }: { label: string; value: number; accent?: boolean; subtle?: boolean }) {
+function Price({
+  label,
+  value,
+  accent,
+  subtle,
+}: {
+  label: string;
+  value: number;
+  accent?: boolean;
+  subtle?: boolean;
+}) {
   return (
-    <div className={cn("rounded-xl border p-4", accent ? "border-foreground bg-background" : "border-border bg-background")}>
-      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className={cn("mt-1 text-2xl font-semibold tracking-tight font-mono", subtle && "text-muted-foreground")}>₹{value.toLocaleString("en-IN")}</div>
+    <div
+      className={cn(
+        "rounded-xl border p-4",
+        accent ? "border-foreground bg-background" : "border-border bg-background",
+      )}
+    >
+      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        {label}
+      </div>
+      <div
+        className={cn(
+          "mt-1 text-2xl font-semibold tracking-tight font-mono",
+          subtle && "text-muted-foreground",
+        )}
+      >
+        ₹{value.toLocaleString("en-IN")}
+      </div>
     </div>
   );
 }
@@ -524,8 +757,14 @@ function Price({ label, value, accent, subtle }: { label: string; value: number;
 function Metric({ label, value, small }: { label: string; value: string; small?: boolean }) {
   return (
     <div className="rounded-xl border border-border bg-background p-3">
-      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
-      <div className={cn("mt-1 font-semibold font-mono tracking-tight", small ? "text-sm" : "text-lg")}>{value}</div>
+      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        {label}
+      </div>
+      <div
+        className={cn("mt-1 font-semibold font-mono tracking-tight", small ? "text-sm" : "text-lg")}
+      >
+        {value}
+      </div>
     </div>
   );
 }

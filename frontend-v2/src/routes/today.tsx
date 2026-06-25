@@ -769,7 +769,9 @@ function HouseholdHQ({
               onClick={() => setShowScoreDetail((v) => !v)}
               className="shrink-0 rounded-md bg-surface-2 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
             >
-              Understands {intelligence.score}%
+              {intelligence.score >= 90
+                ? "We know your household well"
+                : "Still learning about your household"}
             </button>
           )}
         </div>
@@ -807,7 +809,7 @@ function HouseholdHQ({
             <div>
               <div className="text-lg font-semibold">{intelligence.pantryConfidenceScore}</div>
               <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-0.5">
-                Pantry prediction
+                What you probably have
               </div>
             </div>
           </div>
@@ -816,7 +818,7 @@ function HouseholdHQ({
         {profile && (
           <div className="mt-5 pt-5 border-t border-border flex items-center gap-2 flex-wrap">
             <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              Shopping DNA
+              Your shopping style
             </span>
             <span className="rounded-md bg-surface-2 px-2 py-0.5 text-xs font-semibold">
               {profile.shoppingStyle}
@@ -860,7 +862,7 @@ function HouseholdHQ({
       {/* Household Journey */}
       <section className="rounded-2xl border border-border bg-surface p-5">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold tracking-tight text-sm">Household journey</h3>
+          <h3 className="font-semibold tracking-tight text-sm">Your progress</h3>
           <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
             {journeyDone}/{journey.length}
           </span>
@@ -887,7 +889,7 @@ function ShoppingTimeline({ events }: { events: ShoppingEventSummary[] | null })
 
   return (
     <section className="rounded-2xl border border-border bg-surface p-5">
-      <h3 className="font-semibold tracking-tight text-sm mb-3">Shopping timeline</h3>
+      <h3 className="font-semibold tracking-tight text-sm mb-3">Recent shopping</h3>
       {events.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           Your first shopping event will show up here once you add a bill.
