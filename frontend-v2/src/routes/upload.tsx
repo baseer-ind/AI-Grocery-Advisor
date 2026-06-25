@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/upload")({
   head: () => ({ meta: [{ title: "Upload Bill — Household Advisor AI" }] }),
   validateSearch: (search: Record<string, unknown>): { debug?: boolean } => ({
-    debug: search.debug === "1" || search.debug === true || undefined,
+    debug: search.debug === "1" || search.debug === 1 || search.debug === true || undefined,
   }),
   component: UploadPage,
 });
