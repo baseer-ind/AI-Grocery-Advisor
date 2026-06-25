@@ -295,7 +295,11 @@ function HouseholdOnboardingPage() {
   const started = step !== "intro";
 
   async function submitProfile() {
-    if (!API_BASE || answers.size == null || !answers.city.trim()) return;
+    if (answers.size == null || !answers.city.trim()) return;
+    if (!API_BASE) {
+      setError("Backend URL is not configured (VITE_API_URL is missing from this build).");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -316,8 +320,11 @@ function HouseholdOnboardingPage() {
       setHouseholdId(data.household_id);
       setInsight(data.insight);
       setStep("behavior");
-    } catch {
-      setError("We couldn't save that step. Check your connection and try again.");
+    } catch (err) {
+      console.error("submitProfile failed", err);
+      setError(
+        `We couldn't save that step (${err instanceof Error ? err.message : "unknown error"}).`,
+      );
     } finally {
       setBusy(false);
     }
@@ -337,8 +344,11 @@ function HouseholdOnboardingPage() {
       const data = await res.json();
       setInsight(data.insight);
       setStep("style");
-    } catch {
-      setError("We couldn't save that step. Check your connection and try again.");
+    } catch (err) {
+      console.error("submitBehavior failed", err);
+      setError(
+        `We couldn't save that step (${err instanceof Error ? err.message : "unknown error"}).`,
+      );
     } finally {
       setBusy(false);
     }
@@ -371,8 +381,11 @@ function HouseholdOnboardingPage() {
           confidence: snapshot.confidence,
         });
       }
-    } catch {
-      setError("We couldn't save that step. Check your connection and try again.");
+    } catch (err) {
+      console.error("submitStyle failed", err);
+      setError(
+        `We couldn't save that step (${err instanceof Error ? err.message : "unknown error"}).`,
+      );
     } finally {
       setBusy(false);
     }
