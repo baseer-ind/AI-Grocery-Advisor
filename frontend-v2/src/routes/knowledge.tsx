@@ -8,6 +8,7 @@ import {
   getFrequentProductsSavedAt,
   getHouseholdProfile,
   getTaughtFacts,
+  getUnlockTimestamps,
 } from "@/lib/real-data";
 import {
   getPredictedPantry,
@@ -17,6 +18,7 @@ import {
 } from "@/lib/api";
 import { computePlanningScore } from "@/lib/household-intelligence";
 import { buildHouseholdKnowledge } from "@/lib/household-knowledge";
+import { computeHouseholdIdentity, confidenceNarrative } from "@/lib/household-identity";
 
 export const Route = createFileRoute("/knowledge")({
   head: () => ({ meta: [{ title: "Household Knowledge — Household Advisor AI" }] }),
@@ -64,14 +66,18 @@ function HouseholdKnowledgePage() {
   }
 
   const planning = computePlanningScore(events);
+  const frequentProducts = getFrequentProducts();
+  const identity = computeHouseholdIdentity(events, frequentProducts);
+  const narrative = confidenceNarrative(events?.length ?? 0);
   const knowledge = buildHouseholdKnowledge(
     profile,
     events,
-    getFrequentProducts(),
+    frequentProducts,
     getFrequentProductsSavedAt(),
     getTaughtFacts(),
     pantry,
     planning,
+    getUnlockTimestamps(),
   );
 
   return (
@@ -81,8 +87,17 @@ function HouseholdKnowledgePage() {
           <BookOpen className="h-5 w-5 mt-0.5 text-muted-foreground" />
           <div>
             <h1 className="text-lg font-semibold tracking-tight">
-              We're no longer just recording your shopping — we're learning about your household.
+              {identity ? (
+                <>
+                  We've learned that your household is a{" "}
+                  <span className="text-accent">{identity.label}</span>
+                  {profile.stores?.[0] ? ` that prefers ${profile.stores[0]}` : ""}.
+                </>
+              ) : (
+                "We're no longer just recording your shopping — we're learning about your household."
+              )}
             </h1>
+            <p className="mt-1 text-sm text-muted-foreground">{narrative}</p>
             <p className="mt-1 text-sm text-muted-foreground">
               Every line below comes from something real: your onboarding answers, your shopping
               history, or something you've told us directly. Nothing here is a guess.

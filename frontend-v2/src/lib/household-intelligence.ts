@@ -1,5 +1,6 @@
 import type { PredictedPantry, ShoppingEventSummary } from "@/lib/api";
 import type { StoredHouseholdProfile } from "@/lib/real-data";
+import type { HouseholdIdentity } from "@/lib/household-identity";
 
 const PANTRY_CONFIDENCE_SCORE: Record<"low" | "medium" | "high", number> = {
   low: 33,
@@ -194,6 +195,7 @@ export type WeeklyActionCard = {
   to: string;
   cta: string;
   why: string;
+  improve: string | null;
   confidence: "low" | "medium" | "high";
 };
 
@@ -201,6 +203,7 @@ export function buildWeeklyActionCards(
   pantry: PredictedPantry | null,
   events: ShoppingEventSummary[] | null,
   planning: PlanningScore | null,
+  identity: HouseholdIdentity | null = null,
 ): WeeklyActionCard[] {
   const cards: WeeklyActionCard[] = [];
 
@@ -217,6 +220,10 @@ export function buildWeeklyActionCards(
       to: "/this-week",
       cta: "Add to list",
       why: `Because: ${worst.product_name} usually lasts about ${worst.estimated_days_of_stock_remaining} more day${worst.estimated_days_of_stock_remaining === 1 ? "" : "s"} based on how often you buy it.`,
+      improve:
+        worst.confidence !== "high"
+          ? "A couple more shopping events with this product would make this estimate more reliable."
+          : null,
       confidence: pantry?.confidence ?? "low",
     });
   }
@@ -227,14 +234,22 @@ export function buildWeeklyActionCards(
       ? Math.round((Date.now() - new Date(lastDateStr).getTime()) / (1000 * 60 * 60 * 24))
       : null;
     if (daysSinceLast != null && daysSinceLast >= planning.averageGapDays) {
+      const identityNote =
+        identity?.archetype === "weekend-planner"
+          ? " Since you're usually a Weekend Planner, waiting until Saturday for your main trip tends to work well."
+          : "";
       cards.push({
         id: "next-trip",
         tag: "Next shopping recommendation",
         title: `You usually shop every ~${planning.averageGapDays} days — it's been ${daysSinceLast}`,
-        body: "Based on your real shopping history, not a guess.",
+        body: `Based on your real shopping history, not a guess.${identityNote}`,
         to: "/this-week",
         cta: "Plan this week's list",
         why: `Because: your last ${events.length} shopping trips averaged ${planning.averageGapDays} days apart, and it's been ${daysSinceLast} since your last one.`,
+        improve:
+          planning.score < 70
+            ? "A few more shopping events would make this cadence estimate more consistent."
+            : null,
         confidence: planning.score >= 70 ? "high" : planning.score >= 40 ? "medium" : "low",
       });
     }
@@ -246,10 +261,17 @@ export function buildWeeklyActionCards(
       id: "store-recommendation",
       tag: "Store recommendation",
       title: "Your recent shops span multiple stores",
-      body: "Compare your basket across them to see where it's cheaper this week.",
+      body:
+        identity?.archetype === "bulk-buyer"
+          ? "Because your household buys in bulk, comparing stores can save more per trip."
+          : "Compare your basket across them to see where it's cheaper this week.",
       to: "/bill-check",
       cta: "Compare stores",
       why: `Because: your shopping history includes ${distinctStores.size} different stores, so we can compare prices across them.`,
+      improve:
+        distinctStores.size < 3
+          ? "Shopping events from one more store would make this comparison stronger."
+          : null,
       confidence: "medium",
     });
   }

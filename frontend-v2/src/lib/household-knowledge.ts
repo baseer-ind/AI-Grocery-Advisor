@@ -3,6 +3,7 @@ import { buildHouseholdMemory } from "@/lib/household-memory";
 import { buildHouseholdTimeline, type TimelineEntry } from "@/lib/household-timeline";
 import type { PlanningScore } from "@/lib/household-intelligence";
 import { buildUnlocks, type Unlock } from "@/lib/household-unlocks";
+import { computeHouseholdIdentity } from "@/lib/household-identity";
 import type { FrequentProduct, StoredHouseholdProfile, TaughtFact } from "@/lib/real-data";
 
 // Household Knowledge — the internal "what do we actually understand about
@@ -40,12 +41,18 @@ export function buildHouseholdKnowledge(
   taughtFacts: TaughtFact[],
   pantry: PredictedPantry | null,
   planning: PlanningScore | null,
+  unlockTimestamps: Record<string, string> = {},
 ): HouseholdKnowledge {
   const observations = buildHouseholdMemory(profile, events, frequentProducts);
 
   const known: KnownFact[] = observations
     .filter((o) => o.value != null)
     .map((o) => ({ id: o.id, label: o.label, value: o.value as string }));
+
+  const identity = computeHouseholdIdentity(events, frequentProducts);
+  if (identity) {
+    known.unshift({ id: "household-identity", label: "Household identity", value: identity.label });
+  }
 
   for (const fact of taughtFacts) {
     known.push({ id: `taught-${fact.id}`, label: fact.category, value: fact.text });
@@ -55,10 +62,25 @@ export function buildHouseholdKnowledge(
     .filter((o) => o.value == null && o.unlockedBy != null)
     .map((o) => ({ id: o.id, label: o.label, unlockedBy: o.unlockedBy as string }));
 
-  const timeline = buildHouseholdTimeline(profile, events, frequentProductsSavedAt);
-  const recentlyLearned = timeline.slice(0, 3);
+  if (!identity) {
+    learning.push({
+      id: "household-identity",
+      label: "Household identity",
+      unlockedBy: "We're still learning your shopping style.",
+    });
+  }
 
   const unlocks = buildUnlocks(events, pantry, planning, frequentProducts);
+
+  const timeline = buildHouseholdTimeline(
+    profile,
+    events,
+    frequentProductsSavedAt,
+    taughtFacts,
+    unlocks,
+    unlockTimestamps,
+  );
+  const recentlyLearned = timeline.slice(0, 3);
 
   return { known, learning, recentlyLearned, unlocks };
 }

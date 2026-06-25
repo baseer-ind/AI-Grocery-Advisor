@@ -28,7 +28,13 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { categories, household, monthlyTrend } from "@/lib/sample-data";
 import { demoEvents, demoPantry, demoProfile } from "@/lib/demo-household";
-import { getHouseholdProfile, hasRealData, type StoredHouseholdProfile } from "@/lib/real-data";
+import {
+  getFrequentProducts,
+  getHouseholdProfile,
+  hasRealData,
+  type StoredHouseholdProfile,
+} from "@/lib/real-data";
+import { computeHouseholdIdentity, confidenceNarrative } from "@/lib/household-identity";
 import {
   getPredictedPantry,
   getShoppingEvents,
@@ -569,6 +575,7 @@ function FeedCard({
   cta,
   muted,
   why,
+  improve,
   confidence,
 }: {
   icon?: React.ReactNode;
@@ -580,6 +587,7 @@ function FeedCard({
   cta: string;
   muted?: boolean;
   why?: string;
+  improve?: string | null;
   confidence?: "low" | "medium" | "high";
 }) {
   const [showWhy, setShowWhy] = useState(false);
@@ -622,10 +630,13 @@ function FeedCard({
             )}
           </div>
           {why && showWhy && (
-            <p className="mt-2 text-xs text-muted-foreground border-t border-border pt-2">
-              {why}
-              {confidence && <span className="ml-1 capitalize">· Confidence: {confidence}</span>}
-            </p>
+            <div className="mt-2 text-xs text-muted-foreground border-t border-border pt-2 space-y-1">
+              <p>
+                {why}
+                {confidence && <span className="ml-1 capitalize">· Confidence: {confidence}</span>}
+              </p>
+              {improve && <p>To improve this: {improve}</p>}
+            </div>
           )}
         </div>
       </div>
@@ -649,9 +660,11 @@ function HouseholdHQ({
   const planning = computePlanningScore(events);
   const intelligence = computeHouseholdIntelligenceScore(profile, events, pantry);
   const readiness = computeShoppingReadiness(pantry, events, planning, profile, null);
-  const cards = buildWeeklyActionCards(pantry, events, planning);
+  const identity = computeHouseholdIdentity(events, getFrequentProducts());
+  const cards = buildWeeklyActionCards(pantry, events, planning, identity);
   const journey = buildHouseholdJourney(profile, events, pantry, planning);
   const journeyDone = journey.filter((m) => m.done).length;
+  const narrative = confidenceNarrative(events?.length ?? 0);
 
   return (
     <>
@@ -686,12 +699,18 @@ function HouseholdHQ({
           </p>
         )}
 
+        {identity && (
+          <p className="mt-2 text-sm">
+            Your household appears to be a <span className="font-semibold">{identity.label}</span>.
+          </p>
+        )}
+
         {intelligence && (
           <button
             onClick={() => setShowScoreDetail((v) => !v)}
             className="mt-4 text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
           >
-            We've learned about {intelligence.score}% of your household — details
+            {narrative} — details
           </button>
         )}
 
@@ -736,6 +755,28 @@ function HouseholdHQ({
             )}
 
             <div>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Household identity
+              </span>
+              {identity ? (
+                <div className="mt-1.5">
+                  <span className="text-sm font-semibold">{identity.label}</span>
+                  <ul className="mt-1.5 space-y-1">
+                    {identity.evidence.map((e, i) => (
+                      <li key={i} className="text-xs text-muted-foreground">
+                        • {e}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  We're still learning your shopping style.
+                </p>
+              )}
+            </div>
+
+            <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                   Your progress
@@ -776,6 +817,7 @@ function HouseholdHQ({
                 to={card.to}
                 cta={card.cta}
                 why={card.why}
+                improve={card.improve}
                 confidence={card.confidence}
               />
             </div>
