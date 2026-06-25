@@ -121,6 +121,74 @@ class User(Base):
     )
     bill_uploads: Mapped[list["BillUpload"]] = relationship(back_populates="user")
     baskets: Mapped[list["Basket"]] = relationship(back_populates="user")
+    household: Mapped["Household | None"] = relationship(
+        back_populates="user", uselist=False, cascade="all, delete-orphan"
+    )
+
+
+class Household(Base):
+    """The unit of onboarding intelligence, replacing the bill-upload-first
+    model: a household exists, and accrues signal, independently of whether
+    its owner ever uploads a bill. `user_id` is nullable for the same reason
+    `BillUpload.user_id` is — early beta usage shouldn't require an account.
+    """
+
+    __tablename__ = "households"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), unique=True, nullable=True)
+    size: Mapped[int] = mapped_column(Integer)
+    adults: Mapped[int] = mapped_column(Integer)
+    children: Mapped[int] = mapped_column(Integer, default=0)
+    seniors: Mapped[int] = mapped_column(Integer, default=0)
+    city: Mapped[str] = mapped_column(String(128))
+    monthly_grocery_budget: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user: Mapped["User | None"] = relationship(back_populates="household")
+    shopping_behavior: Mapped["ShoppingBehavior | None"] = relationship(
+        back_populates="household", uselist=False, cascade="all, delete-orphan"
+    )
+    shopping_style: Mapped["ShoppingStyle | None"] = relationship(
+        back_populates="household", uselist=False, cascade="all, delete-orphan"
+    )
+
+
+class ShoppingBehavior(Base):
+    """Step 2 of onboarding: where and how often a household shops.
+    `stores` is JSON (a small fixed-vocabulary multi-select) rather than a
+    join table for the same reason `UserPreferences` uses JSON — open-ended,
+    never queried/joined on independently of its household.
+    """
+
+    __tablename__ = "shopping_behaviors"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    household_id: Mapped[int] = mapped_column(ForeignKey("households.id"), unique=True)
+    stores: Mapped[list[str]] = mapped_column(JSON, default=list)
+    frequency: Mapped[str] = mapped_column(String(32))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    household: Mapped["Household"] = relationship(back_populates="shopping_behavior")
+
+
+class ShoppingStyle(Base):
+    """Step 3 of onboarding: self-reported shopping priorities
+    (convenience-first, save-money, premium-brands, etc.) — a fixed-
+    vocabulary multi-select, same JSON reasoning as `ShoppingBehavior.stores`.
+    """
+
+    __tablename__ = "shopping_styles"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    household_id: Mapped[int] = mapped_column(ForeignKey("households.id"), unique=True)
+    priorities: Mapped[list[str]] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    household: Mapped["Household"] = relationship(back_populates="shopping_style")
 
 
 class UserPreferences(Base):

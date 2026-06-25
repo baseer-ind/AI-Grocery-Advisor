@@ -5,6 +5,7 @@ from app.api.v1.routes_auth import router as auth_router
 from app.api.v1.routes_baskets import router as baskets_router
 from app.api.v1.routes_bill_upload import router as bill_upload_router
 from app.api.v1.routes_bill_upload_async import router as bill_upload_async_router
+from app.api.v1.routes_household import router as household_router
 from app.api.v1.routes_product_intelligence import router as product_intelligence_router
 from app.api.v1.routes_providers_search import router as providers_search_router
 from app.api.v1.routes_search import router as search_router
@@ -54,6 +55,7 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(baskets_router)
 app.include_router(product_intelligence_router)
+app.include_router(household_router)
 
 
 @app.get("/health")
