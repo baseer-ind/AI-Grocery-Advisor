@@ -21,10 +21,14 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { aiFindings, basketOptions, categories, products, samplePriceList, stores } from "@/lib/sample-data";
+import { hasRealData } from "@/lib/real-data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/bill-check")({
   head: () => ({ meta: [{ title: "Bill Check — Household Advisor AI" }] }),
+  validateSearch: (search: Record<string, unknown>): { sample?: boolean } => ({
+    sample: search.sample === "1" || search.sample === true || undefined,
+  }),
   component: BillCheck,
 });
 
@@ -55,6 +59,7 @@ const tabs = ["Overview", "Basket Swaps", "Product Picks", "Compare Stores"] as 
 type Tab = (typeof tabs)[number];
 
 function BillCheck() {
+  const { sample } = Route.useSearch();
   const [tab, setTab] = useState<Tab>("Overview");
   const [selected, setSelected] = useState(basketOptions[3].id);
   const [activeProductIdx, setActiveProductIdx] = useState(0);
@@ -62,8 +67,42 @@ function BillCheck() {
   const alternatives = basketOptions.slice(1);
   const activeProduct = products[activeProductIdx];
 
+  if (!sample && !hasRealData()) {
+    return (
+      <AppShell title="Bill Check" eyebrow="No bill yet">
+        <div className="max-w-xl mx-auto text-center rounded-2xl border border-border bg-surface p-10 mt-10">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
+            Not enough data yet
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">Upload your first bill to see your analysis</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            We don't show bill insights until we've actually read one of your bills — never invented numbers.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Link to="/upload" className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90">
+              Upload a bill <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link to="/bill-check" search={{ sample: true }} className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-semibold hover:bg-surface-2">
+              Explore a sample bill
+            </Link>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell title="Bill Check" eyebrow="Bill / 21 Aug 2025">
+      {sample && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-warning bg-warning/10 px-4 py-2.5">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-warning-foreground">
+            Sample mode — this is illustrative data, not your bill
+          </span>
+          <Link to="/upload" className="text-xs font-semibold underline hover:no-underline">
+            Upload your bill
+          </Link>
+        </div>
+      )}
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
         {tabs.map((t) => (
           <button

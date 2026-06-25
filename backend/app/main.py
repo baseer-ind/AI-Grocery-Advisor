@@ -13,6 +13,11 @@ from app.core.config import settings
 from app.db.session import engine
 from app.queue import dispose_arq_pool
 
+if settings.environment == "production" and settings.ocr_engine == "mock":
+    # A real beta user's bill must never be silently swapped for canned OCR
+    # text — refuse to boot rather than serve fabricated results.
+    raise RuntimeError("OCR_ENGINE=mock is not allowed when ENVIRONMENT=production")
+
 app = FastAPI(title=settings.app_name)
 
 

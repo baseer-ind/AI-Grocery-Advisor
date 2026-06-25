@@ -14,6 +14,7 @@ import {
   Search,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { markHasRealData } from "@/lib/real-data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/upload")({
@@ -58,14 +59,13 @@ function UploadPage() {
   };
 
   const start = async (file?: File) => {
+    if (!file) return;
     setStage("processing");
 
-    if (!file || !API_BASE) {
-      // No backend configured yet — be honest instead of faking a real read.
-      setTimeout(() => {
-        setReal(null);
-        setStage("done");
-      }, 1400);
+    if (!API_BASE) {
+      // No backend configured — fail loudly rather than ever showing
+      // invented stats that look like a real read of this user's bill.
+      setStage("error");
       return;
     }
 
@@ -86,6 +86,7 @@ function UploadPage() {
         totalSpend: basket.reduce((s, b) => s + (b.total_price ?? 0), 0),
         items: basket,
       });
+      if (basket.length > 0) markHasRealData();
       setStage("done");
     } catch {
       setStage("error");
@@ -178,28 +179,39 @@ function UploadPage() {
                     Try again
                   </button>
                 </div>
+              ) : real && real.productsFound === 0 ? (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle className="h-5 w-5 text-warning-foreground" />
+                    <span className="font-semibold">We read the bill, but couldn't find any items</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    The image came through, but we couldn't pick out any line items from it. Try a clearer photo, or
+                    one that shows the full itemized list.
+                  </p>
+                  <button
+                    onClick={() => setStage("idle")}
+                    className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-surface-2"
+                  >
+                    Try again
+                  </button>
+                </div>
               ) : (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span className="font-semibold">{real ? "Bill read" : "Sample analysis — demo mode"}</span>
+                    <span className="font-semibold">Bill read</span>
                   </div>
-                  {!real && (
-                    <p className="text-xs text-muted-foreground mb-4">
-                      We're not yet reading your actual bill in this preview — the numbers below are a sample so you
-                      can see what a real analysis looks like. We'll tell you the moment this is reading real receipts.
-                    </p>
-                  )}
                   <div className="grid grid-cols-3 gap-4">
-                    <Stat label="Products Found" value={String(real?.productsFound ?? 42)} />
-                    <Stat label="Categories" value={String(real?.categories ?? 6)} />
-                    <Stat label="Total Spend" value={`₹${(real?.totalSpend ?? 9250).toLocaleString("en-IN")}`} />
+                    <Stat label="Products Found" value={String(real?.productsFound ?? 0)} />
+                    <Stat label="Categories" value={String(real?.categories ?? 0)} />
+                    <Stat label="Total Spend" value={`₹${(real?.totalSpend ?? 0).toLocaleString("en-IN")}`} />
                   </div>
                   <Link
                     to="/bill-check"
                     className="mt-6 inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
                   >
-                    {real ? "Analyze My Spending" : "See Sample Analysis"}
+                    Analyze My Spending
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>

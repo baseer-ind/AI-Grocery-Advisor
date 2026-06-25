@@ -12,4 +12,10 @@ from app.services.providers.mock_provider import MockProvider
 
 
 def build_price_providers() -> list[PriceProvider]:
-    return [CSVProvider(settings.curated_prices_path), MockProvider(), BigBasketProvider()]
+    providers: list[PriceProvider] = [CSVProvider(settings.curated_prices_path), BigBasketProvider()]
+    # MockProvider's "demo-mart" catalog is fine in dev/tests, but a real
+    # beta user must never see fictional store prices mixed into a live
+    # comparison, so it's excluded unless explicitly running outside prod.
+    if settings.environment != "production":
+        providers.append(MockProvider())
+    return providers

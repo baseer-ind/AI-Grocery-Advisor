@@ -32,10 +32,14 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { categories, household, metrics, monthlyTrend } from "@/lib/sample-data";
+import { hasRealData } from "@/lib/real-data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/today")({
   head: () => ({ meta: [{ title: "Today — Household Advisor AI" }] }),
+  validateSearch: (search: Record<string, unknown>): { sample?: boolean } => ({
+    sample: search.sample === "1" || search.sample === true || undefined,
+  }),
   component: Today,
 });
 
@@ -106,14 +110,49 @@ type AlertItem = {
 const fiveredAlert: AlertItem = { name: "Surf Excel", size: "2kg", current: 520, target: 525, status: "fired" };
 
 function Today() {
+  const { sample } = Route.useSearch();
   const [showDetails, setShowDetails] = useState(false);
   const [eventFlag, setEventFlag] = useState<"normal" | "event" | null>(null);
   const firstName = household.name.split(" ")[0] ?? household.name;
   const isEventMonth = eventFlag === "event";
 
+  if (!sample && !hasRealData()) {
+    return (
+      <AppShell title="Today" eyebrow="Household Advisor">
+        <div className="max-w-xl mx-auto text-center rounded-2xl border border-border bg-surface p-10 mt-10">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
+            Not enough data yet
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">We don't have anything to show you yet</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Upload a bill or enter your grocery spend to start seeing real insights here — never invented numbers.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Link to="/upload" className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90">
+              Upload a bill <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link to="/today" search={{ sample: true }} className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-semibold hover:bg-surface-2">
+              Explore a sample household
+            </Link>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell title="Today" eyebrow="Household Advisor">
       <div className="space-y-4 max-w-3xl mx-auto">
+        {sample && (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-warning bg-warning/10 px-4 py-2.5">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-warning-foreground">
+              Sample mode — this is illustrative data, not your household
+            </span>
+            <Link to="/upload" className="text-xs font-semibold underline hover:no-underline">
+              Upload your bill
+            </Link>
+          </div>
+        )}
         {/* AI greeting + top call */}
         <section className="rounded-2xl border border-border bg-surface p-6 lg:p-7 relative overflow-hidden">
           <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
