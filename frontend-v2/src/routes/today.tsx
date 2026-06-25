@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { categories, household, metrics, monthlyTrend } from "@/lib/sample-data";
-import { hasRealData } from "@/lib/real-data";
+import { getHouseholdProfile, hasRealData, type StoredHouseholdProfile } from "@/lib/real-data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/today")({
@@ -107,7 +107,13 @@ type AlertItem = {
   status: "buynow" | "watching" | "fired";
 };
 
-const fiveredAlert: AlertItem = { name: "Surf Excel", size: "2kg", current: 520, target: 525, status: "fired" };
+const fiveredAlert: AlertItem = {
+  name: "Surf Excel",
+  size: "2kg",
+  current: 520,
+  target: 525,
+  status: "fired",
+};
 
 function Today() {
   const { sample } = Route.useSearch();
@@ -117,32 +123,51 @@ function Today() {
   const isEventMonth = eventFlag === "event";
 
   if (!sample && !hasRealData()) {
+    const profile = getHouseholdProfile();
     return (
-      <AppShell title="Today" eyebrow="Household Advisor">
-        <div className="max-w-xl mx-auto text-center rounded-2xl border border-border bg-surface p-10 mt-10">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
-            Not enough data yet
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight">We don't have anything to show you yet</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Upload a bill or enter your grocery spend to start seeing real insights here — never invented numbers.
-          </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <Link to="/upload" className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90">
-              Upload a bill <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link to="/today" search={{ sample: true }} className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-semibold hover:bg-surface-2">
-              Explore a sample household
-            </Link>
+      <AppShell title="Home" eyebrow="Household Advisor">
+        <div className="max-w-xl mx-auto space-y-4">
+          <HouseholdSnapshotStrip profile={profile} />
+          <div className="text-center rounded-2xl border border-border bg-surface p-10">
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
+              Not enough data yet
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              We don't have anything to show you yet
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {profile
+                ? "Add a bill, your frequent purchases, or your monthly spend to start seeing real insights here — never invented numbers."
+                : "Build your household profile to get started — it takes about two minutes and needs no bill."}
+            </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                to={profile ? "/upload" : "/household"}
+                className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
+              >
+                {profile ? "Add a bill" : "Build my household profile"}{" "}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/today"
+                search={{ sample: true }}
+                className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-semibold hover:bg-surface-2"
+              >
+                Explore a sample household
+              </Link>
+            </div>
           </div>
         </div>
       </AppShell>
     );
   }
 
+  const profile = getHouseholdProfile();
+
   return (
-    <AppShell title="Today" eyebrow="Household Advisor">
+    <AppShell title="Home" eyebrow="Household Advisor">
       <div className="space-y-4 max-w-3xl mx-auto">
+        <HouseholdSnapshotStrip profile={profile} />
         {sample && (
           <div className="flex items-center justify-between gap-3 rounded-xl border border-warning bg-warning/10 px-4 py-2.5">
             <span className="font-mono text-[10px] uppercase tracking-widest text-warning-foreground">
@@ -165,12 +190,12 @@ function Today() {
             {isEventMonth ? (
               <>
                 <h1 className="mt-3 text-2xl lg:text-3xl font-semibold tracking-tight text-balance">
-                  Got it — you flagged something different this month, so I've paused my usual "skip it" calls on
-                  staples like oil and atta.
+                  Got it — you flagged something different this month, so I've paused my usual "skip
+                  it" calls on staples like oil and atta.
                 </h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  I'll still flag genuine price drops and target hits below — just nothing that assumes a normal
-                  week.
+                  I'll still flag genuine price drops and target hits below — just nothing that
+                  assumes a normal week.
                 </p>
               </>
             ) : (
@@ -180,8 +205,12 @@ function Today() {
                   <span className="text-accent">DMart</span> — saves ₹540 with no quality loss.
                 </h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Based on your last 3 bills, oil stock looks like ~5 weeks of normal use — so I'd skip buying more
-                  this cycle, <span className="font-medium text-foreground">unless you're hosting, traveling, or it's a festival month</span>.
+                  Based on your last 3 bills, oil stock looks like ~5 weeks of normal use — so I'd
+                  skip buying more this cycle,{" "}
+                  <span className="font-medium text-foreground">
+                    unless you're hosting, traveling, or it's a festival month
+                  </span>
+                  .
                   <span className="ml-1.5 inline-flex items-center rounded-md bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                     Confidence: medium
                   </span>
@@ -197,7 +226,10 @@ function Today() {
                 Open this week's list <ArrowRight className="h-4 w-4" />
               </Link>
               <span className="text-xs text-muted-foreground">
-                Potential this month: <span className="font-mono font-semibold text-foreground">{fmt(metrics.potentialSavings)}</span>
+                Potential this month:{" "}
+                <span className="font-mono font-semibold text-foreground">
+                  {fmt(metrics.potentialSavings)}
+                </span>
               </span>
             </div>
 
@@ -208,7 +240,9 @@ function Today() {
                   onClick={() => setEventFlag("normal")}
                   className={cn(
                     "rounded-md px-2.5 py-1 font-medium border",
-                    eventFlag === "normal" ? "border-foreground bg-foreground text-background" : "border-border hover:bg-surface-2",
+                    eventFlag === "normal"
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border hover:bg-surface-2",
                   )}
                 >
                   Yes, normal month
@@ -288,9 +322,24 @@ function Today() {
 
         {/* Quick actions */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-          <ActionCard to="/upload" icon={<Sparkles className="h-4 w-4" />} title="Upload a bill" body="Find savings in 10 seconds" />
-          <ActionCard to="/bill-check" icon={<TrendingDown className="h-4 w-4" />} title="Basket alternatives" body="Same items, smarter swaps" />
-          <ActionCard to="/this-week" icon={<TrendingUp className="h-4 w-4" />} title="This week's list" body="Pantry-aware, ready to shop" />
+          <ActionCard
+            to="/this-week"
+            icon={<TrendingUp className="h-4 w-4" />}
+            title="This week's list"
+            body="Pantry-aware, ready to shop"
+          />
+          <ActionCard
+            to="/bill-check"
+            icon={<TrendingDown className="h-4 w-4" />}
+            title="Basket alternatives"
+            body="Same items, smarter swaps"
+          />
+          <ActionCard
+            to="/upload"
+            icon={<Sparkles className="h-4 w-4" />}
+            title="Improve accuracy"
+            body="Add a bill for sharper recommendations"
+          />
         </section>
 
         {/* Progressive disclosure: full breakdown */}
@@ -300,7 +349,9 @@ function Today() {
             className="w-full flex items-center justify-between px-6 py-4 text-sm font-medium"
           >
             <span>Full breakdown — spend, inflation &amp; savings history</span>
-            <ChevronDown className={cn("h-4 w-4 transition-transform", showDetails && "rotate-180")} />
+            <ChevronDown
+              className={cn("h-4 w-4 transition-transform", showDetails && "rotate-180")}
+            />
           </button>
 
           {showDetails && (
@@ -311,23 +362,62 @@ function Today() {
                   <p className="text-xs text-muted-foreground">Last 6 months</p>
                   <div className="h-56 -ml-4 mt-2">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={monthlyTrend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <AreaChart
+                        data={monthlyTrend}
+                        margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                      >
                         <defs>
                           <linearGradient id="spendG" x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stopColor="var(--color-foreground)" stopOpacity={0.18} />
-                            <stop offset="100%" stopColor="var(--color-foreground)" stopOpacity={0} />
+                            <stop
+                              offset="0%"
+                              stopColor="var(--color-foreground)"
+                              stopOpacity={0.18}
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="var(--color-foreground)"
+                              stopOpacity={0}
+                            />
                           </linearGradient>
                           <linearGradient id="optG" x1="0" x2="0" y1="0" y2="1">
                             <stop offset="0%" stopColor="var(--color-accent)" stopOpacity={0.25} />
                             <stop offset="100%" stopColor="var(--color-accent)" stopOpacity={0} />
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                        <XAxis dataKey="month" stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v / 1000}k`} />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="var(--color-border)"
+                          vertical={false}
+                        />
+                        <XAxis
+                          dataKey="month"
+                          stroke="var(--color-muted-foreground)"
+                          fontSize={12}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <YAxis
+                          stroke="var(--color-muted-foreground)"
+                          fontSize={12}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(v) => `₹${v / 1000}k`}
+                        />
                         <Tooltip content={<ChartTip />} />
-                        <Area type="monotone" dataKey="spend" stroke="var(--color-foreground)" strokeWidth={2} fill="url(#spendG)" />
-                        <Area type="monotone" dataKey="optimized" stroke="var(--color-accent)" strokeWidth={2} fill="url(#optG)" />
+                        <Area
+                          type="monotone"
+                          dataKey="spend"
+                          stroke="var(--color-foreground)"
+                          strokeWidth={2}
+                          fill="url(#spendG)"
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="optimized"
+                          stroke="var(--color-accent)"
+                          strokeWidth={2}
+                          fill="url(#optG)"
+                        />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
@@ -338,7 +428,14 @@ function Today() {
                   <div className="h-40 mt-2">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <Pie data={categories} dataKey="value" innerRadius={40} outerRadius={62} paddingAngle={2} stroke="none">
+                        <Pie
+                          data={categories}
+                          dataKey="value"
+                          innerRadius={40}
+                          outerRadius={62}
+                          paddingAngle={2}
+                          stroke="none"
+                        >
                           {categories.map((c, i) => (
                             <Cell key={i} fill={c.color} />
                           ))}
@@ -367,12 +464,33 @@ function Today() {
                   <div className="h-52 mt-3 -ml-3">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={inflation}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                        <XAxis dataKey="cat" stroke="var(--color-muted-foreground)" fontSize={10} tickLine={false} axisLine={false} />
-                        <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="var(--color-border)"
+                          vertical={false}
+                        />
+                        <XAxis
+                          dataKey="cat"
+                          stroke="var(--color-muted-foreground)"
+                          fontSize={10}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <YAxis
+                          stroke="var(--color-muted-foreground)"
+                          fontSize={11}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(v) => `${v}%`}
+                        />
                         <Tooltip
                           cursor={{ fill: "var(--color-surface-2)" }}
-                          contentStyle={{ background: "var(--color-background)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }}
+                          contentStyle={{
+                            background: "var(--color-background)",
+                            border: "1px solid var(--color-border)",
+                            borderRadius: 8,
+                            fontSize: 12,
+                          }}
                           formatter={(v: any) => [`${v}%`, "MoM"]}
                         />
                         <Bar dataKey="pct" radius={[6, 6, 0, 0]} fill="var(--color-foreground)" />
@@ -386,12 +504,48 @@ function Today() {
                   <div className="h-52 mt-3 -ml-3">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={inflationTrend}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                        <XAxis dataKey="m" stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                        <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
-                        <Tooltip contentStyle={{ background: "var(--color-background)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
-                        <Line type="monotone" dataKey="overall" stroke="var(--color-foreground)" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3 }} />
-                        <Line type="monotone" dataKey="household" stroke="var(--color-accent)" strokeWidth={2} dot={{ r: 3 }} />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="var(--color-border)"
+                          vertical={false}
+                        />
+                        <XAxis
+                          dataKey="m"
+                          stroke="var(--color-muted-foreground)"
+                          fontSize={11}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <YAxis
+                          stroke="var(--color-muted-foreground)"
+                          fontSize={11}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(v) => `${v}%`}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            background: "var(--color-background)",
+                            border: "1px solid var(--color-border)",
+                            borderRadius: 8,
+                            fontSize: 12,
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="overall"
+                          stroke="var(--color-foreground)"
+                          strokeWidth={2}
+                          strokeDasharray="4 4"
+                          dot={{ r: 3 }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="household"
+                          stroke="var(--color-accent)"
+                          strokeWidth={2}
+                          dot={{ r: 3 }}
+                        />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -400,7 +554,9 @@ function Today() {
 
               <div className="rounded-xl border border-border p-5">
                 <div className="flex items-end justify-between mb-3">
-                  <h3 className="font-semibold tracking-tight text-sm">Cumulative savings since first bill</h3>
+                  <h3 className="font-semibold tracking-tight text-sm">
+                    Cumulative savings since first bill
+                  </h3>
                   <span className="rounded-md bg-accent/10 text-accent px-2 py-1 text-[11px] font-semibold uppercase font-mono tracking-wider">
                     On pace · ₹14.4k/yr
                   </span>
@@ -414,11 +570,40 @@ function Today() {
                           <stop offset="100%" stopColor="var(--color-accent)" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                      <XAxis dataKey="m" stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                      <YAxis stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v / 1000}k`} />
-                      <Tooltip contentStyle={{ background: "var(--color-background)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
-                      <Area type="monotone" dataKey="saved" stroke="var(--color-accent)" strokeWidth={2} fill="url(#jG)" />
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="var(--color-border)"
+                        vertical={false}
+                      />
+                      <XAxis
+                        dataKey="m"
+                        stroke="var(--color-muted-foreground)"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        stroke="var(--color-muted-foreground)"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(v) => `₹${v / 1000}k`}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          background: "var(--color-background)",
+                          border: "1px solid var(--color-border)",
+                          borderRadius: 8,
+                          fontSize: 12,
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="saved"
+                        stroke="var(--color-accent)"
+                        strokeWidth={2}
+                        fill="url(#jG)"
+                      />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -428,14 +613,18 @@ function Today() {
                       <span
                         className={cn(
                           "mt-0.5 h-5 w-5 rounded-full flex items-center justify-center shrink-0",
-                          m.done ? "bg-accent text-accent-foreground" : "bg-surface-2 text-muted-foreground border border-border",
+                          m.done
+                            ? "bg-accent text-accent-foreground"
+                            : "bg-surface-2 text-muted-foreground border border-border",
                         )}
                       >
                         <CheckCircle2 className="h-3 w-3" />
                       </span>
                       <div className="flex-1">
                         <div className="font-medium">{m.text}</div>
-                        <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{m.d}</div>
+                        <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                          {m.d}
+                        </div>
                       </div>
                     </li>
                   ))}
@@ -448,11 +637,12 @@ function Today() {
                   <div>
                     <div className="text-sm font-medium">Household profile</div>
                     <div className="text-xs text-muted-foreground">
-                      {household.familySize} members · {household.monthlyBudget} budget · {household.primaryGoal}
+                      {household.familySize} members · {household.monthlyBudget} budget ·{" "}
+                      {household.primaryGoal}
                     </div>
                   </div>
                 </div>
-                <Link to="/discovery" className="text-xs font-semibold hover:text-accent shrink-0">
+                <Link to="/household" className="text-xs font-semibold hover:text-accent shrink-0">
                   Update profile →
                 </Link>
               </div>
@@ -461,6 +651,52 @@ function Today() {
         </section>
       </div>
     </AppShell>
+  );
+}
+
+function HouseholdSnapshotStrip({ profile }: { profile: StoredHouseholdProfile | null }) {
+  if (!profile) {
+    return (
+      <Link
+        to="/household"
+        className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-border bg-surface px-5 py-3.5 hover:border-foreground/30 transition-colors"
+      >
+        <span className="text-sm font-medium">
+          Build your household profile to unlock personalized insights
+        </span>
+        <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+      </Link>
+    );
+  }
+
+  const stats: { label: string; value: string }[] = [
+    { label: "Shopping style", value: profile.shoppingStyle },
+    { label: "Planning", value: profile.planningStyle },
+    { label: "Pantry", value: profile.pantryReadiness },
+    { label: "Profile confidence", value: `${Math.round(profile.confidence * 100)}%` },
+  ];
+
+  return (
+    <section className="rounded-xl border border-border bg-surface px-5 py-3.5">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-4 flex-wrap">
+          {stats.map((s) => (
+            <div key={s.label}>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                {s.label}
+              </div>
+              <div className="text-sm font-semibold">{s.value}</div>
+            </div>
+          ))}
+        </div>
+        <Link
+          to="/household"
+          className="text-xs font-semibold text-muted-foreground hover:text-foreground shrink-0"
+        >
+          Update profile →
+        </Link>
+      </div>
+    </section>
   );
 }
 
@@ -484,16 +720,28 @@ function FeedCard({
   muted?: boolean;
 }) {
   return (
-    <section className={cn("rounded-2xl border border-border bg-surface p-5", muted && "opacity-90")}>
+    <section
+      className={cn("rounded-2xl border border-border bg-surface p-5", muted && "opacity-90")}
+    >
       <div className="flex items-start gap-3">
-        <div className="h-8 w-8 rounded-lg bg-surface-2 flex items-center justify-center shrink-0 mt-0.5">{icon}</div>
+        <div className="h-8 w-8 rounded-lg bg-surface-2 flex items-center justify-center shrink-0 mt-0.5">
+          {icon}
+        </div>
         <div className="flex-1 min-w-0">
-          <span className={cn("inline-flex items-center rounded-md px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest font-semibold", tagClass)}>
+          <span
+            className={cn(
+              "inline-flex items-center rounded-md px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest font-semibold",
+              tagClass,
+            )}
+          >
             {tag}
           </span>
           <h3 className="mt-2 font-semibold tracking-tight text-balance">{title}</h3>
           <p className="mt-1 text-sm text-muted-foreground text-pretty">{body}</p>
-          <Link to={to} className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold hover:text-accent">
+          <Link
+            to={to}
+            className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold hover:text-accent"
+          >
             {cta} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -502,10 +750,25 @@ function FeedCard({
   );
 }
 
-function ActionCard({ to, icon, title, body }: { to: string; icon: React.ReactNode; title: string; body: string }) {
+function ActionCard({
+  to,
+  icon,
+  title,
+  body,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+}) {
   return (
-    <Link to={to} className="group rounded-2xl border border-border bg-surface p-4 hover:border-foreground/30 transition-all block">
-      <div className="h-8 w-8 rounded-lg bg-surface-2 flex items-center justify-center mb-2.5">{icon}</div>
+    <Link
+      to={to}
+      className="group rounded-2xl border border-border bg-surface p-4 hover:border-foreground/30 transition-all block"
+    >
+      <div className="h-8 w-8 rounded-lg bg-surface-2 flex items-center justify-center mb-2.5">
+        {icon}
+      </div>
       <h4 className="font-semibold tracking-tight text-sm">{title}</h4>
       <p className="text-xs text-muted-foreground mt-0.5">{body}</p>
     </Link>
@@ -516,12 +779,22 @@ function ChartTip({ active, payload, label, suffix = "" }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border border-border bg-background/95 backdrop-blur px-3 py-2 text-xs shadow-lg">
-      {label && <div className="font-mono uppercase tracking-widest text-[10px] text-muted-foreground mb-1">{label}</div>}
+      {label && (
+        <div className="font-mono uppercase tracking-widest text-[10px] text-muted-foreground mb-1">
+          {label}
+        </div>
+      )}
       {payload.map((p: any) => (
         <div key={p.dataKey ?? p.name} className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full" style={{ background: p.color || p.payload?.color }} />
+          <span
+            className="h-2 w-2 rounded-full"
+            style={{ background: p.color || p.payload?.color }}
+          />
           <span className="text-muted-foreground capitalize">{p.name}</span>
-          <span className="ml-auto font-mono font-medium">₹{p.value?.toLocaleString("en-IN")}{suffix}</span>
+          <span className="ml-auto font-mono font-medium">
+            ₹{p.value?.toLocaleString("en-IN")}
+            {suffix}
+          </span>
         </div>
       ))}
     </div>

@@ -1,27 +1,28 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import {
-  Upload,
-  ShoppingBasket,
+  Sparkles,
   Home as HomeIcon,
   Crown,
   Menu,
   X,
   ListChecks,
   Heart,
+  UserCircle2,
 } from "lucide-react";
 import { FeedbackCta } from "./feedback-cta";
 import { ThemeToggle } from "./theme-toggle";
 import { AskAiWidget } from "./ask-ai-widget";
 import { cn } from "@/lib/utils";
+import { getHouseholdProfile, type StoredHouseholdProfile } from "@/lib/real-data";
 
 const navGroups = [
   {
     label: "Your Household",
     items: [
-      { to: "/today", label: "Today", icon: HomeIcon },
-      { to: "/bill-check", label: "Bill Check", icon: ShoppingBasket },
-      { to: "/this-week", label: "This Week", icon: ListChecks },
+      { to: "/today", label: "Home", icon: HomeIcon },
+      { to: "/this-week", label: "Shopping List", icon: ListChecks },
+      { to: "/household", label: "Profile", icon: UserCircle2 },
     ],
   },
   {
@@ -33,9 +34,31 @@ const navGroups = [
   },
 ] as const;
 
-export function AppShell({ children, title, eyebrow }: { children: ReactNode; title: string; eyebrow?: string }) {
+// Bottom nav is the primary nav on mobile. Bill upload/Bill Check are
+// deliberately not here — they're a data source you reach from Home, not
+// a destination households think in terms of.
+const bottomNavItems = [
+  { to: "/today", label: "Home", icon: HomeIcon },
+  { to: "/this-week", label: "List", icon: ListChecks },
+  { to: "/household", label: "Profile", icon: UserCircle2 },
+] as const;
+
+export function AppShell({
+  children,
+  title,
+  eyebrow,
+}: {
+  children: ReactNode;
+  title: string;
+  eyebrow?: string;
+}) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
+  const [profile, setProfile] = useState<StoredHouseholdProfile | null>(null);
+
+  useEffect(() => {
+    setProfile(getHouseholdProfile());
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -58,7 +81,7 @@ export function AppShell({ children, title, eyebrow }: { children: ReactNode; ti
       </div>
 
       <div className="flex">
-        {/* Sidebar */}
+        {/* Sidebar (desktop nav) */}
         <aside
           className={cn(
             "fixed lg:sticky top-0 z-30 h-screen w-72 shrink-0 border-r border-border bg-surface flex flex-col",
@@ -66,11 +89,16 @@ export function AppShell({ children, title, eyebrow }: { children: ReactNode; ti
             open ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
           )}
         >
-          <Link to="/" className="hidden lg:flex items-center gap-2.5 px-6 h-16 border-b border-border">
+          <Link
+            to="/"
+            className="hidden lg:flex items-center gap-2.5 px-6 h-16 border-b border-border"
+          >
             <Logo />
             <div className="flex flex-col leading-tight">
               <span className="font-semibold tracking-tight text-sm">Household Advisor</span>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">AI · v1.0</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                AI · v1.0
+              </span>
             </div>
           </Link>
           <nav className="flex-1 overflow-y-auto p-3 space-y-4">
@@ -109,15 +137,28 @@ export function AppShell({ children, title, eyebrow }: { children: ReactNode; ti
             <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
               Household
             </div>
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-semibold">
-                B
+            {profile ? (
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-semibold">
+                  {profile.city ? profile.city[0] : "H"}
+                </div>
+                <div className="leading-tight">
+                  <div className="text-sm font-semibold">{profile.householdType}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {profile.size ? `${profile.size} members` : "Profile started"}
+                    {profile.city ? ` · ${profile.city}` : ""}
+                  </div>
+                </div>
               </div>
-              <div className="leading-tight">
-                <div className="text-sm font-semibold">Baseer's Home</div>
-                <div className="text-xs text-muted-foreground">4 members · Hyderabad</div>
-              </div>
-            </div>
+            ) : (
+              <Link
+                to="/household"
+                className="flex items-center gap-2 text-sm font-semibold hover:opacity-80"
+              >
+                <Sparkles className="h-4 w-4 text-accent" />
+                Build your household profile
+              </Link>
+            )}
           </div>
         </aside>
 
@@ -139,19 +180,10 @@ export function AppShell({ children, title, eyebrow }: { children: ReactNode; ti
               )}
               <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
             </div>
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
-              <Link
-                to="/upload"
-                className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-3.5 py-2 text-sm font-medium hover:opacity-90"
-              >
-                <Upload className="h-4 w-4" />
-                Upload Bill
-              </Link>
-            </div>
+            <ThemeToggle />
           </div>
 
-          <div className="p-5 lg:p-8 max-w-[1400px] mx-auto">
+          <div className="p-5 lg:p-8 pb-24 lg:pb-8 max-w-[1400px] mx-auto">
             <div className="lg:hidden mb-6">
               {eyebrow && (
                 <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -164,6 +196,30 @@ export function AppShell({ children, title, eyebrow }: { children: ReactNode; ti
           </div>
         </main>
       </div>
+
+      {/* Mobile bottom nav — primary navigation on phones */}
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border bg-background/95 backdrop-blur-md">
+        <div className="grid grid-cols-3">
+          {bottomNavItems.map((item) => {
+            const active = pathname === item.to;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  "flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium",
+                  active ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                <Icon className="h-5 w-5" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
       <FeedbackCta />
       <AskAiWidget />
     </div>

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight, CheckCircle2, ListChecks, Sparkles, Upload as UploadIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { saveHouseholdProfile } from "@/lib/real-data";
 
 export const Route = createFileRoute("/household")({
   head: () => ({ meta: [{ title: "Build Your Household Profile — Household Advisor AI" }] }),
@@ -357,6 +358,19 @@ function HouseholdOnboardingPage() {
       const data = await res.json();
       setInsight(data.insight);
       setStep("snapshot");
+      if (householdId) {
+        const snapshot = deriveProfile(answers);
+        saveHouseholdProfile({
+          householdId,
+          city: answers.city,
+          size: answers.size ?? 0,
+          householdType: snapshot.householdType,
+          shoppingStyle: snapshot.shoppingStyle,
+          planningStyle: snapshot.planningStyle,
+          pantryReadiness: snapshot.pantryReadiness,
+          confidence: snapshot.confidence,
+        });
+      }
     } catch {
       setError("We couldn't save that step. Check your connection and try again.");
     } finally {
@@ -371,7 +385,7 @@ function HouseholdOnboardingPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <div className="flex items-center justify-between mb-6">
           <Link
-            to="/home"
+            to="/today"
             className="text-sm font-medium text-muted-foreground hover:text-foreground"
           >
             ← Back
@@ -716,7 +730,7 @@ function SnapshotCard({
           <ArrowRight className="h-4 w-4 text-muted-foreground" />
         </Link>
         <Link
-          to="/list"
+          to="/this-week"
           className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-3.5 hover:bg-surface-2"
         >
           <span className="flex items-center gap-2.5 text-sm font-medium">
@@ -725,11 +739,11 @@ function SnapshotCard({
           <ArrowRight className="h-4 w-4 text-muted-foreground" />
         </Link>
         <Link
-          to="/home"
+          to="/today"
           className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-3.5 hover:bg-surface-2"
         >
           <span className="flex items-center gap-2.5 text-sm font-medium">
-            <Sparkles className="h-4 w-4" /> Go to Dashboard
+            <Sparkles className="h-4 w-4" /> Go to Home
           </span>
           <ArrowRight className="h-4 w-4 text-muted-foreground" />
         </Link>

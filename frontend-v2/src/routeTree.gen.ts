@@ -12,25 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as TodayRouteImport } from './routes/today'
 import { Route as ThisWeekRouteImport } from './routes/this-week'
-import { Route as StoresRouteImport } from './routes/stores'
-import { Route as ProductsRouteImport } from './routes/products'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as PantryRouteImport } from './routes/pantry'
-import { Route as ListRouteImport } from './routes/list'
-import { Route as JourneyRouteImport } from './routes/journey'
-import { Route as InflationRouteImport } from './routes/inflation'
 import { Route as HouseholdRouteImport } from './routes/household'
-import { Route as HomeRouteImport } from './routes/home'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as DiscoveryRouteImport } from './routes/discovery'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as CommandRouteImport } from './routes/command'
-import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as BillCheckRouteImport } from './routes/bill-check'
-import { Route as BasketRouteImport } from './routes/basket'
-import { Route as AnalysisRouteImport } from './routes/analysis'
-import { Route as AlertsRouteImport } from './routes/alerts'
-import { Route as AdvisorRouteImport } from './routes/advisor'
 import { Route as IndexRouteImport } from './routes/index'
 
 const UploadRoute = UploadRouteImport.update({
@@ -48,49 +34,14 @@ const ThisWeekRoute = ThisWeekRouteImport.update({
   path: '/this-week',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StoresRoute = StoresRouteImport.update({
-  id: '/stores',
-  path: '/stores',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProductsRoute = ProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PantryRoute = PantryRouteImport.update({
-  id: '/pantry',
-  path: '/pantry',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ListRoute = ListRouteImport.update({
-  id: '/list',
-  path: '/list',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JourneyRoute = JourneyRouteImport.update({
-  id: '/journey',
-  path: '/journey',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InflationRoute = InflationRouteImport.update({
-  id: '/inflation',
-  path: '/inflation',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const HouseholdRoute = HouseholdRouteImport.update({
   id: '/household',
   path: '/household',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HomeRoute = HomeRouteImport.update({
-  id: '/home',
-  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedbackRoute = FeedbackRouteImport.update({
@@ -103,44 +54,9 @@ const DiscoveryRoute = DiscoveryRouteImport.update({
   path: '/discovery',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CommandRoute = CommandRouteImport.update({
-  id: '/command',
-  path: '/command',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CalendarRoute = CalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const BillCheckRoute = BillCheckRouteImport.update({
   id: '/bill-check',
   path: '/bill-check',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BasketRoute = BasketRouteImport.update({
-  id: '/basket',
-  path: '/basket',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AnalysisRoute = AnalysisRouteImport.update({
-  id: '/analysis',
-  path: '/analysis',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AlertsRoute = AlertsRouteImport.update({
-  id: '/alerts',
-  path: '/alerts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdvisorRoute = AdvisorRouteImport.update({
-  id: '/advisor',
-  path: '/advisor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -151,50 +67,22 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/advisor': typeof AdvisorRoute
-  '/alerts': typeof AlertsRoute
-  '/analysis': typeof AnalysisRoute
-  '/basket': typeof BasketRoute
   '/bill-check': typeof BillCheckRoute
-  '/calendar': typeof CalendarRoute
-  '/command': typeof CommandRoute
-  '/dashboard': typeof DashboardRoute
   '/discovery': typeof DiscoveryRoute
   '/feedback': typeof FeedbackRoute
-  '/home': typeof HomeRoute
   '/household': typeof HouseholdRoute
-  '/inflation': typeof InflationRoute
-  '/journey': typeof JourneyRoute
-  '/list': typeof ListRoute
-  '/pantry': typeof PantryRoute
   '/pricing': typeof PricingRoute
-  '/products': typeof ProductsRoute
-  '/stores': typeof StoresRoute
   '/this-week': typeof ThisWeekRoute
   '/today': typeof TodayRoute
   '/upload': typeof UploadRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/advisor': typeof AdvisorRoute
-  '/alerts': typeof AlertsRoute
-  '/analysis': typeof AnalysisRoute
-  '/basket': typeof BasketRoute
   '/bill-check': typeof BillCheckRoute
-  '/calendar': typeof CalendarRoute
-  '/command': typeof CommandRoute
-  '/dashboard': typeof DashboardRoute
   '/discovery': typeof DiscoveryRoute
   '/feedback': typeof FeedbackRoute
-  '/home': typeof HomeRoute
   '/household': typeof HouseholdRoute
-  '/inflation': typeof InflationRoute
-  '/journey': typeof JourneyRoute
-  '/list': typeof ListRoute
-  '/pantry': typeof PantryRoute
   '/pricing': typeof PricingRoute
-  '/products': typeof ProductsRoute
-  '/stores': typeof StoresRoute
   '/this-week': typeof ThisWeekRoute
   '/today': typeof TodayRoute
   '/upload': typeof UploadRoute
@@ -202,25 +90,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/advisor': typeof AdvisorRoute
-  '/alerts': typeof AlertsRoute
-  '/analysis': typeof AnalysisRoute
-  '/basket': typeof BasketRoute
   '/bill-check': typeof BillCheckRoute
-  '/calendar': typeof CalendarRoute
-  '/command': typeof CommandRoute
-  '/dashboard': typeof DashboardRoute
   '/discovery': typeof DiscoveryRoute
   '/feedback': typeof FeedbackRoute
-  '/home': typeof HomeRoute
   '/household': typeof HouseholdRoute
-  '/inflation': typeof InflationRoute
-  '/journey': typeof JourneyRoute
-  '/list': typeof ListRoute
-  '/pantry': typeof PantryRoute
   '/pricing': typeof PricingRoute
-  '/products': typeof ProductsRoute
-  '/stores': typeof StoresRoute
   '/this-week': typeof ThisWeekRoute
   '/today': typeof TodayRoute
   '/upload': typeof UploadRoute
@@ -229,75 +103,33 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/advisor'
-    | '/alerts'
-    | '/analysis'
-    | '/basket'
     | '/bill-check'
-    | '/calendar'
-    | '/command'
-    | '/dashboard'
     | '/discovery'
     | '/feedback'
-    | '/home'
     | '/household'
-    | '/inflation'
-    | '/journey'
-    | '/list'
-    | '/pantry'
     | '/pricing'
-    | '/products'
-    | '/stores'
     | '/this-week'
     | '/today'
     | '/upload'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/advisor'
-    | '/alerts'
-    | '/analysis'
-    | '/basket'
     | '/bill-check'
-    | '/calendar'
-    | '/command'
-    | '/dashboard'
     | '/discovery'
     | '/feedback'
-    | '/home'
     | '/household'
-    | '/inflation'
-    | '/journey'
-    | '/list'
-    | '/pantry'
     | '/pricing'
-    | '/products'
-    | '/stores'
     | '/this-week'
     | '/today'
     | '/upload'
   id:
     | '__root__'
     | '/'
-    | '/advisor'
-    | '/alerts'
-    | '/analysis'
-    | '/basket'
     | '/bill-check'
-    | '/calendar'
-    | '/command'
-    | '/dashboard'
     | '/discovery'
     | '/feedback'
-    | '/home'
     | '/household'
-    | '/inflation'
-    | '/journey'
-    | '/list'
-    | '/pantry'
     | '/pricing'
-    | '/products'
-    | '/stores'
     | '/this-week'
     | '/today'
     | '/upload'
@@ -305,25 +137,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdvisorRoute: typeof AdvisorRoute
-  AlertsRoute: typeof AlertsRoute
-  AnalysisRoute: typeof AnalysisRoute
-  BasketRoute: typeof BasketRoute
   BillCheckRoute: typeof BillCheckRoute
-  CalendarRoute: typeof CalendarRoute
-  CommandRoute: typeof CommandRoute
-  DashboardRoute: typeof DashboardRoute
   DiscoveryRoute: typeof DiscoveryRoute
   FeedbackRoute: typeof FeedbackRoute
-  HomeRoute: typeof HomeRoute
   HouseholdRoute: typeof HouseholdRoute
-  InflationRoute: typeof InflationRoute
-  JourneyRoute: typeof JourneyRoute
-  ListRoute: typeof ListRoute
-  PantryRoute: typeof PantryRoute
   PricingRoute: typeof PricingRoute
-  ProductsRoute: typeof ProductsRoute
-  StoresRoute: typeof StoresRoute
   ThisWeekRoute: typeof ThisWeekRoute
   TodayRoute: typeof TodayRoute
   UploadRoute: typeof UploadRoute
@@ -352,20 +170,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ThisWeekRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/stores': {
-      id: '/stores'
-      path: '/stores'
-      fullPath: '/stores'
-      preLoaderRoute: typeof StoresRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/products': {
-      id: '/products'
-      path: '/products'
-      fullPath: '/products'
-      preLoaderRoute: typeof ProductsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -373,46 +177,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/pantry': {
-      id: '/pantry'
-      path: '/pantry'
-      fullPath: '/pantry'
-      preLoaderRoute: typeof PantryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/list': {
-      id: '/list'
-      path: '/list'
-      fullPath: '/list'
-      preLoaderRoute: typeof ListRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/journey': {
-      id: '/journey'
-      path: '/journey'
-      fullPath: '/journey'
-      preLoaderRoute: typeof JourneyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inflation': {
-      id: '/inflation'
-      path: '/inflation'
-      fullPath: '/inflation'
-      preLoaderRoute: typeof InflationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/household': {
       id: '/household'
       path: '/household'
       fullPath: '/household'
       preLoaderRoute: typeof HouseholdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/home': {
-      id: '/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feedback': {
@@ -429,60 +198,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiscoveryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/command': {
-      id: '/command'
-      path: '/command'
-      fullPath: '/command'
-      preLoaderRoute: typeof CommandRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/calendar': {
-      id: '/calendar'
-      path: '/calendar'
-      fullPath: '/calendar'
-      preLoaderRoute: typeof CalendarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/bill-check': {
       id: '/bill-check'
       path: '/bill-check'
       fullPath: '/bill-check'
       preLoaderRoute: typeof BillCheckRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/basket': {
-      id: '/basket'
-      path: '/basket'
-      fullPath: '/basket'
-      preLoaderRoute: typeof BasketRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/analysis': {
-      id: '/analysis'
-      path: '/analysis'
-      fullPath: '/analysis'
-      preLoaderRoute: typeof AnalysisRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/alerts': {
-      id: '/alerts'
-      path: '/alerts'
-      fullPath: '/alerts'
-      preLoaderRoute: typeof AlertsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/advisor': {
-      id: '/advisor'
-      path: '/advisor'
-      fullPath: '/advisor'
-      preLoaderRoute: typeof AdvisorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -497,25 +217,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdvisorRoute: AdvisorRoute,
-  AlertsRoute: AlertsRoute,
-  AnalysisRoute: AnalysisRoute,
-  BasketRoute: BasketRoute,
   BillCheckRoute: BillCheckRoute,
-  CalendarRoute: CalendarRoute,
-  CommandRoute: CommandRoute,
-  DashboardRoute: DashboardRoute,
   DiscoveryRoute: DiscoveryRoute,
   FeedbackRoute: FeedbackRoute,
-  HomeRoute: HomeRoute,
   HouseholdRoute: HouseholdRoute,
-  InflationRoute: InflationRoute,
-  JourneyRoute: JourneyRoute,
-  ListRoute: ListRoute,
-  PantryRoute: PantryRoute,
   PricingRoute: PricingRoute,
-  ProductsRoute: ProductsRoute,
-  StoresRoute: StoresRoute,
   ThisWeekRoute: ThisWeekRoute,
   TodayRoute: TodayRoute,
   UploadRoute: UploadRoute,
