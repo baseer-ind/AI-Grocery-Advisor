@@ -220,3 +220,32 @@ export function removeTaughtFact(id: string) {
     // localStorage unavailable (e.g. private browsing) — non-critical, skip persisting
   }
 }
+
+// First-unlocked timestamps — unlock status itself is always computed live
+// from real signals (never stored as a fact), but the *moment* a capability
+// first became unlocked is worth remembering for the Memory Timeline. We
+// record it the first time we observe "unlocked" for a given id and never
+// overwrite it, so it reflects when it actually happened, not when it was
+// last viewed.
+const UNLOCK_TIMESTAMPS_KEY = "hb_unlock_timestamps";
+
+export function getUnlockTimestamps(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(UNLOCK_TIMESTAMPS_KEY);
+    return raw ? (JSON.parse(raw) as Record<string, string>) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function recordUnlockAchieved(id: string) {
+  try {
+    const current = getUnlockTimestamps();
+    if (!current[id]) {
+      current[id] = new Date().toISOString();
+      localStorage.setItem(UNLOCK_TIMESTAMPS_KEY, JSON.stringify(current));
+    }
+  } catch {
+    // localStorage unavailable (e.g. private browsing) — non-critical, skip persisting
+  }
+}

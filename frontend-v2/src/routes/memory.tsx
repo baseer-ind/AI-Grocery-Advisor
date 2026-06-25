@@ -6,10 +6,20 @@ import {
   getFrequentProducts,
   getFrequentProductsSavedAt,
   getHouseholdProfile,
+  getTaughtFacts,
+  getUnlockTimestamps,
+  recordUnlockAchieved,
 } from "@/lib/real-data";
-import { getShoppingEvents, type ShoppingEventSummary } from "@/lib/api";
+import {
+  getPredictedPantry,
+  getShoppingEvents,
+  type PredictedPantry,
+  type ShoppingEventSummary,
+} from "@/lib/api";
 import { buildHouseholdMemory } from "@/lib/household-memory";
 import { buildHouseholdTimeline } from "@/lib/household-timeline";
+import { computePlanningScore } from "@/lib/household-intelligence";
+import { buildUnlocks } from "@/lib/household-unlocks";
 
 export const Route = createFileRoute("/memory")({
   head: () => ({ meta: [{ title: "Household Memory — Household Advisor AI" }] }),
@@ -19,10 +29,12 @@ export const Route = createFileRoute("/memory")({
 function HouseholdMemoryPage() {
   const profile = getHouseholdProfile();
   const [events, setEvents] = useState<ShoppingEventSummary[] | null>(null);
+  const [pantry, setPantry] = useState<PredictedPantry | null>(null);
 
   useEffect(() => {
     if (!profile) return;
     getShoppingEvents(profile.householdId).then(setEvents);
+    getPredictedPantry(profile.householdId).then(setPantry);
   }, [profile]);
 
   if (!profile) {
@@ -53,7 +65,19 @@ function HouseholdMemoryPage() {
   }
 
   const observations = buildHouseholdMemory(profile, events, getFrequentProducts());
-  const timeline = buildHouseholdTimeline(profile, events, getFrequentProductsSavedAt());
+  const planning = computePlanningScore(events);
+  const unlocks = buildUnlocks(events, pantry, planning, getFrequentProducts());
+  for (const u of unlocks) {
+    if (u.status === "unlocked") recordUnlockAchieved(u.id);
+  }
+  const timeline = buildHouseholdTimeline(
+    profile,
+    events,
+    getFrequentProductsSavedAt(),
+    getTaughtFacts(),
+    unlocks,
+    getUnlockTimestamps(),
+  );
 
   return (
     <AppShell title="Household Memory" eyebrow="Household Advisor">

@@ -1,5 +1,6 @@
 import type { ShoppingEventSummary } from "@/lib/api";
-import type { StoredHouseholdProfile } from "@/lib/real-data";
+import type { StoredHouseholdProfile, TaughtFact } from "@/lib/real-data";
+import type { Unlock } from "@/lib/household-unlocks";
 
 // The Household Memory Timeline is built only from events with a real
 // timestamp we actually recorded — household creation, frequent-products
@@ -17,6 +18,9 @@ export function buildHouseholdTimeline(
   profile: StoredHouseholdProfile | null,
   events: ShoppingEventSummary[] | null,
   frequentProductsSavedAt: string | null,
+  taughtFacts: TaughtFact[] = [],
+  unlocks: Unlock[] = [],
+  unlockTimestamps: Record<string, string> = {},
 ): TimelineEntry[] {
   const entries: TimelineEntry[] = [];
 
@@ -51,6 +55,28 @@ export function buildHouseholdTimeline(
       id: `event-${event.shopping_event_id}`,
       date: d,
       label: `Shopping event${store}${spend}`,
+    });
+  }
+
+  for (const fact of taughtFacts) {
+    const d = new Date(fact.taughtAt);
+    if (Number.isNaN(d.getTime())) continue;
+    entries.push({
+      id: `taught-${fact.id}`,
+      date: d,
+      label: `Taught us: "${fact.text}"`,
+    });
+  }
+
+  for (const unlock of unlocks) {
+    const ts = unlockTimestamps[unlock.id];
+    if (!ts) continue;
+    const d = new Date(ts);
+    if (Number.isNaN(d.getTime())) continue;
+    entries.push({
+      id: `unlock-${unlock.id}`,
+      date: d,
+      label: `${unlock.label} unlocked`,
     });
   }
 
