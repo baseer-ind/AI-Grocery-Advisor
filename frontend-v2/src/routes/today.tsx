@@ -594,24 +594,20 @@ function FeedCard({
 
   return (
     <section
-      className={cn("rounded-2xl border border-border bg-surface p-5", muted && "opacity-90")}
+      className={cn(
+        "rounded-3xl bg-surface-2 p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)]",
+        muted && "opacity-90",
+      )}
     >
       <div className="flex items-start gap-3">
         {icon && (
-          <div className="h-8 w-8 rounded-lg bg-surface-2 flex items-center justify-center shrink-0 mt-0.5">
+          <div className="h-8 w-8 rounded-full bg-surface flex items-center justify-center shrink-0 mt-0.5">
             {icon}
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <span
-            className={cn(
-              "inline-flex items-center rounded-md px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest font-semibold",
-              tagClass,
-            )}
-          >
-            {tag}
-          </span>
-          <h3 className="mt-2 font-semibold tracking-tight text-balance">{title}</h3>
+          <span className="text-xs font-medium text-muted-foreground">{tag}</span>
+          <h3 className="mt-1.5 text-lg font-semibold tracking-tight text-balance">{title}</h3>
           <p className="mt-1 text-sm text-muted-foreground text-pretty">{body}</p>
           <div className="mt-3 flex items-center gap-3 flex-wrap">
             <Link
@@ -670,39 +666,38 @@ function HouseholdHQ({
     <>
       {/* Layer 1 — Shopping Readiness. One sentence, one fact to remember. Everything
           else on this screen is supporting detail, never competing with this answer. */}
-      <section className="rounded-2xl border border-border bg-surface p-6 lg:p-7">
-        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-          {readiness.greeting}
-        </div>
+      <section className="px-1 pt-2 pb-1">
+        <div className="text-xs text-muted-foreground">{readiness.greeting}</div>
 
-        {readiness.status !== "unknown" && (
-          <div className="mt-2 flex items-center gap-2">
-            <span
-              className={cn(
-                "inline-flex h-2 w-2 rounded-full",
-                readiness.status === "ready" ? "bg-accent" : "bg-warning",
-              )}
-            />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              Shopping readiness — {readiness.status === "ready" ? "Ready" : "Needs attention"}
-            </span>
-          </div>
-        )}
-
-        <p className="mt-2 text-xl lg:text-2xl font-semibold tracking-tight text-balance">
+        <p className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance leading-[1.15]">
           {readiness.headline}
         </p>
 
         {readiness.remember && (
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            One thing to remember: {readiness.remember}
+          <p className="mt-2 text-base text-muted-foreground text-pretty max-w-prose">
+            {readiness.remember}
           </p>
         )}
 
         {identity && (
-          <p className="mt-2 text-sm">
-            Your household appears to be a <span className="font-semibold">{identity.label}</span>.
+          <p className="mt-1 text-base text-muted-foreground">
+            Your household appears to be a{" "}
+            <span className="text-foreground font-medium">{identity.label}</span>.
           </p>
+        )}
+
+        {readiness.status !== "unknown" && (
+          <div className="mt-3 flex items-center gap-2">
+            <span
+              className={cn(
+                "inline-flex h-1.5 w-1.5 rounded-full",
+                readiness.status === "ready" ? "bg-accent" : "bg-warning",
+              )}
+            />
+            <span className="text-xs text-muted-foreground">
+              {readiness.status === "ready" ? "Ready to shop" : "Needs a little attention"}
+            </span>
+          </div>
         )}
 
         {intelligence && (
@@ -710,7 +705,7 @@ function HouseholdHQ({
             onClick={() => setShowScoreDetail((v) => !v)}
             className="mt-4 text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
           >
-            {narrative} — details
+            {narrative} — learn more
           </button>
         )}
 
