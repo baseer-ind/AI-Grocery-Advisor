@@ -10,12 +10,21 @@ import {
   Plus,
   ShoppingBasket,
   Sparkles,
+  X,
   XCircle,
   Zap,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { cn } from "@/lib/utils";
-import { getHouseholdProfile, hasRealData } from "@/lib/real-data";
+import {
+  addPlannerItem,
+  getHouseholdProfile,
+  getPlannerAdded,
+  getPlannerRemoved,
+  hasRealData,
+  removePlannerAddedItem,
+  removePlannerItem,
+} from "@/lib/real-data";
 import { getPredictedPantry, type PredictedPantry, type PredictedPantryItem } from "@/lib/api";
 
 export const Route = createFileRoute("/this-week")({
@@ -48,7 +57,13 @@ const demoAvailable: Item[] = [
   { name: "Salt", size: "Tata 1kg", daysSince: 4, cycle: 90, level: 95 },
 ];
 
-type Row = { name: string; size: string; note: string; price?: number };
+type Row = {
+  name: string;
+  size: string;
+  note: string;
+  price?: number;
+  source?: "predicted" | "added";
+};
 
 const demoBuyNow: Row[] = [
   {
@@ -82,8 +97,12 @@ type Tab = (typeof tabs)[number];
 // Buckets a real, predicted pantry into the same shape the UI expects — no
 // prices or savings, since we don't know real prices. Only what we actually know:
 // the item, how confident we are, and roughly how soon it'll run out.
-function bucketRealPantry(pantry: PredictedPantry | null) {
-  const items = pantry?.items ?? [];
+function bucketRealPantry(
+  pantry: PredictedPantry | null,
+  removed: string[],
+  added: { name: string }[],
+) {
+  const items = (pantry?.items ?? []).filter((i) => !removed.includes(i.product_name));
   const withEstimate = items.filter((i) => i.estimated_days_of_stock_remaining != null);
 
   const toRow = (i: PredictedPantryItem): Row => ({
@@ -93,6 +112,7 @@ function bucketRealPantry(pantry: PredictedPantry | null) {
       i.estimated_days_of_stock_remaining != null
         ? `Usually lasts ~${i.typical_repurchase_interval_days ?? "?"} days · about ${i.estimated_days_of_stock_remaining} day${i.estimated_days_of_stock_remaining === 1 ? "" : "s"} left`
         : "Not enough purchase history yet",
+    source: "predicted",
   });
 
   const runningLow = withEstimate
@@ -112,8 +132,17 @@ function bucketRealPantry(pantry: PredictedPantry | null) {
     );
   const stocked = withEstimate.filter((i) => (i.estimated_days_of_stock_remaining ?? 0) >= 14);
 
+  const addedRows: Row[] = added
+    .filter((a) => !removed.includes(a.name))
+    .map((a) => ({
+      name: a.name,
+      size: "",
+      note: "You added this — not from your purchase history.",
+      source: "added",
+    }));
+
   return {
-    runningLow: runningLow.map(toRow),
+    runningLow: [...addedRows, ...runningLow.map(toRow)],
     soon: soon.map(toRow),
     stocked: stocked.map(toRow),
   };
@@ -127,6 +156,29 @@ function ThisWeek() {
 
   const [pantry, setPantry] = useState<PredictedPantry | null>(null);
   const profile = sample ? null : getHouseholdProfile();
+
+  const [removed, setRemoved] = useState<string[]>(() => getPlannerRemoved());
+  const [added, setAdded] = useState(() => getPlannerAdded());
+  const [newItemName, setNewItemName] = useState("");
+
+  function handleRemove(row: Row) {
+    if (row.source === "added") {
+      removePlannerAddedItem(row.name);
+      setAdded(getPlannerAdded());
+    } else {
+      removePlannerItem(row.name);
+      setRemoved(getPlannerRemoved());
+    }
+  }
+
+  function handleAddItem() {
+    const name = newItemName.trim();
+    if (!name) return;
+    addPlannerItem(name);
+    setAdded(getPlannerAdded());
+    setRemoved(getPlannerRemoved());
+    setNewItemName("");
+  }
 
   useEffect(() => {
     if (!profile) return;
@@ -171,7 +223,7 @@ function ThisWeek() {
     );
   }
 
-  const real = !sample ? bucketRealPantry(pantry) : null;
+  const real = !sample ? bucketRealPantry(pantry, removed, added) : null;
   const buyNow = sample ? demoBuyNow : real!.runningLow;
   const buyThisWeek = sample ? demoBuyThisWeek : real!.soon;
   const haveIt = sample ? demoHaveIt : real!.stocked;
@@ -233,6 +285,7 @@ function ThisWeek() {
                   rows={buyNow}
                   checked={checked}
                   onToggle={toggle}
+                  onRemove={sample ? undefined : handleRemove}
                   emptyLabel="Nothing looks low right now."
                 />
                 <Group
@@ -243,6 +296,7 @@ function ThisWeek() {
                   rows={buyThisWeek}
                   checked={checked}
                   onToggle={toggle}
+                  onRemove={sample ? undefined : handleRemove}
                   emptyLabel="Nothing in this range yet."
                 />
                 <Group
@@ -253,9 +307,33 @@ function ThisWeek() {
                   rows={haveIt}
                   checked={checked}
                   onToggle={toggle}
+                  onRemove={sample ? undefined : handleRemove}
                   muted
                   emptyLabel="Nothing well-stocked yet — check back after a few more bills."
                 />
+
+                {!sample && (
+                  <div className="rounded-2xl border border-dashed border-border bg-surface p-4">
+                    <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+                      Know you need something we missed?
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        value={newItemName}
+                        onChange={(e) => setNewItemName(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleAddItem()}
+                        placeholder="e.g. Coffee"
+                        className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      />
+                      <button
+                        onClick={handleAddItem}
+                        className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-surface-2"
+                      >
+                        <Plus className="h-3.5 w-3.5" /> Add
+                      </button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -460,6 +538,7 @@ function Group({
   rows,
   checked,
   onToggle,
+  onRemove,
   muted,
   emptyLabel,
 }: {
@@ -470,6 +549,7 @@ function Group({
   rows: Row[];
   checked: Record<string, boolean>;
   onToggle: (k: string) => void;
+  onRemove?: (row: Row) => void;
   muted?: boolean;
   emptyLabel?: string;
 }) {
@@ -509,7 +589,8 @@ function Group({
                       ? "bg-foreground border-foreground text-background"
                       : "border-border bg-background",
                   )}
-                  aria-label="toggle"
+                  aria-label={onRemove ? "Confirm" : "toggle"}
+                  title={onRemove ? "Confirm — yes, I need this" : undefined}
                 >
                   {isChecked && <Check className="h-3 w-3" />}
                 </button>
@@ -522,7 +603,14 @@ function Group({
                     )}
                   >
                     {r.name}
-                    <span className="text-xs text-muted-foreground font-normal">· {r.size}</span>
+                    {r.size && (
+                      <span className="text-xs text-muted-foreground font-normal">· {r.size}</span>
+                    )}
+                    {r.source === "added" && (
+                      <span className="rounded-md bg-surface-2 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                        Added by you
+                      </span>
+                    )}
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5">{r.note}</div>
                 </div>
@@ -530,6 +618,16 @@ function Group({
                   <div className="font-mono text-sm font-semibold">
                     ₹{r.price.toLocaleString("en-IN")}
                   </div>
+                )}
+                {onRemove && (
+                  <button
+                    onClick={() => onRemove(r)}
+                    className="shrink-0 text-muted-foreground hover:text-destructive"
+                    aria-label={`Remove ${r.name}`}
+                    title="Remove — this isn't actually needed"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 )}
               </li>
             );

@@ -105,3 +105,70 @@ export function getFrequentProductsSavedAt(): string | null {
     return null;
   }
 }
+
+// Shopping Planner corrections — a household's own edits to the predicted
+// "likely needed" list: items they removed because the prediction was wrong,
+// and items they manually added because we don't know about them yet.
+// Corrections persist and are re-applied on every future render of the
+// planner — that's the entire "learns from corrections" promise, no hidden
+// model retraining implied.
+const PLANNER_REMOVED_KEY = "hb_planner_removed";
+const PLANNER_ADDED_KEY = "hb_planner_added";
+
+export type PlannerAddedItem = { name: string; addedAt: string };
+
+export function getPlannerRemoved(): string[] {
+  try {
+    const raw = localStorage.getItem(PLANNER_REMOVED_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function removePlannerItem(name: string) {
+  try {
+    const current = getPlannerRemoved();
+    if (!current.includes(name)) {
+      localStorage.setItem(PLANNER_REMOVED_KEY, JSON.stringify([...current, name]));
+    }
+  } catch {
+    // localStorage unavailable (e.g. private browsing) — non-critical, skip persisting
+  }
+}
+
+export function getPlannerAdded(): PlannerAddedItem[] {
+  try {
+    const raw = localStorage.getItem(PLANNER_ADDED_KEY);
+    return raw ? (JSON.parse(raw) as PlannerAddedItem[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addPlannerItem(name: string) {
+  try {
+    const current = getPlannerAdded();
+    if (!current.some((i) => i.name === name)) {
+      localStorage.setItem(
+        PLANNER_ADDED_KEY,
+        JSON.stringify([...current, { name, addedAt: new Date().toISOString() }]),
+      );
+    }
+    // Adding an item the household knows it needs overrides any earlier
+    // removal of that same item — the correction reflects current intent.
+    const removed = getPlannerRemoved().filter((n) => n !== name);
+    localStorage.setItem(PLANNER_REMOVED_KEY, JSON.stringify(removed));
+  } catch {
+    // localStorage unavailable (e.g. private browsing) — non-critical, skip persisting
+  }
+}
+
+export function removePlannerAddedItem(name: string) {
+  try {
+    const current = getPlannerAdded().filter((i) => i.name !== name);
+    localStorage.setItem(PLANNER_ADDED_KEY, JSON.stringify(current));
+  } catch {
+    // localStorage unavailable (e.g. private browsing) — non-critical, skip persisting
+  }
+}
