@@ -26,7 +26,8 @@ import {
   Store as StoreIcon,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { categories, household, metrics, monthlyTrend } from "@/lib/sample-data";
+import { categories, household, monthlyTrend } from "@/lib/sample-data";
+import { demoEvents, demoPantry, demoProfile } from "@/lib/demo-household";
 import { getHouseholdProfile, hasRealData, type StoredHouseholdProfile } from "@/lib/real-data";
 import {
   getPredictedPantry,
@@ -53,24 +54,6 @@ export const Route = createFileRoute("/today")({
 });
 
 const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
-
-const runningLow = [
-  { name: "Cooking Oil", note: "Runs out in 3 days" },
-  { name: "Milk", note: "1 day of stock" },
-  { name: "Atta", note: "Runs out in 2 days" },
-];
-
-const buyNowOps = [
-  { name: "Fortune Oil 5L", save: 120 },
-  { name: "Tide Plus 2kg", save: 80 },
-  { name: "Yippee Noodles ×6", save: 60 },
-];
-
-const canWait = [
-  { name: "Basmati Rice 5kg", reason: "Harvest drop in ~3 weeks" },
-  { name: "Sugar 1kg", reason: "24 days of stock" },
-  { name: "Tea 500g", reason: "70% stock at home" },
-];
 
 const inflation = [
   { cat: "Cooking Oil", pct: -3.2 },
@@ -108,27 +91,10 @@ const milestones = [
   { d: "—", text: "Hit ₹6,000 annual savings", done: false },
 ];
 
-type AlertItem = {
-  name: string;
-  size: string;
-  current: number;
-  target: number;
-  status: "buynow" | "watching" | "fired";
-};
-
-const fiveredAlert: AlertItem = {
-  name: "Surf Excel",
-  size: "2kg",
-  current: 520,
-  target: 525,
-  status: "fired",
-};
-
 function Today() {
   const { sample } = Route.useSearch();
   const [showDetails, setShowDetails] = useState(false);
   const [showScoreDetail, setShowScoreDetail] = useState(false);
-  const firstName = household.name.split(" ")[0] ?? household.name;
 
   const [pantry, setPantry] = useState<PredictedPantry | null>(null);
   const [events, setEvents] = useState<ShoppingEventSummary[] | null>(null);
@@ -149,15 +115,17 @@ function Today() {
           <HouseholdSnapshotStrip profile={profile} />
           <div className="text-center rounded-2xl border border-border bg-surface p-10">
             <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
-              Not enough data yet
+              We're just getting started
             </div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              We don't have anything to show you yet
+              {profile
+                ? "We'll learn more after your first shopping event."
+                : "Let's build your household profile."}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
               {profile
-                ? "Add a bill, your frequent purchases, or your monthly spend to start seeing real insights here — never invented numbers."
-                : "Build your household profile to get started — it takes about two minutes and needs no bill."}
+                ? "Add a bill, your frequent purchases, or your monthly spend, and we'll start predicting your pantry and shopping rhythm from there — never invented numbers."
+                : "It takes about two minutes and needs no bill — just a few questions about your household."}
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <Link
@@ -172,7 +140,7 @@ function Today() {
                 search={{ sample: true }}
                 className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-semibold hover:bg-surface-2"
               >
-                Explore a sample household
+                See how it works
               </Link>
             </div>
           </div>
@@ -189,102 +157,20 @@ function Today() {
         {sample && (
           <div className="flex items-center justify-between gap-3 rounded-xl border border-warning bg-warning/10 px-4 py-2.5">
             <span className="font-mono text-[10px] uppercase tracking-widest text-warning-foreground">
-              Sample mode — this is illustrative data, not your household
+              Interactive demo — exploring a demo household, not your data
             </span>
             <Link to="/upload" className="text-xs font-semibold underline hover:no-underline">
-              Upload your bill
+              Add your own bill
             </Link>
           </div>
         )}
-        {sample ? (
-          <>
-            {/* Sample-mode hero — illustrative only, never shown for real households */}
-            <section className="rounded-2xl border border-border bg-surface p-6 lg:p-7 relative overflow-hidden">
-              <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
-              <div className="relative">
-                <div className="inline-flex items-center gap-2 rounded-md bg-foreground/5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest">
-                  <Sparkles className="h-3 w-3" />
-                  Good to see you, {firstName}
-                </div>
-                <h1 className="mt-3 text-2xl lg:text-3xl font-semibold tracking-tight text-balance">
-                  Split this shop between <span className="text-accent">BigBasket</span> and{" "}
-                  <span className="text-accent">DMart</span> — saves ₹540 with no quality loss.
-                </h1>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Based on your last 3 bills, oil stock looks like ~5 weeks of normal use — so I'd
-                  skip buying more this cycle.
-                  <span className="ml-1.5 inline-flex items-center rounded-md bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    Confidence: medium
-                  </span>
-                </p>
-                <div className="mt-5 flex flex-wrap items-center gap-3">
-                  <Link
-                    to="/this-week"
-                    className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-4 py-2.5 text-sm font-semibold hover:opacity-90"
-                  >
-                    Open this week's list <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  <span className="text-xs text-muted-foreground">
-                    Potential this month:{" "}
-                    <span className="font-mono font-semibold text-foreground">
-                      {fmt(metrics.potentialSavings)}
-                    </span>
-                  </span>
-                </div>
-              </div>
-            </section>
-
-            <FeedCard
-              tag="Running low"
-              tagClass="bg-warning text-warning-foreground"
-              title="3 items run out this week"
-              body={runningLow.map((r) => `${r.name} (${r.note.toLowerCase()})`).join(" · ")}
-              to="/this-week"
-              cta="Add to list"
-            />
-            <FeedCard
-              tag="Buy now"
-              tagClass="bg-accent text-accent-foreground"
-              title={`Lock in ₹${buyNowOps.reduce((s, b) => s + b.save, 0)} in price drops`}
-              body={buyNowOps.map((b) => `${b.name} (−₹${b.save})`).join(" · ")}
-              to="/this-week"
-              cta="Review & buy"
-            />
-            <FeedCard
-              tag="Target hit"
-              tagClass="bg-foreground text-background"
-              title={`${fiveredAlert.name} ${fiveredAlert.size} hit your target price`}
-              body={`Now ₹${fiveredAlert.current} · You wanted ≤ ₹${fiveredAlert.target}. Good time to stock up.`}
-              to="/bill-check"
-              cta="See alternatives"
-            />
-            <FeedCard
-              tag="Can wait"
-              tagClass="bg-surface-2 text-foreground border border-border"
-              title="Hold off on 3 items"
-              body={canWait.map((c) => `${c.name} — ${c.reason}`).join(" · ")}
-              to="/this-week"
-              cta="See why"
-              muted
-            />
-            <FeedCard
-              tag="On pace"
-              tagClass="bg-accent/10 text-accent border border-accent/30"
-              title={`₹${metrics.lastMonthSpend - metrics.currentSpend} saved vs. last month`}
-              body={`You're on track for ₹14,400 this year. Last win: ${milestones[milestones.length - 2].text}.`}
-              to="/bill-check"
-              cta="See breakdown"
-            />
-          </>
-        ) : (
-          <HouseholdHQ
-            profile={profile}
-            pantry={pantry}
-            events={events}
-            showScoreDetail={showScoreDetail}
-            setShowScoreDetail={setShowScoreDetail}
-          />
-        )}
+        <HouseholdHQ
+          profile={sample ? demoProfile : profile}
+          pantry={sample ? demoPantry : pantry}
+          events={sample ? demoEvents : events}
+          showScoreDetail={showScoreDetail}
+          setShowScoreDetail={setShowScoreDetail}
+        />
 
         {!sample && (
           <Link
@@ -615,7 +501,6 @@ function Today() {
           </section>
         )}
 
-        {!sample && <ShoppingTimeline events={events} />}
       </div>
     </AppShell>
   );
