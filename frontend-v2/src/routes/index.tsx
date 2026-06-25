@@ -10,7 +10,6 @@ import {
   Store,
   Clock,
   ShoppingBasket,
-  ScanLine,
   Heart,
   Flame,
 } from "lucide-react";
@@ -19,16 +18,16 @@ import { ThemeToggle } from "@/components/theme-toggle";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Household Advisor AI — Upload Your Grocery Bill. Discover Your Savings." },
+      { title: "Household Advisor AI — Understand Your Household's Groceries." },
       {
         name: "description",
         content:
-          "Upload your grocery bill. Our AI shows you better stores, smarter swaps, and how much you could have saved.",
+          "Build your household profile, compare stores, and find smarter swaps — add a bill whenever you're ready.",
       },
       { property: "og:title", content: "Household Advisor AI" },
       {
         property: "og:description",
-        content: "Upload your grocery bill. Discover how much you could have saved.",
+        content: "Build your household profile, compare stores, and find smarter swaps.",
       },
     ],
   }),
@@ -40,7 +39,6 @@ function Landing() {
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
       <Hero />
-      <SocialProof />
       <HowItWorks />
       <UploadBand />
       <ResultPreview />
@@ -70,15 +68,23 @@ function Nav() {
           </div>
         </Link>
         <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
-          <a href="#how" className="hover:text-foreground transition-colors">How it works</a>
-          <a href="#stores" className="hover:text-foreground transition-colors">Stores</a>
-          <a href="#why" className="hover:text-foreground transition-colors">Why us</a>
-          <Link to="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
+          <a href="#how" className="hover:text-foreground transition-colors">
+            How it works
+          </a>
+          <a href="#stores" className="hover:text-foreground transition-colors">
+            Stores
+          </a>
+          <a href="#why" className="hover:text-foreground transition-colors">
+            Why us
+          </a>
+          <Link to="/pricing" className="hover:text-foreground transition-colors">
+            Pricing
+          </Link>
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <Link
-            to="/discovery"
+            to="/household"
             className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-foreground text-background px-3.5 py-2 text-sm font-semibold hover:opacity-90"
           >
             Get started
@@ -113,19 +119,15 @@ function Hero() {
             </span>
           </div>
           <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.05] text-balance">
-            Know what your household could save. <br />
+            Understand your household's groceries. <br />
             <span className="text-muted-foreground">Before you upload a single bill.</span>
           </h1>
           <p className="mt-5 max-w-xl text-muted-foreground text-base lg:text-lg text-pretty">
-            Answer a few quick questions and we'll show you personalized savings — then go further with a bill, your grocery spend, or a shopping list.
+            Tell us about your household — size, budget, where you shop — and we'll build a profile
+            that gets sharper over time. Add a bill or a shopping list whenever you're ready.
           </p>
           <ul className="mt-5 flex flex-wrap gap-2 max-w-xl">
-            {[
-              "Better stores",
-              "Smarter swaps",
-              "Hidden savings",
-              "When to buy",
-            ].map((x) => (
+            {["Household profile", "Store comparisons", "Smarter swaps", "When to buy"].map((x) => (
               <li
                 key={x}
                 className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface pl-1.5 pr-3 py-1 text-xs font-medium"
@@ -139,7 +141,7 @@ function Hero() {
           </ul>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
-              to="/discovery"
+              to="/household"
               className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-3 text-sm font-semibold hover:opacity-90"
             >
               Get started
@@ -214,10 +216,7 @@ function SavingsHeroCard() {
                   <span className="font-mono font-semibold">₹{amt}</span>
                 </div>
                 <div className="mt-1 h-1.5 rounded-full bg-surface-2 overflow-hidden">
-                  <div
-                    className="h-full bg-foreground"
-                    style={{ width: `${w}%` }}
-                  />
+                  <div className="h-full bg-foreground" style={{ width: `${w}%` }} />
                 </div>
               </div>
             );
@@ -227,9 +226,9 @@ function SavingsHeroCard() {
         <div className="mt-6 rounded-xl border border-border bg-background p-3 flex items-start gap-3">
           <Sparkles className="h-4 w-4 text-accent mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground">
-            <span className="text-foreground font-medium">AI insight.</span> You could save ₹500/month
-            without changing product quality. We never recommend the cheapest — we recommend the
-            smartest.
+            <span className="text-foreground font-medium">Illustrative example.</span> This is a
+            sample bill analysis — your own numbers appear once you upload a real bill. We never
+            recommend the cheapest option — we recommend the smartest one.
           </p>
         </div>
       </div>
@@ -254,97 +253,32 @@ function MiniStat({ label, value, accent }: { label: string; value: string; acce
   );
 }
 
-/* ---------- Social proof ---------- */
-function SocialProof() {
-  const cards = [
-    { spend: 9250, opt: 8050, save: 1200, family: "Family of 4 · Hyderabad" },
-    { spend: 6800, opt: 6050, save: 750, family: "Couple · Bengaluru" },
-    { spend: 12400, opt: 10950, save: 1450, family: "Family of 5 · Mumbai" },
-  ];
-  return (
-    <section className="border-b border-border bg-surface">
-      <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-20">
-        <div className="flex items-end justify-between flex-wrap gap-4 mb-10">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              Real bills · Real savings
-            </div>
-            <h2 className="mt-2 text-2xl lg:text-3xl font-semibold tracking-tight">
-              Households quietly saving every month.
-            </h2>
-          </div>
-          <div className="text-sm text-muted-foreground max-w-sm">
-            We don't push you to switch everything. Small, calm changes that compound.
-          </div>
-        </div>
-        <div className="grid md:grid-cols-3 gap-4">
-          {cards.map((c, i) => (
-            <div
-              key={i}
-              className="rounded-2xl border border-border bg-background p-6"
-            >
-              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                {c.family}
-              </div>
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <div>
-                  <div className="text-[11px] text-muted-foreground">Monthly spend</div>
-                  <div className="font-mono font-semibold text-lg">
-                    ₹{c.spend.toLocaleString("en-IN")}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[11px] text-muted-foreground">Optimized</div>
-                  <div className="font-mono font-semibold text-lg">
-                    ₹{c.opt.toLocaleString("en-IN")}
-                  </div>
-                </div>
-              </div>
-              <div className="mt-5 pt-5 border-t border-border flex items-center justify-between">
-                <div>
-                  <div className="text-[11px] text-muted-foreground">Potential savings</div>
-                  <div className="font-mono font-semibold text-xl text-accent">
-                    ₹{c.save.toLocaleString("en-IN")}
-                  </div>
-                </div>
-                <TrendingDown className="h-5 w-5 text-accent" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* ---------- How it works ---------- */
 function HowItWorks() {
   const steps = [
     {
       n: "01",
-      title: "Upload your bill",
+      title: "Tell us about your household",
+      body: "Size, budget, where you shop — a couple of minutes, no bill needed.",
+      icon: Sparkles,
+    },
+    {
+      n: "02",
+      title: "Get your household profile",
+      body: "Shopping style, planning style and where to focus first.",
+      icon: ShoppingBasket,
+    },
+    {
+      n: "03",
+      title: "Add a bill, anytime",
       body: "Photo, PDF or screenshot — any grocery app or kirana.",
       icon: UploadIcon,
     },
     {
-      n: "02",
-      title: "OCR extraction",
-      body: "Items, prices and brands lifted off the bill instantly.",
-      icon: ScanLine,
-      tag: "Cost-efficient",
-    },
-    {
-      n: "03",
-      title: "AI analysis",
-      body: "Our AI reasons over the extracted data — your spend, brands, patterns.",
-      icon: Sparkles,
-      tag: "AI-powered",
-    },
-    {
       n: "04",
       title: "Get recommendations",
-      body: "Where, what and when to buy — and how much you'd save.",
-      icon: ShoppingBasket,
+      body: "Where, what and when to buy, based on your real data.",
+      icon: TrendingDown,
     },
   ];
   return (
@@ -356,12 +290,12 @@ function HowItWorks() {
               How it works
             </div>
             <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
-              OCR reads it. AI analyzes it.
+              Start with your household. Add a bill whenever you like.
             </h2>
           </div>
           <p className="text-xs text-muted-foreground max-w-xs">
-            OCR handles raw extraction so our AI only spends its reasoning where it matters — leaner,
-            faster, and built to scale.
+            No bill required to get started — your profile builds the foundation, real data sharpens
+            it.
           </p>
         </div>
         <div className="mt-12 grid sm:grid-cols-2 md:grid-cols-4 gap-px bg-border rounded-2xl overflow-hidden border border-border">
@@ -375,11 +309,6 @@ function HowItWorks() {
               </div>
               <h3 className="mt-5 text-base font-semibold tracking-tight">{s.title}</h3>
               <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">{s.body}</p>
-              {s.tag && (
-                <span className="mt-3 inline-flex items-center rounded-full bg-surface-2 px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                  {s.tag}
-                </span>
-              )}
             </div>
           ))}
         </div>
@@ -439,14 +368,14 @@ function ResultPreview() {
       <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-12 gap-10">
         <div className="lg:col-span-5">
           <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            What you'll see
+            Illustrative example · What you'll see
           </div>
           <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
-            You could have saved <span className="text-accent">₹1,200</span> last month.
+            A single, calm savings number — once you upload a real bill.
           </h2>
           <p className="mt-4 text-muted-foreground max-w-md">
-            A single, calm number — then a quiet breakdown of exactly where the savings hid in your
-            cart. No noise, no upsells.
+            Below is a sample breakdown. Your own numbers appear the moment you upload a real bill.
+            No noise, no upsells.
           </p>
           <div className="mt-6 rounded-2xl border border-border bg-surface p-6">
             <div className="grid grid-cols-3 gap-3">
@@ -474,10 +403,7 @@ function ResultPreview() {
                       <span className="font-mono">₹{b.save}</span>
                     </div>
                     <div className="mt-2 h-2 rounded-full bg-surface-2 overflow-hidden">
-                      <div
-                        className="h-full bg-foreground"
-                        style={{ width: `${w}%` }}
-                      />
+                      <div className="h-full bg-foreground" style={{ width: `${w}%` }} />
                     </div>
                   </div>
                 );
@@ -521,14 +447,15 @@ function Stores() {
         <div className="flex items-end justify-between flex-wrap gap-4 mb-10">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              Store intelligence
+              Illustrative example · Store intelligence
             </div>
             <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
               The same basket, priced across every store you'd consider.
             </h2>
           </div>
           <p className="text-sm text-muted-foreground max-w-sm">
-            We weigh price, availability, delivery and rating — not just the cheapest sticker.
+            Sample data shown below. We weigh price, availability, delivery and rating — not just
+            the cheapest sticker.
           </p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -581,17 +508,17 @@ function Kv({ k, v }: { k: string; v: string }) {
 /* ---------- Insights ---------- */
 function Insights() {
   const items = [
-    { icon: Flame, text: "22% of your spend is snacks — above average." },
-    { icon: TrendingDown, text: "Cooking oil is cheaper at 3 nearby stores." },
+    { icon: Flame, text: "Your snack spend is higher than the rest of your cart." },
+    { icon: TrendingDown, text: "Cooking oil is cheaper at nearby stores." },
     { icon: Heart, text: "You're brand-loyal — and that's perfectly fine." },
-    { icon: Sparkles, text: "Save ₹500/month, no quality trade-off." },
+    { icon: Sparkles, text: "A few quiet swaps, no quality trade-off." },
   ];
   return (
     <section className="border-b border-border">
       <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-12 gap-10">
         <div className="lg:col-span-4">
           <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            AI insights
+            Illustrative example · Insights
           </div>
           <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
             What we'd quietly tell you.
@@ -642,13 +569,14 @@ function Alternatives() {
       <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-24">
         <div className="max-w-2xl mb-10">
           <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            Smart alternatives
+            Illustrative example · Smart alternatives
           </div>
           <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
             Swap one or two things. Keep everything else.
           </h2>
           <p className="mt-4 text-sm text-muted-foreground">
-            We never push the cheapest. Only switches where quality stays close and savings are real.
+            We never push the cheapest. Only switches where quality stays close and savings are
+            real.
           </p>
         </div>
         <div className="rounded-2xl border border-border bg-background overflow-hidden">
@@ -695,10 +623,26 @@ function Alternatives() {
 /* ---------- Why us ---------- */
 function WhyUs() {
   const cards = [
-    { icon: Store, title: "Know where to buy", body: "Balanced across price, availability, delivery and rating." },
-    { icon: Clock, title: "Know when to buy", body: "Buy-now vs wait calls based on price history and seasonality." },
-    { icon: ShoppingBasket, title: "Know what to buy", body: "Quiet alternatives that respect your taste and brand loyalty." },
-    { icon: Sparkles, title: "Save without compromise", body: "We tune for value, never for the cheapest possible cart." },
+    {
+      icon: Store,
+      title: "Know where to buy",
+      body: "Balanced across price, availability, delivery and rating.",
+    },
+    {
+      icon: Clock,
+      title: "Know when to buy",
+      body: "Buy-now vs wait calls based on price history and seasonality.",
+    },
+    {
+      icon: ShoppingBasket,
+      title: "Know what to buy",
+      body: "Quiet alternatives that respect your taste and brand loyalty.",
+    },
+    {
+      icon: Sparkles,
+      title: "Save without compromise",
+      body: "We tune for value, never for the cheapest possible cart.",
+    },
   ];
   return (
     <section id="why" className="border-b border-border">
@@ -779,16 +723,16 @@ function FinalCta() {
     <section className="border-b border-border">
       <div className="mx-auto max-w-5xl px-5 lg:px-8 py-20 lg:py-28 text-center">
         <h2 className="text-3xl lg:text-5xl font-semibold tracking-tight text-balance">
-          You're probably overspending by ₹500–₹1,500 a month.
+          Most households find a few quiet savings.
           <br />
-          <span className="text-muted-foreground">Let's quietly fix that.</span>
+          <span className="text-muted-foreground">Let's find yours.</span>
         </h2>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
-            to="/upload"
+            to="/household"
             className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-6 py-3 text-sm font-semibold hover:opacity-90"
           >
-            Analyze my bill
+            Get started
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
@@ -813,9 +757,15 @@ function Footer() {
           <span>© 2026 Household Advisor AI · Built for Indian households</span>
         </div>
         <div className="flex items-center gap-5">
-          <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
-          <Link to="/today" className="hover:text-foreground">Today</Link>
-          <Link to="/bill-check" className="hover:text-foreground">Bill Check</Link>
+          <Link to="/pricing" className="hover:text-foreground">
+            Pricing
+          </Link>
+          <Link to="/today" className="hover:text-foreground">
+            Today
+          </Link>
+          <Link to="/bill-check" className="hover:text-foreground">
+            Bill Check
+          </Link>
         </div>
       </div>
     </footer>
