@@ -92,6 +92,13 @@ function HouseholdMemoryPage() {
             </div>
           ))}
         </div>
+
+        <Link
+          to="/habits"
+          className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground py-1"
+        >
+          See your full shopping habits <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
       </div>
     </AppShell>
   );

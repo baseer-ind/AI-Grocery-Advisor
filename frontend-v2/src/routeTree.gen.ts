@@ -15,6 +15,7 @@ import { Route as ThisWeekRouteImport } from './routes/this-week'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as MemoryRouteImport } from './routes/memory'
 import { Route as HouseholdRouteImport } from './routes/household'
+import { Route as HabitsRouteImport } from './routes/habits'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as DiscoveryRouteImport } from './routes/discovery'
 import { Route as BillCheckRouteImport } from './routes/bill-check'
@@ -50,6 +51,11 @@ const HouseholdRoute = HouseholdRouteImport.update({
   path: '/household',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HabitsRoute = HabitsRouteImport.update({
+  id: '/habits',
+  path: '/habits',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FeedbackRoute = FeedbackRouteImport.update({
   id: '/feedback',
   path: '/feedback',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/bill-check': typeof BillCheckRoute
   '/discovery': typeof DiscoveryRoute
   '/feedback': typeof FeedbackRoute
+  '/habits': typeof HabitsRoute
   '/household': typeof HouseholdRoute
   '/memory': typeof MemoryRoute
   '/pricing': typeof PricingRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/bill-check': typeof BillCheckRoute
   '/discovery': typeof DiscoveryRoute
   '/feedback': typeof FeedbackRoute
+  '/habits': typeof HabitsRoute
   '/household': typeof HouseholdRoute
   '/memory': typeof MemoryRoute
   '/pricing': typeof PricingRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/bill-check': typeof BillCheckRoute
   '/discovery': typeof DiscoveryRoute
   '/feedback': typeof FeedbackRoute
+  '/habits': typeof HabitsRoute
   '/household': typeof HouseholdRoute
   '/memory': typeof MemoryRoute
   '/pricing': typeof PricingRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/bill-check'
     | '/discovery'
     | '/feedback'
+    | '/habits'
     | '/household'
     | '/memory'
     | '/pricing'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/bill-check'
     | '/discovery'
     | '/feedback'
+    | '/habits'
     | '/household'
     | '/memory'
     | '/pricing'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/bill-check'
     | '/discovery'
     | '/feedback'
+    | '/habits'
     | '/household'
     | '/memory'
     | '/pricing'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   BillCheckRoute: typeof BillCheckRoute
   DiscoveryRoute: typeof DiscoveryRoute
   FeedbackRoute: typeof FeedbackRoute
+  HabitsRoute: typeof HabitsRoute
   HouseholdRoute: typeof HouseholdRoute
   MemoryRoute: typeof MemoryRoute
   PricingRoute: typeof PricingRoute
@@ -204,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HouseholdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/habits': {
+      id: '/habits'
+      path: '/habits'
+      fullPath: '/habits'
+      preLoaderRoute: typeof HabitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/feedback': {
       id: '/feedback'
       path: '/feedback'
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   BillCheckRoute: BillCheckRoute,
   DiscoveryRoute: DiscoveryRoute,
   FeedbackRoute: FeedbackRoute,
+  HabitsRoute: HabitsRoute,
   HouseholdRoute: HouseholdRoute,
   MemoryRoute: MemoryRoute,
   PricingRoute: PricingRoute,
