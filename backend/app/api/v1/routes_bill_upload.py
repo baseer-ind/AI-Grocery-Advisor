@@ -17,9 +17,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_session
-from app.domain.models import Basket, BasketItem, BasketOptimization, BasketRecommendation, BillUpload
+from app.domain.models import BasketOptimization, BasketRecommendation, BillUpload, ShoppingEvent, ShoppingEventItem
 from app.domain.schemas_bills import BillUploadResponse
 from app.services.bill_processing_service import BillProcessingError, process_bill
+from app.services.shopping_event_intelligence_service import compute_shopping_event_intelligence
 
 router = APIRouter(prefix="/api/v1/bills", tags=["bills"])
 
@@ -50,20 +51,23 @@ async def upload_bill(
         bill_upload.unparsed_ocr_text = result.unparsed_ocr_text
 
     if result.response.basket:
-        basket = Basket(
+        basket = ShoppingEvent(
             bill_upload_id=bill_upload.id,
             source="bill_upload",
+            receipt_source="bill",
             location_key=location,
             store_name=result.response.store,
             bill_date=result.response.bill_date,
+            total_spend=sum(item.total_price for item in result.response.basket),
             used_llm_fallback=result.used_llm_fallback,
         )
         session.add(basket)
         await session.flush()
 
         recs_by_index = dict(enumerate(result.response.recommendations))
+        basket_items: list[ShoppingEventItem] = []
         for idx, item_out in enumerate(result.response.basket):
-            basket_item = BasketItem(
+            basket_item = ShoppingEventItem(
                 basket_id=basket.id,
                 product_name=item_out.product_name,
                 quantity=item_out.quantity,
@@ -77,6 +81,7 @@ async def upload_bill(
             session.add(basket_item)
             await session.flush()
             item_out.basket_item_id = basket_item.id
+            basket_items.append(basket_item)
 
             rec_out = recs_by_index.get(idx)
             if rec_out is not None:
@@ -86,6 +91,12 @@ async def upload_bill(
 
         if result.optimization is not None:
             session.add(BasketOptimization(basket_id=basket.id, optimization_json=asdict(result.optimization)))
+
+        bill_upload.status = "done"
+        await session.commit()
+
+        result.response.intelligence = await compute_shopping_event_intelligence(session, basket, basket_items)
+        return result.response
 
     bill_upload.status = "done"
     await session.commit()

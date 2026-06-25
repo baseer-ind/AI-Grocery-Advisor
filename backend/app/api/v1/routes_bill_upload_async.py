@@ -4,15 +4,17 @@ poll; `routes_bill_upload.py` remains the inline/synchronous variant.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.deps import get_current_user_optional
 from app.db.session import get_session
-from app.domain.models import Basket, BasketItem, BasketOptimization, BasketRecommendation, BillUpload, User
+from app.domain.models import BasketOptimization, BasketRecommendation, BillUpload, ShoppingEvent, ShoppingEventItem, User
 from app.domain.schemas_baskets import BasketOptimizationOut
 from app.domain.schemas_bills import BasketItemRecommendationOut, BillUploadResponse
 from app.domain.schemas_bills_async import BillUploadAsyncAccepted, BillUploadStatusOut
 from app.queue import get_arq_pool
+from app.services.shopping_event_intelligence_service import compute_shopping_event_intelligence
 
 router = APIRouter(prefix="/api/v1/bills", tags=["bills"])
 
@@ -59,17 +61,17 @@ async def get_bill_upload_status(
         )
 
     basket = (
-        await session.execute(
-            Basket.__table__.select().where(Basket.bill_upload_id == bill_upload.id)
-        )
-    ).first()
+        await session.execute(select(ShoppingEvent).where(ShoppingEvent.bill_upload_id == bill_upload.id))
+    ).scalar_one_or_none()
     if basket is None:
         return BillUploadStatusOut(bill_upload_id=bill_upload.id, status=bill_upload.status, result=None)
 
     basket_id = basket.id
     items = (
-        await session.execute(BasketItem.__table__.select().where(BasketItem.basket_id == basket_id))
-    ).all()
+        (await session.execute(select(ShoppingEventItem).where(ShoppingEventItem.basket_id == basket_id)))
+        .scalars()
+        .all()
+    )
     recs = (
         await session.execute(
             BasketRecommendation.__table__.select().where(
@@ -101,6 +103,7 @@ async def get_bill_upload_status(
         store=basket.store_name,
         bill_date=basket.bill_date,
     )
+    result.intelligence = await compute_shopping_event_intelligence(session, basket, items)
 
     optimization_row = (
         await session.execute(BasketOptimization.__table__.select().where(BasketOptimization.basket_id == basket_id))

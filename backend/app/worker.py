@@ -12,7 +12,9 @@ from app.core.config import settings
 from app.db.session import SessionLocal
 from dataclasses import asdict
 
-from app.domain.models import Basket, BasketItem, BasketOptimization, BasketRecommendation, BillUpload
+from sqlalchemy import select
+
+from app.domain.models import BasketOptimization, BasketRecommendation, BillUpload, Household, ShoppingEvent, ShoppingEventItem
 from app.services.bill_processing_service import BillProcessingError, process_bill
 
 
@@ -38,20 +40,29 @@ async def process_bill_job(ctx, bill_upload_id: int, file_bytes: bytes, content_
         if result.unparsed_ocr_text:
             bill_upload.unparsed_ocr_text = result.unparsed_ocr_text
 
-        basket = Basket(
+        household_id = None
+        if bill_upload.user_id is not None:
+            household_id = (
+                await session.execute(select(Household.id).where(Household.user_id == bill_upload.user_id))
+            ).scalar_one_or_none()
+
+        basket = ShoppingEvent(
             bill_upload_id=bill_upload.id,
             user_id=bill_upload.user_id,
+            household_id=household_id,
             source="bill_upload",
+            receipt_source="bill",
             location_key=location,
             store_name=result.response.store,
             bill_date=result.response.bill_date,
+            total_spend=sum(item.total_price for item in result.response.basket),
             used_llm_fallback=result.used_llm_fallback,
         )
         session.add(basket)
         await session.flush()
 
         for item_out, item_rec_out in zip(result.response.basket, result.response.recommendations):
-            basket_item = BasketItem(
+            basket_item = ShoppingEventItem(
                 basket_id=basket.id,
                 product_name=item_out.product_name,
                 quantity=item_out.quantity,

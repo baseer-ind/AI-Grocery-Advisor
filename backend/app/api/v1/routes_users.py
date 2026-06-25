@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.deps import get_current_user
 from app.db.session import get_session
-from app.domain.models import Basket, BillUpload, User
+from app.domain.models import BillUpload, ShoppingEvent, User
 from app.domain.schemas_auth import UserOut, UserPreferencesOut, UserPreferencesUpdateIn
 from app.services.user_service import update_preferences
 
@@ -40,5 +40,5 @@ async def get_bill_history(
 async def get_basket_history(
     user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session)
 ) -> list[int]:
-    result = await session.execute(select(Basket.id).where(Basket.user_id == user.id))
+    result = await session.execute(select(ShoppingEvent.id).where(ShoppingEvent.user_id == user.id))
     return [row[0] for row in result.all()]

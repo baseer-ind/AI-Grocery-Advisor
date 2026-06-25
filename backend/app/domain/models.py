@@ -120,7 +120,7 @@ class User(Base):
         back_populates="user", cascade="all, delete-orphan"
     )
     bill_uploads: Mapped[list["BillUpload"]] = relationship(back_populates="user")
-    baskets: Mapped[list["Basket"]] = relationship(back_populates="user")
+    baskets: Mapped[list["ShoppingEvent"]] = relationship(back_populates="user")
     household: Mapped["Household | None"] = relationship(
         back_populates="user", uselist=False, cascade="all, delete-orphan"
     )
@@ -153,6 +153,7 @@ class Household(Base):
     shopping_style: Mapped["ShoppingStyle | None"] = relationship(
         back_populates="household", uselist=False, cascade="all, delete-orphan"
     )
+    shopping_events: Mapped[list["ShoppingEvent"]] = relationship(back_populates="household")
 
 
 class ShoppingBehavior(Base):
@@ -271,56 +272,76 @@ class BillUpload(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     user: Mapped["User | None"] = relationship(back_populates="bill_uploads")
-    basket: Mapped["Basket | None"] = relationship(back_populates="bill_upload", uselist=False)
+    basket: Mapped["ShoppingEvent | None"] = relationship(back_populates="bill_upload", uselist=False)
 
     __table_args__ = (Index("ix_bill_uploads_job_id", "job_id"),)
 
 
-class Basket(Base):
-    """A normalized set of items derived from a bill upload, OCR, or a
-    manually entered list — the unit ownership and comparison results are
-    attached to.
+class ShoppingEvent(Base):
+    """The central record of a household's purchase — one bill upload, OCR
+    read, or manually entered list. Everything else (price comparisons,
+    predicted pantry, future price history / community pricing) reads from
+    this table rather than inventing its own purchase record.
 
-    `source` distinguishes how the basket was built (`"bill_upload"` vs.
-    `"manual"` today; OCR-derived baskets currently flow through
-    `bill_upload` since they originate from the same upload pipeline).
+    `household_id` is nullable for the same reason `Household.user_id` is —
+    early beta usage (anonymous bill uploads) shouldn't require an account
+    or a completed onboarding flow. It's resolved from `user.household` at
+    creation time when available.
+
+    `source`/`receipt_source` distinguish how the event was captured
+    (`"bill_upload"`/`"bill"` vs. `"manual"`); kept as two columns for one
+    release so nothing reading the legacy `source` string breaks while
+    callers migrate to `receipt_source`. `purchase_method` is a separate
+    axis — *where* the shopping happened (in-store/online/quick-commerce),
+    not how the record was captured.
+
     `location_key` mirrors `ProductListing.location_key` — the same opaque
-    pincode/city/dark-store identifier — so a saved basket can be re-compared
-    against the location it was originally priced for.
+    pincode/city/dark-store identifier — so a saved event can be re-compared
+    against the location it was originally priced for. `total_spend` is
+    denormalized (sum of item `total_price`s) so household-level spend
+    queries don't need a join + aggregate on every read.
     """
 
-    __tablename__ = "baskets"
+    __tablename__ = "shopping_events"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    household_id: Mapped[int | None] = mapped_column(ForeignKey("households.id"), nullable=True)
     bill_upload_id: Mapped[int | None] = mapped_column(ForeignKey("bill_uploads.id"), nullable=True)
     source: Mapped[str] = mapped_column(String(32), default="manual", server_default="manual")
+    receipt_source: Mapped[str] = mapped_column(String(16), default="bill", server_default="bill")
+    # 'bill' | 'manual' | 'import'
+    purchase_method: Mapped[str | None] = mapped_column(String(16), nullable=True, default="in_store")
+    # 'in_store' | 'online' | 'quick_commerce'
     location_key: Mapped[str | None] = mapped_column(String(64), nullable=True, default=None)
     store_name: Mapped[str | None] = mapped_column(String(64), nullable=True, default=None)
     bill_date: Mapped[str | None] = mapped_column(String(32), nullable=True, default=None)
+    total_spend: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True, default=None)
     used_llm_fallback: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     user: Mapped["User | None"] = relationship(back_populates="baskets")
+    household: Mapped["Household | None"] = relationship(back_populates="shopping_events")
     bill_upload: Mapped["BillUpload | None"] = relationship(back_populates="basket")
-    items: Mapped[list["BasketItem"]] = relationship(back_populates="basket")
+    items: Mapped[list["ShoppingEventItem"]] = relationship(back_populates="basket")
     optimization: Mapped["BasketOptimization | None"] = relationship(
         back_populates="basket", uselist=False, cascade="all, delete-orphan"
     )
 
 
-class BasketItem(Base):
+class ShoppingEventItem(Base):
     """`matched_product_id`/`match_confidence`/`match_tier` are the output of
     the alias-matching layer (see `product_alias_service.py`); `review_status`
     tracks where the item sits in the verification loop. All four are
-    nullable/defaulted because manually-entered baskets (`routes_baskets.py`)
-    never run alias matching against an `Basket.bill_upload_id`-less row.
+    nullable/defaulted because manually-entered events (`routes_baskets.py`)
+    never run alias matching against a `ShoppingEvent.bill_upload_id`-less
+    row. Store lives on `ShoppingEvent`, not here — never duplicated per item.
     """
 
     __tablename__ = "basket_items"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    basket_id: Mapped[int] = mapped_column(ForeignKey("baskets.id"))
+    basket_id: Mapped[int] = mapped_column(ForeignKey("shopping_events.id"))
     product_name: Mapped[str] = mapped_column(String(255))
     quantity: Mapped[float] = mapped_column(Numeric(10, 2))
     unit: Mapped[str] = mapped_column(String(16))
@@ -332,7 +353,7 @@ class BasketItem(Base):
     review_status: Mapped[str] = mapped_column(String(16), default="auto_confirmed", server_default="auto_confirmed")
     # 'auto_confirmed' | 'pending_review' | 'user_confirmed' | 'user_edited' | 'user_rejected'
 
-    basket: Mapped["Basket"] = relationship(back_populates="items")
+    basket: Mapped["ShoppingEvent"] = relationship(back_populates="items")
     recommendation: Mapped["BasketRecommendation | None"] = relationship(back_populates="basket_item", uselist=False)
 
 
@@ -379,7 +400,7 @@ class BasketRecommendation(Base):
     recommendation_json: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    basket_item: Mapped["BasketItem"] = relationship(back_populates="recommendation")
+    basket_item: Mapped["ShoppingEventItem"] = relationship(back_populates="recommendation")
 
 
 class BasketOptimization(Base):
@@ -390,14 +411,14 @@ class BasketOptimization(Base):
     columns, and shouldn't require a migration every time
     `BasketOptimizationResult` grows a field. One row per basket — re-running
     a comparison for the same basket overwrites it rather than accumulating
-    history, since "basket history" is the list of `Basket` rows themselves.
+    history, since "basket history" is the list of `ShoppingEvent` rows themselves.
     """
 
     __tablename__ = "basket_optimizations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    basket_id: Mapped[int] = mapped_column(ForeignKey("baskets.id"), unique=True)
+    basket_id: Mapped[int] = mapped_column(ForeignKey("shopping_events.id"), unique=True)
     optimization_json: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    basket: Mapped["Basket"] = relationship(back_populates="optimization")
+    basket: Mapped["ShoppingEvent"] = relationship(back_populates="optimization")

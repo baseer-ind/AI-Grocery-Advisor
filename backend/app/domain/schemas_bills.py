@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 from app.domain.schemas import RecommendationSetOut
 from app.domain.schemas_providers import ProviderStatusOut
+from app.domain.schemas_shopping_intelligence import ShoppingEventIntelligenceOut  # noqa: F401
 
 
 class MatchSuggestionOut(BaseModel):
@@ -55,3 +56,4 @@ class BillUploadResponse(BaseModel):
     store: str | None = None
     bill_date: str | None = None
     debug: BillDebugInfo | None = None
+    intelligence: ShoppingEventIntelligenceOut | None = None

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from app.domain.models import Basket, BasketItem, BillUpload, Product, ProductAlias
+from app.domain.models import BillUpload, Product, ProductAlias, ShoppingEvent, ShoppingEventItem
 from app.services.product_intelligence_metrics_service import compute_product_intelligence_metrics
 
 
@@ -25,18 +25,18 @@ async def test_alias_coverage_and_auto_match_rate_reflect_matched_items(db_sessi
     bill = BillUpload(original_filename="x.jpg", content_type="image/jpeg", status="done")
     db_session.add(bill)
     await db_session.flush()
-    basket = Basket(bill_upload_id=bill.id, source="bill_upload")
+    basket = ShoppingEvent(bill_upload_id=bill.id, source="bill_upload")
     db_session.add(basket)
     await db_session.flush()
 
     db_session.add(
-        BasketItem(
+        ShoppingEventItem(
             basket_id=basket.id, product_name="Amul Butter", quantity=1, unit="unit", total_price=50,
             matched_product_id=product.id, match_tier="auto", review_status="auto_confirmed",
         )
     )
     db_session.add(
-        BasketItem(
+        ShoppingEventItem(
             basket_id=basket.id, product_name="Unknown Item", quantity=1, unit="unit", total_price=20,
             matched_product_id=None, match_tier="manual", review_status="pending_review",
         )
@@ -51,18 +51,18 @@ async def test_alias_coverage_and_auto_match_rate_reflect_matched_items(db_sessi
 
 
 async def test_user_correction_rate_only_counts_reviewed_items(db_session):
-    basket = Basket(source="bill_upload")
+    basket = ShoppingEvent(source="bill_upload")
     db_session.add(basket)
     await db_session.flush()
 
     db_session.add(
-        BasketItem(
+        ShoppingEventItem(
             basket_id=basket.id, product_name="A", quantity=1, unit="unit", total_price=10,
             match_tier="auto", review_status="auto_confirmed",
         )
     )
     db_session.add(
-        BasketItem(
+        ShoppingEventItem(
             basket_id=basket.id, product_name="B", quantity=1, unit="unit", total_price=10,
             match_tier="suggest", review_status="user_edited",
         )

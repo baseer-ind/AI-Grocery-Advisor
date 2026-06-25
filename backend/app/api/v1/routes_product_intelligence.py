@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_session
-from app.domain.models import Basket, BasketItem
+from app.domain.models import ShoppingEvent, ShoppingEventItem
 from app.domain.schemas_bills import MatchSuggestionOut
 from app.domain.schemas_product_intelligence import (
     ItemConfirmationRequest,
@@ -33,7 +33,7 @@ async def basket_item_suggestions(
     including aliases learned from *other* users' corrections since this
     bill was originally processed.
     """
-    basket_item = await session.get(BasketItem, basket_item_id)
+    basket_item = await session.get(ShoppingEventItem, basket_item_id)
     if basket_item is None:
         raise HTTPException(status_code=404, detail="Basket item not found")
 
@@ -50,7 +50,7 @@ async def confirm_basket_item(
     body: ItemConfirmationRequest,
     session: AsyncSession = Depends(get_session),
 ) -> ItemConfirmationResponse:
-    basket_item = await session.get(BasketItem, basket_item_id)
+    basket_item = await session.get(ShoppingEventItem, basket_item_id)
     if basket_item is None:
         raise HTTPException(status_code=404, detail="Basket item not found")
 
@@ -61,7 +61,7 @@ async def confirm_basket_item(
         if body.product_id is None:
             raise HTTPException(status_code=400, detail="product_id is required for this action")
 
-        basket = await session.get(Basket, basket_item.basket_id)
+        basket = await session.get(ShoppingEvent, basket_item.basket_id)
         source_bill_id = basket.bill_upload_id if basket else None
 
         await record_correction(

@@ -10,9 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.deps import get_current_user_optional
 from app.db.session import get_session
-from app.domain.models import Basket as BasketModel
-from app.domain.models import BasketItem as BasketItemModel
 from app.domain.models import BasketOptimization, BasketRecommendation, User
+from app.domain.models import ShoppingEvent as BasketModel
+from app.domain.models import ShoppingEventItem as BasketItemModel
 from app.domain.schemas_baskets import BasketCompareRequest, BasketCompareResponse, BasketOptimizationOut
 from app.services.basket_comparison_service import (
     basket_item_out,
@@ -22,6 +22,7 @@ from app.services.basket_comparison_service import (
 )
 from app.services.basket_service import Basket, BasketItem
 from app.services.providers.registry import build_price_providers
+from app.services.shopping_event_intelligence_service import compute_shopping_event_intelligence
 
 router = APIRouter(prefix="/api/v1/baskets", tags=["baskets"])
 
@@ -40,10 +41,19 @@ async def compare_manual_basket(
 
     basket_id: int | None = None
     if user is not None:
-        basket_row = BasketModel(user_id=user.id, source="manual", location_key=body.location_key)
+        basket_row = BasketModel(
+            user_id=user.id,
+            household_id=user.household.id if user.household else None,
+            source="manual",
+            receipt_source="manual",
+            purchase_method=body.purchase_method or "in_store",
+            location_key=body.location_key,
+            total_spend=sum(item.total_price for item in basket.items),
+        )
         session.add(basket_row)
         await session.flush()
 
+        basket_item_rows: list[BasketItemModel] = []
         for item, item_rec_out in zip(basket.items, item_recommendations_to_out(result.item_recommendations)):
             basket_item_row = BasketItemModel(
                 basket_id=basket_row.id,
@@ -54,6 +64,7 @@ async def compare_manual_basket(
             )
             session.add(basket_item_row)
             await session.flush()
+            basket_item_rows.append(basket_item_row)
             session.add(
                 BasketRecommendation(
                     basket_item_id=basket_item_row.id,
@@ -69,6 +80,15 @@ async def compare_manual_basket(
         )
         await session.commit()
         basket_id = basket_row.id
+
+        intelligence = await compute_shopping_event_intelligence(session, basket_row, basket_item_rows)
+        return BasketCompareResponse(
+            basket_id=basket_id,
+            basket=[basket_item_out(item) for item in basket.items],
+            item_recommendations=item_recommendations_to_out(result.item_recommendations),
+            optimization=optimization_to_out(result.optimization),
+            intelligence=intelligence,
+        )
 
     return BasketCompareResponse(
         basket_id=basket_id,

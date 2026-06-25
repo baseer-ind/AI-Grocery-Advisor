@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.models import BasketItem, BillUpload, ProductAlias
+from app.domain.models import BillUpload, ProductAlias, ShoppingEventItem
 from app.domain.schemas_product_intelligence import ProductIntelligenceMetricsOut
 
 
@@ -24,26 +24,26 @@ async def compute_product_intelligence_metrics(session: AsyncSession) -> Product
         await session.execute(select(func.count()).where(BillUpload.status == "done"))
     ).scalar_one()
 
-    total_basket_items = (await session.execute(select(func.count()).select_from(BasketItem))).scalar_one()
+    total_basket_items = (await session.execute(select(func.count()).select_from(ShoppingEventItem))).scalar_one()
 
     matched_items = (
-        await session.execute(select(func.count()).where(BasketItem.matched_product_id.is_not(None)))
+        await session.execute(select(func.count()).where(ShoppingEventItem.matched_product_id.is_not(None)))
     ).scalar_one()
 
     auto_matched_items = (
-        await session.execute(select(func.count()).where(BasketItem.match_tier == "auto"))
+        await session.execute(select(func.count()).where(ShoppingEventItem.match_tier == "auto"))
     ).scalar_one()
 
     user_corrected_items = (
         await session.execute(
-            select(func.count()).where(BasketItem.review_status.in_(["user_edited", "user_rejected"]))
+            select(func.count()).where(ShoppingEventItem.review_status.in_(["user_edited", "user_rejected"]))
         )
     ).scalar_one()
 
     reviewed_or_pending_items = (
         await session.execute(
             select(func.count()).where(
-                BasketItem.review_status.in_(
+                ShoppingEventItem.review_status.in_(
                     ["pending_review", "user_confirmed", "user_edited", "user_rejected"]
                 )
             )

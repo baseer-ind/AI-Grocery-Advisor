@@ -19,7 +19,9 @@ from app.domain.schemas_household import (
     ShoppingStyleIn,
     ShoppingStyleOut,
 )
+from app.domain.schemas_shopping_intelligence import PredictedPantryOut
 from app.services import household_insight_service
+from app.services.pantry_prediction_service import predict_pantry
 
 router = APIRouter(prefix="/api/v1/household", tags=["household"])
 
@@ -105,3 +107,9 @@ async def set_shopping_style(
         priorities=style.priorities,
         insight=household_insight_service.shopping_style_insight(style),
     )
+
+
+@router.get("/{household_id}/pantry/predicted", response_model=PredictedPantryOut)
+async def get_predicted_pantry(household_id: int, session: AsyncSession = Depends(get_session)) -> PredictedPantryOut:
+    await _get_household_or_404(household_id, session)
+    return await predict_pantry(session, household_id)

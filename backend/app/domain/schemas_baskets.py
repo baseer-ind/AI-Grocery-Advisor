@@ -7,6 +7,7 @@ not just bill-derived ones).
 from pydantic import BaseModel
 
 from app.domain.schemas_bills import BasketItemOut, BasketItemRecommendationOut
+from app.domain.schemas_shopping_intelligence import ShoppingEventIntelligenceOut
 
 
 class PlatformBasketTotalOut(BaseModel):
@@ -55,6 +56,8 @@ class BasketItemInput(BaseModel):
 class BasketCompareRequest(BaseModel):
     items: list[BasketItemInput]
     location_key: str | None = None
+    purchase_method: str | None = None
+    """'in_store' | 'online' | 'quick_commerce'; defaults to 'in_store' if omitted."""
 
 
 class BasketCompareResponse(BaseModel):
@@ -62,3 +65,4 @@ class BasketCompareResponse(BaseModel):
     basket: list[BasketItemOut]
     item_recommendations: list[BasketItemRecommendationOut]
     optimization: BasketOptimizationOut
+    intelligence: ShoppingEventIntelligenceOut | None = None
