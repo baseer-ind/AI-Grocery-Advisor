@@ -60,3 +60,31 @@ export function getHouseholdProfile(): StoredHouseholdProfile | null {
     return null;
   }
 }
+
+// Frequently Purchased Products — a household's own self-reported "we
+// regularly buy this" list, optionally with a preferred brand per product.
+// This is deliberately self-selected, not derived from bill history, so it
+// works before a household has ever uploaded a bill.
+const FREQUENT_PRODUCTS_KEY = "hb_frequent_products";
+
+export type FrequentProduct = {
+  name: string;
+  preferredBrand?: string;
+};
+
+export function saveFrequentProducts(products: FrequentProduct[]) {
+  try {
+    localStorage.setItem(FREQUENT_PRODUCTS_KEY, JSON.stringify(products));
+  } catch {
+    // localStorage unavailable (e.g. private browsing) — non-critical, skip persisting
+  }
+}
+
+export function getFrequentProducts(): FrequentProduct[] {
+  try {
+    const raw = localStorage.getItem(FREQUENT_PRODUCTS_KEY);
+    return raw ? (JSON.parse(raw) as FrequentProduct[]) : [];
+  } catch {
+    return [];
+  }
+}

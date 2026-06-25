@@ -13,6 +13,7 @@ import {
   TrendingDown,
   BrainCircuit,
   Repeat,
+  ShoppingBasket,
 } from "lucide-react";
 import { FeedbackCta } from "./feedback-cta";
 import { ThemeToggle } from "./theme-toggle";
@@ -28,6 +29,7 @@ const navGroups = [
       { to: "/this-week", label: "Shopping List", icon: ListChecks },
       { to: "/memory", label: "Household Memory", icon: BrainCircuit },
       { to: "/habits", label: "Shopping Habits", icon: Repeat },
+      { to: "/products", label: "Frequently Purchased", icon: ShoppingBasket },
       { to: "/household", label: "Profile", icon: UserCircle2 },
     ],
   },

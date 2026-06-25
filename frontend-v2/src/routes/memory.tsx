@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, BrainCircuit, Lock } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { getHouseholdProfile } from "@/lib/real-data";
+import { getFrequentProducts, getHouseholdProfile } from "@/lib/real-data";
 import { getShoppingEvents, type ShoppingEventSummary } from "@/lib/api";
 import { buildHouseholdMemory } from "@/lib/household-memory";
 
@@ -47,7 +47,7 @@ function HouseholdMemoryPage() {
     );
   }
 
-  const observations = buildHouseholdMemory(profile, events);
+  const observations = buildHouseholdMemory(profile, events, getFrequentProducts());
 
   return (
     <AppShell title="Household Memory" eyebrow="Household Advisor">
@@ -93,12 +93,20 @@ function HouseholdMemoryPage() {
           ))}
         </div>
 
-        <Link
-          to="/habits"
-          className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground py-1"
-        >
-          See your full shopping habits <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
+        <div className="flex items-center justify-center gap-4">
+          <Link
+            to="/habits"
+            className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground py-1"
+          >
+            See your full shopping habits <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+          <Link
+            to="/products"
+            className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground py-1"
+          >
+            Tell us what you buy <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
       </div>
     </AppShell>
   );

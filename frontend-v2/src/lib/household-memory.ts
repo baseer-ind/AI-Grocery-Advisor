@@ -1,5 +1,5 @@
 import type { ShoppingEventSummary } from "@/lib/api";
-import type { StoredHouseholdProfile } from "@/lib/real-data";
+import type { FrequentProduct, StoredHouseholdProfile } from "@/lib/real-data";
 
 // Every observation below is sourced from real, already-collected data —
 // either the household's own onboarding answers or its real shopping-event
@@ -34,6 +34,7 @@ function mostCommon(values: string[]): { value: string; count: number } | null {
 export function buildHouseholdMemory(
   profile: StoredHouseholdProfile | null,
   events: ShoppingEventSummary[] | null,
+  frequentProducts: FrequentProduct[] | null = null,
 ): MemoryObservation[] {
   const realEvents = events ?? [];
 
@@ -186,11 +187,31 @@ export function buildHouseholdMemory(
         unlockedBy: "Complete your household profile to reveal this.",
       };
 
+  // Regularly bought products — self-reported, not derived, so this can be
+  // honest immediately rather than waiting on shopping history.
+  const productsObservation: MemoryObservation =
+    frequentProducts && frequentProducts.length > 0
+      ? {
+          id: "frequent-products",
+          label: "Regularly bought products",
+          value: `${frequentProducts.length} product${frequentProducts.length === 1 ? "" : "s"} you've told us about`,
+          source: "onboarding",
+          unlockedBy: null,
+        }
+      : {
+          id: "frequent-products",
+          label: "Regularly bought products",
+          value: null,
+          source: null,
+          unlockedBy: "Tell us what you regularly buy to reveal this.",
+        };
+
   return [
     dayObservation,
     storeObservation,
     frequencyObservation,
     budgetObservation,
     styleObservation,
+    productsObservation,
   ];
 }
