@@ -23,6 +23,10 @@ class OCRResult:
     status: OCRStatus
     raw_text: str = ""
     message: str = ""
+    # Mean per-word confidence (0-100) where the engine can report one
+    # (Tesseract images); None for engines/formats that don't produce a
+    # meaningful score (PDF text-layer extraction, mock OCR).
+    confidence: float | None = None
 
 
 class OCRProvider(ABC):

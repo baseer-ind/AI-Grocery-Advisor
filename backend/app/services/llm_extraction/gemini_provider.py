@@ -42,6 +42,7 @@ class GeminiExtractionProvider(LLMExtractionProvider):
             "contents": [{"parts": [{"text": _PROMPT + raw_text[:_MAX_INPUT_CHARS]}]}],
             "generationConfig": {"responseMimeType": "application/json", "temperature": 0},
         }
+        text = ""
         try:
             async with httpx.AsyncClient(timeout=_TIMEOUT_SECONDS) as client:
                 response = await client.post(_API_URL, params={"key": self._api_key}, json=body)
@@ -50,11 +51,15 @@ class GeminiExtractionProvider(LLMExtractionProvider):
             text = payload["candidates"][0]["content"]["parts"][0]["text"]
             items = self._parse_items(text)
         except Exception as exc:  # noqa: BLE001 - any vendor/network/shape failure must degrade, never crash the caller
-            return LLMExtractionResult(items=[], succeeded=False, message=f"Gemini extraction failed: {exc}")
+            return LLMExtractionResult(
+                items=[], succeeded=False, message=f"Gemini extraction failed: {exc}", raw_response=text
+            )
 
         if not items:
-            return LLMExtractionResult(items=[], succeeded=False, message="Gemini returned no extractable line items.")
-        return LLMExtractionResult(items=items, succeeded=True)
+            return LLMExtractionResult(
+                items=[], succeeded=False, message="Gemini returned no extractable line items.", raw_response=text
+            )
+        return LLMExtractionResult(items=items, succeeded=True, raw_response=text)
 
     def _parse_items(self, text: str) -> list[BillLineItem]:
         match = re.search(r"\[.*\]", text, re.DOTALL)

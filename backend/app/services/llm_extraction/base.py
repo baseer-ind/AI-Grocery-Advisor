@@ -18,6 +18,11 @@ class LLMExtractionResult:
     items: list[BillLineItem]
     succeeded: bool
     message: str = ""
+    # Raw text the vendor returned (or attempted to), kept on both success
+    # and failure so a debug view can show exactly what the model said
+    # rather than just "it failed" — needed to tell a vendor/network error
+    # apart from "the model responded but its JSON didn't parse."
+    raw_response: str = ""
 
 
 class LLMExtractionProvider(ABC):

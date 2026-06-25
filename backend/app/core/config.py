@@ -15,12 +15,13 @@ class Settings(BaseSettings):
     allowed_origins: str = "http://localhost:3000,http://localhost:5173"
 
     # Which LLM extraction fallback to use when the rule-based bill parser
-    # finds zero line items. "none" (the default) disables the fallback
-    # entirely — a bill that the regex parser can't read just stays
-    # unread, no API key required, no cost. Swapping this to "gemini",
-    # "claude", or "openai" later is a config change, not a code change —
-    # see app/services/llm_extraction/registry.py.
-    llm_fallback_provider: str = "none"
+    # finds zero line items. Defaults to "gemini" — Gemini is free-tier and
+    # only actually activates if `gemini_api_key` is also set (the registry
+    # falls back to the no-op provider otherwise), so this is safe even
+    # where no key is configured. Set to "none" to disable the fallback
+    # entirely. Swapping to "claude" or "openai" later is a config change,
+    # not a code change — see app/services/llm_extraction/registry.py.
+    llm_fallback_provider: str = "gemini"
     # Hard ceiling on fallback calls per UTC day, enforced via Redis
     # (app/services/llm_fallback_quota.py). Caps worst-case spend
     # independent of upload volume; tune up once usage data justifies it.

@@ -52,6 +52,7 @@ class TesseractOCRProvider(OCRProvider):
         try:
             image = Image.open(io.BytesIO(file_bytes))
             text = pytesseract.image_to_string(image)
+            confidence = self._mean_confidence(image)
         except pytesseract.TesseractNotFoundError as exc:
             return OCRResult(status=OCRStatus.UNAVAILABLE, message=f"Tesseract engine not available: {exc}")
         except Exception as exc:  # noqa: BLE001 - any decode/OCR failure must degrade, never crash the caller
@@ -59,7 +60,19 @@ class TesseractOCRProvider(OCRProvider):
 
         if not text.strip():
             return OCRResult(status=OCRStatus.PARSE_ERROR, message="OCR produced no readable text from the image.")
-        return OCRResult(status=OCRStatus.SUCCESS, raw_text=text)
+        return OCRResult(status=OCRStatus.SUCCESS, raw_text=text, confidence=confidence)
+
+    def _mean_confidence(self, image: Image.Image) -> float | None:
+        """Tesseract reports -1 for non-text regions (whitespace/layout
+        boxes) in `image_to_data` — those aren't real per-word scores, so
+        averaging them in would understate confidence on sparse bills.
+        """
+        try:
+            data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
+            scores = [int(c) for c in data.get("conf", []) if int(c) >= 0]
+        except Exception:  # noqa: BLE001 - confidence is a debug nicety, never block extraction on it
+            return None
+        return sum(scores) / len(scores) if scores else None
 
     def _extract_from_pdf(self, file_bytes: bytes) -> OCRResult:
         try:

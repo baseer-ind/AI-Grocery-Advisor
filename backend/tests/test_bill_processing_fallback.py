@@ -53,7 +53,7 @@ async def test_unrecognized_format_uses_fallback_when_configured(monkeypatch):
     )
     monkeypatch.setattr(bill_processing_service, "try_consume_fallback_quota", _always_allow)
 
-    items, used_fallback = await bill_processing_service._try_llm_fallback(_UNRECOGNIZED_FORMAT)
+    items, used_fallback, _, _ = await bill_processing_service._try_llm_fallback(_UNRECOGNIZED_FORMAT)
     assert used_fallback is True
     assert len(items) == 1
     assert items[0].product_name == "Kitchen King E-500g"
@@ -62,7 +62,7 @@ async def test_unrecognized_format_uses_fallback_when_configured(monkeypatch):
 async def test_disabled_fallback_degrades_to_unread_without_crashing(monkeypatch):
     monkeypatch.setattr(settings, "llm_fallback_provider", "none")
 
-    items, used_fallback = await bill_processing_service._try_llm_fallback(_UNRECOGNIZED_FORMAT)
+    items, used_fallback, _, _ = await bill_processing_service._try_llm_fallback(_UNRECOGNIZED_FORMAT)
     assert items == []
     assert used_fallback is False
 
@@ -72,7 +72,7 @@ async def test_quota_exhaustion_blocks_fallback_even_when_provider_would_succeed
     monkeypatch.setattr(settings, "gemini_api_key", "fake-key")
     monkeypatch.setattr(bill_processing_service, "try_consume_fallback_quota", _always_deny)
 
-    items, used_fallback = await bill_processing_service._try_llm_fallback(_UNRECOGNIZED_FORMAT)
+    items, used_fallback, _, _ = await bill_processing_service._try_llm_fallback(_UNRECOGNIZED_FORMAT)
     assert items == []
     assert used_fallback is False
 
@@ -95,7 +95,7 @@ async def test_provider_failure_degrades_safely_instead_of_raising(monkeypatch):
         "app.services.llm_extraction.gemini_provider.GeminiExtractionProvider.extract_line_items", _failing_extract
     )
 
-    items, used_fallback = await bill_processing_service._try_llm_fallback(_UNRECOGNIZED_FORMAT)
+    items, used_fallback, _, _ = await bill_processing_service._try_llm_fallback(_UNRECOGNIZED_FORMAT)
     assert items == []
     assert used_fallback is False
 

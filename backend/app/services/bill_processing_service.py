@@ -6,12 +6,13 @@ Pulled out of the route handler so the same logic can run either inline
 (larger bills, OCR-heavy formats) without duplicating it.
 """
 
+import logging
 from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.domain.schemas_bills import BillUploadResponse, MatchSuggestionOut
+from app.domain.schemas_bills import BillDebugInfo, BillUploadResponse, MatchSuggestionOut
 from app.services.basket_comparison_service import basket_item_out, item_recommendations_to_out
 from app.services.basket_optimization_engine import BasketOptimizationResult, build_basket_optimization
 from app.services.basket_service import Basket, build_basket
@@ -25,6 +26,8 @@ from app.services.ocr.mock_ocr_provider import MockOCRProvider
 from app.services.ocr.tesseract_provider import TesseractOCRProvider
 from app.services.product_alias_service import MatchResult, match_product
 from app.services.providers.registry import build_price_providers
+
+logger = logging.getLogger("bill_processing")
 
 
 class BillProcessingError(Exception):
@@ -51,6 +54,7 @@ class BillProcessingResult:
     # `match_confidence`/`match_tier`/`review_status` onto each `BasketItem`
     # row without re-running the match.
     item_matches: list[MatchResult] | None = None
+    debug: BillDebugInfo | None = None
 
 
 def _build_ocr_provider() -> OCRProvider:
@@ -96,37 +100,70 @@ def _basket_item_out_with_match(item, match: MatchResult | None):
 
 
 async def process_bill(
-    file_bytes: bytes, content_type: str, location: str | None = None, session: AsyncSession | None = None
+    file_bytes: bytes, content_type: str, location: str | None = None, session: AsyncSession | None = None,
+    debug: bool = False,
 ) -> BillProcessingResult:
     ocr_result = _build_ocr_provider().extract_text(file_bytes, content_type)
     if ocr_result.status != OCRStatus.SUCCESS:
+        logger.info("bill_ocr_failed status=%s message=%s", ocr_result.status, ocr_result.message)
         raise BillProcessingError(
             status_code=_OCR_ERROR_STATUS_CODE.get(ocr_result.status, 422),
             message=ocr_result.message,
         )
 
     metadata = extract_bill_metadata(ocr_result.raw_text)
+    detected_line_count = len([l for l in ocr_result.raw_text.splitlines() if l.strip()])
 
     line_items = parse_bill_text(ocr_result.raw_text)
     used_llm_fallback = False
+    gemini_response = ""
+    gemini_message = ""
 
     if not line_items:
         # The free rule-based parser is always tried first — the LLM
         # fallback only ever runs on what it couldn't read, so the common
         # case (a recognized bill format) never costs anything.
-        line_items, used_llm_fallback = await _try_llm_fallback(ocr_result.raw_text)
+        line_items, used_llm_fallback, gemini_response, gemini_message = await _try_llm_fallback(ocr_result.raw_text)
 
     basket = build_basket(line_items)
+
+    item_matches = await _match_basket_items(session, basket) if basket.items else None
+    matched_count = sum(1 for m in (item_matches or []) if m.best is not None)
+    unmatched_count = len(item_matches or []) - matched_count
+
+    logger.info(
+        "bill_processed ocr_confidence=%s detected_lines=%d rule_based_items=%d used_llm_fallback=%s "
+        "matched=%d unmatched=%d",
+        ocr_result.confidence, detected_line_count, len(line_items), used_llm_fallback,
+        matched_count, unmatched_count,
+    )
+
+    debug_info = (
+        BillDebugInfo(
+            raw_ocr_text=ocr_result.raw_text,
+            ocr_confidence=ocr_result.confidence,
+            detected_line_count=detected_line_count,
+            matched_product_count=matched_count,
+            unmatched_product_count=unmatched_count,
+            llm_fallback_triggered=used_llm_fallback,
+            llm_fallback_provider=settings.llm_fallback_provider,
+            gemini_response=gemini_response,
+            gemini_message=gemini_message,
+        )
+        if debug
+        else None
+    )
 
     if not basket.items:
         return BillProcessingResult(
             response=BillUploadResponse(
                 basket=[], recommendations=[], message="No recognizable line items found on this bill.",
-                store=metadata.store, bill_date=metadata.bill_date,
+                store=metadata.store, bill_date=metadata.bill_date, debug=debug_info,
             ),
             basket=basket,
             unparsed_ocr_text=ocr_result.raw_text,
             used_llm_fallback=used_llm_fallback,
+            debug=debug_info,
         )
 
     item_recommendations = await build_recommendations_for_basket(
@@ -134,7 +171,6 @@ async def process_bill(
     )
     optimization = build_basket_optimization(item_recommendations)
 
-    item_matches = await _match_basket_items(session, basket)
     matches_iter = item_matches if item_matches is not None else [None] * len(basket.items)
     basket_out = [
         _basket_item_out_with_match(item, match) for item, match in zip(basket.items, matches_iter)
@@ -144,28 +180,30 @@ async def process_bill(
     return BillProcessingResult(
         response=BillUploadResponse(
             basket=basket_out, recommendations=recommendations_out,
-            store=metadata.store, bill_date=metadata.bill_date,
+            store=metadata.store, bill_date=metadata.bill_date, debug=debug_info,
         ),
         basket=basket,
         item_recommendations=item_recommendations,
         optimization=optimization,
         used_llm_fallback=used_llm_fallback,
         item_matches=item_matches,
+        debug=debug_info,
     )
 
 
-async def _try_llm_fallback(raw_text: str) -> tuple[list[BillLineItem], bool]:
-    """Returns (items, used_fallback). Never raises — a disabled fallback,
-    an exhausted daily cap, or a vendor failure all just mean "no extra
-    items," same as if the fallback didn't exist.
+async def _try_llm_fallback(raw_text: str) -> tuple[list[BillLineItem], bool, str, str]:
+    """Returns (items, used_fallback, raw_response, message). Never raises —
+    a disabled fallback, an exhausted daily cap, or a vendor failure all
+    just mean "no extra items," same as if the fallback didn't exist, but
+    the reason is always reported back for debug visibility.
     """
     if settings.llm_fallback_provider.lower() == "none":
-        return [], False  # skip the quota check entirely — nothing to spend
+        return [], False, "", "LLM fallback disabled (LLM_FALLBACK_PROVIDER=none)."
 
     if not await try_consume_fallback_quota():
-        return [], False
+        return [], False, "", "LLM fallback daily quota exhausted."
 
     result = await build_llm_extraction_provider().extract_line_items(raw_text)
     if not result.succeeded:
-        return [], False
-    return result.items, True
+        return [], False, result.raw_response, result.message
+    return result.items, True, result.raw_response, result.message

@@ -19,6 +19,9 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/upload")({
   head: () => ({ meta: [{ title: "Upload Bill — Household Advisor AI" }] }),
+  validateSearch: (search: Record<string, unknown>): { debug?: boolean } => ({
+    debug: search.debug === "1" || search.debug === true || undefined,
+  }),
   component: UploadPage,
 });
 
@@ -38,14 +41,28 @@ type BasketItem = {
   review_status: string;
 };
 
+type BillDebugInfo = {
+  raw_ocr_text: string;
+  ocr_confidence: number | null;
+  detected_line_count: number;
+  matched_product_count: number;
+  unmatched_product_count: number;
+  llm_fallback_triggered: boolean;
+  llm_fallback_provider: string;
+  gemini_response: string;
+  gemini_message: string;
+};
+
 type RealResult = {
   productsFound: number;
   categories: number;
   totalSpend: number;
   items: BasketItem[];
+  debug: BillDebugInfo | null;
 };
 
 function UploadPage() {
+  const { debug } = Route.useSearch();
   const [stage, setStage] = useState<"idle" | "processing" | "done" | "error">("idle");
   const [drag, setDrag] = useState(false);
   const [real, setReal] = useState<RealResult | null>(null);
@@ -74,7 +91,8 @@ function UploadPage() {
       form.append("file", file);
       // Processes inline (OCR + matching), typically 5-15s — no queue or
       // worker required, so this works on free-tier hosting at beta scale.
-      const res = await fetch(`${API_BASE}/api/v1/bills/upload`, { method: "POST", body: form });
+      const url = `${API_BASE}/api/v1/bills/upload${debug ? "?debug=1" : ""}`;
+      const res = await fetch(url, { method: "POST", body: form });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
 
@@ -85,6 +103,7 @@ function UploadPage() {
         categories: categories.size,
         totalSpend: basket.reduce((s, b) => s + (b.total_price ?? 0), 0),
         items: basket,
+        debug: data.debug ?? null,
       });
       if (basket.length > 0) markHasRealData();
       setStage("done");
@@ -218,6 +237,8 @@ function UploadPage() {
               )}
             </div>
           )}
+
+          {debug && real?.debug && <DebugPanel info={real.debug} />}
 
           {stage === "done" && real && pendingReview.length > 0 && (
             <VerificationPanel
@@ -460,6 +481,53 @@ function VerificationRow({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function DebugPanel({ info }: { info: BillDebugInfo }) {
+  const rows: [string, string][] = [
+    ["OCR confidence", info.ocr_confidence != null ? `${info.ocr_confidence.toFixed(1)}%` : "n/a"],
+    ["Detected lines", String(info.detected_line_count)],
+    ["Matched products", String(info.matched_product_count)],
+    ["Unmatched products", String(info.unmatched_product_count)],
+    ["LLM fallback provider", info.llm_fallback_provider],
+    ["LLM fallback triggered", info.llm_fallback_triggered ? "yes" : "no"],
+  ];
+
+  return (
+    <div className="mt-5 rounded-2xl border border-dashed border-warning bg-warning/5 p-5">
+      <div className="font-mono text-[10px] uppercase tracking-widest text-warning-foreground mb-3">
+        Debug — bill processing trace
+      </div>
+      <dl className="grid grid-cols-2 gap-2 text-xs">
+        {rows.map(([k, v]) => (
+          <div key={k} className="flex items-center justify-between gap-2 rounded-lg bg-background px-3 py-2">
+            <dt className="text-muted-foreground">{k}</dt>
+            <dd className="font-mono font-semibold">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      {info.gemini_message && (
+        <div className="mt-3">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Gemini message</div>
+          <pre className="whitespace-pre-wrap rounded-lg bg-background px-3 py-2 text-xs">{info.gemini_message}</pre>
+        </div>
+      )}
+      {info.gemini_response && (
+        <div className="mt-3">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Gemini raw response</div>
+          <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-lg bg-background px-3 py-2 text-xs">
+            {info.gemini_response}
+          </pre>
+        </div>
+      )}
+      <div className="mt-3">
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Raw OCR text</div>
+        <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-lg bg-background px-3 py-2 text-xs">
+          {info.raw_ocr_text || "(empty)"}
+        </pre>
+      </div>
     </div>
   );
 }

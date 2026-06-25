@@ -26,7 +26,10 @@ router = APIRouter(prefix="/api/v1/bills", tags=["bills"])
 
 @router.post("/upload", response_model=BillUploadResponse)
 async def upload_bill(
-    file: UploadFile, location: str | None = Query(None), session: AsyncSession = Depends(get_session)
+    file: UploadFile,
+    location: str | None = Query(None),
+    debug: bool = Query(False, description="Include OCR/matching/Gemini diagnostics in the response."),
+    session: AsyncSession = Depends(get_session),
 ) -> BillUploadResponse:
     file_bytes = await file.read()
     content_type = file.content_type or ""
@@ -36,7 +39,7 @@ async def upload_bill(
     await session.flush()
 
     try:
-        result = await process_bill(file_bytes, content_type, location=location, session=session)
+        result = await process_bill(file_bytes, content_type, location=location, session=session, debug=debug)
     except BillProcessingError as exc:
         bill_upload.status = "failed"
         bill_upload.error_message = exc.message
