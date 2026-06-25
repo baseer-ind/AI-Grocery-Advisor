@@ -21,7 +21,19 @@ def _build_engine(database_url: str):
     if sslmode and sslmode != "disable":
         connect_args["ssl"] = True
 
-    return create_async_engine(clean_url, echo=False, connect_args=connect_args)
+    return create_async_engine(
+        clean_url,
+        echo=False,
+        connect_args=connect_args,
+        # Render's backend spins down on inactivity, which leaves stale
+        # connections sitting in the pool when it wakes back up — without
+        # pre_ping, the first request after idle reuses a dead connection
+        # and asyncpg raises `connection is closed`. pool_recycle caps how
+        # long a connection can live before being replaced, as a second
+        # line of defense against the same staleness.
+        pool_pre_ping=True,
+        pool_recycle=300,
+    )
 
 
 engine = _build_engine(settings.database_url)
