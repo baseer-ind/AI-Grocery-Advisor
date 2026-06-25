@@ -156,40 +156,54 @@ function HouseholdKnowledgePage() {
         </section>
 
         <section className="rounded-xl border border-border bg-surface p-4">
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
-            <Sparkles className="h-3.5 w-3.5" /> Upcoming unlocks
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              <Sparkles className="h-3.5 w-3.5" /> Upcoming unlocks
+            </div>
+            <Link
+              to="/unlocks"
+              className="text-xs font-medium text-muted-foreground hover:text-foreground"
+            >
+              See all
+            </Link>
           </div>
           <ul className="space-y-2">
-            {knowledge.unlocks.map((u) => (
-              <li
-                key={u.id}
-                className={cn(
-                  "rounded-lg border px-3.5 py-2.5 flex items-start gap-3",
-                  statusStyles[u.status],
-                )}
-              >
-                {u.status === "unlocked" ? (
-                  <Check className="h-4 w-4 mt-0.5 shrink-0 text-accent" />
-                ) : u.status === "learning" ? (
-                  <Sparkles className="h-4 w-4 mt-0.5 shrink-0 text-warning-foreground" />
-                ) : (
-                  <Lock className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
-                )}
-                <div>
-                  <div className="text-sm font-medium flex items-center gap-2">
-                    {u.label}
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                      {u.status === "unlocked"
-                        ? "Unlocked"
-                        : u.status === "learning"
-                          ? "Learning…"
-                          : "Locked"}
-                    </span>
+            {[...knowledge.unlocks]
+              .sort((a, b) => {
+                const order = { locked: 0, learning: 1, unlocked: 2 };
+                return order[a.status] - order[b.status];
+              })
+              .slice(0, 3)
+              .map((u) => (
+                <li
+                  key={u.id}
+                  className={cn(
+                    "rounded-lg border px-3.5 py-2.5 flex items-start gap-3",
+                    statusStyles[u.status],
+                  )}
+                >
+                  {u.status === "unlocked" ? (
+                    <Check className="h-4 w-4 mt-0.5 shrink-0 text-accent" />
+                  ) : u.status === "learning" ? (
+                    <Sparkles className="h-4 w-4 mt-0.5 shrink-0 text-warning-foreground" />
+                  ) : (
+                    <Lock className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
+                  )}
+                  <div>
+                    <div className="text-sm font-medium flex items-center gap-2">
+                      {u.label}
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                        {u.status === "unlocked"
+                          ? "Unlocked"
+                          : u.status === "learning"
+                            ? "Learning…"
+                            : "Locked"}
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{u.reason}</div>
                   </div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{u.reason}</div>
-                </div>
-              </li>
-            ))}
+                </li>
+              ))}
           </ul>
         </section>
 
