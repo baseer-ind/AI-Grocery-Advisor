@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowRight, CheckCircle2, ListChecks, Sparkles, Upload as UploadIcon } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { saveHouseholdProfile } from "@/lib/real-data";
 import { identifyHousehold, track } from "@/lib/analytics";
@@ -153,15 +153,6 @@ function deriveProfile(answers: Answers) {
   return { householdType, shoppingStyle, planningStyle, pantryReadiness, confidence };
 }
 
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl bg-surface-2 px-4 py-3">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="font-medium mt-0.5">{value}</div>
-    </div>
-  );
-}
-
 function InsightStrip({ text }: { text: string | null }) {
   if (!text) return null;
   return (
@@ -222,9 +213,10 @@ function PrimaryButton({
   );
 }
 
-type StepKey = "intro" | "profile" | "behavior" | "style" | "snapshot";
+type StepKey = "intro" | "profile" | "behavior" | "style";
 
 function HouseholdOnboardingPage() {
+  const navigate = useNavigate();
   const draft = loadOnboardingDraft();
   const [step, setStep] = useState<StepKey>(draft?.step ?? "intro");
   const [answers, setAnswers] = useState<Answers>(draft?.answers ?? initialAnswers);
@@ -236,7 +228,6 @@ function HouseholdOnboardingPage() {
     answers.size == null ? 0 : answers.size - (answers.adults + answers.children + answers.seniors);
 
   useEffect(() => {
-    if (step === "snapshot") return;
     saveOnboardingDraft(step, answers);
   }, [step, answers]);
 
@@ -313,9 +304,6 @@ function HouseholdOnboardingPage() {
         body: JSON.stringify({ priorities: answers.priorities }),
       });
       if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      setInsight(data.insight);
-      setStep("snapshot");
       if (householdId) {
         const snapshot = deriveProfile(answers);
         saveHouseholdProfile({
@@ -336,6 +324,7 @@ function HouseholdOnboardingPage() {
       clearOnboardingDraft();
       identifyHousehold(householdId);
       track("Completed Onboarding", "/household");
+      navigate({ to: "/today" });
     } catch (err) {
       console.error("submitStyle failed", err);
       setError(
@@ -346,13 +335,11 @@ function HouseholdOnboardingPage() {
     }
   }
 
-  const profile = deriveProfile(answers);
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <div className="flex items-center justify-between mb-8">
-          {step === "intro" || step === "snapshot" ? (
+          {step === "intro" ? (
             <Link
               to="/today"
               className="text-sm font-medium text-muted-foreground hover:text-foreground"
@@ -369,7 +356,7 @@ function HouseholdOnboardingPage() {
               ← Back
             </button>
           )}
-          {started && step !== "snapshot" && <StepDots step={step} />}
+          {started && <StepDots step={step} />}
         </div>
 
         <div>
@@ -633,8 +620,6 @@ function HouseholdOnboardingPage() {
               </div>
             </StepCard>
           )}
-
-          {step === "snapshot" && <SnapshotCard profile={profile} insight={insight} />}
         </div>
       </div>
     </div>
@@ -707,74 +692,4 @@ function Counter({
       </div>
     </div>
   );
-}
-
-function SnapshotCard({
-  profile,
-  insight,
-}: {
-  profile: ReturnType<typeof deriveProfile>;
-  insight: string | null;
-}) {
-  return (
-    <div className="p-1">
-      <div className="flex items-center gap-2 mb-1">
-        <CheckCircle2 className="h-5 w-5 text-accent" />
-        <span className="font-semibold">Household Snapshot</span>
-      </div>
-      <p className="text-xs text-muted-foreground mb-5">
-        Here's what we understand about your household so far — it'll keep getting sharper as you
-        add more.
-      </p>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Shopping Style" value={profile.shoppingStyle} />
-        <Field label="Planning Style" value={profile.planningStyle} />
-        <Field label="Primary Opportunity" value={primaryOpportunity(profile)} />
-        <Field label="Confidence" value={`${profile.confidence}%`} />
-      </div>
-
-      <InsightStrip text={insight} />
-
-      <div className="mt-7 space-y-2">
-        <div className="text-sm font-medium text-muted-foreground mb-2">
-          Continue building your profile
-        </div>
-        <Link
-          to="/upload"
-          className="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3.5 hover:opacity-80"
-        >
-          <span className="flex items-center gap-2.5 text-sm font-medium">
-            <UploadIcon className="h-4 w-4" /> Add a Bill
-          </span>
-          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-        </Link>
-        <Link
-          to="/this-week"
-          className="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3.5 hover:opacity-80"
-        >
-          <span className="flex items-center gap-2.5 text-sm font-medium">
-            <ListChecks className="h-4 w-4" /> Create a Shopping List
-          </span>
-          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-        </Link>
-        <Link
-          to="/today"
-          className="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3.5 hover:opacity-80"
-        >
-          <span className="flex items-center gap-2.5 text-sm font-medium">
-            <Sparkles className="h-4 w-4" /> Go to Home
-          </span>
-          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function primaryOpportunity(profile: ReturnType<typeof deriveProfile>) {
-  if (profile.shoppingStyle === "Convenience Shopper") return "Store Optimization";
-  if (profile.planningStyle === "Reactive Shopper") return "Planning Routine";
-  if (profile.shoppingStyle === "Value Shopper") return "Deal Timing";
-  return "Not Enough Data";
 }

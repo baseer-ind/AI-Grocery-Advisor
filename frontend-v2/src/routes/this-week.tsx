@@ -25,6 +25,7 @@ import {
   removePlannerItem,
 } from "@/lib/real-data";
 import { getPredictedPantry, type PredictedPantry, type PredictedPantryItem } from "@/lib/api";
+import { getReflections } from "@/lib/reflection";
 
 export const Route = createFileRoute("/this-week")({
   head: () => ({ meta: [{ title: "This Week — Household Advisor AI" }] }),
@@ -196,8 +197,21 @@ function ThisWeek() {
   }, []);
 
   if (!sample && !hasRealData()) {
+    const reflections = profile ? getReflections(2) : [];
     return (
       <AppShell title="This Week" eyebrow="Pantry & Shopping List">
+        {reflections.length > 0 && (
+          <div className="max-w-xl mx-auto mb-4 rounded-2xl border border-border bg-surface p-5">
+            <p className="text-sm text-muted-foreground">We already know a couple of things:</p>
+            <ul className="mt-2 space-y-1">
+              {reflections.map((r) => (
+                <li key={r} className="text-sm">
+                  {r}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div className="max-w-xl mx-auto text-center rounded-2xl border border-border bg-surface p-10">
           <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
             We're just getting started

@@ -35,6 +35,7 @@ import {
   hasRealData,
   type StoredHouseholdProfile,
 } from "@/lib/real-data";
+import { getReflections } from "@/lib/reflection";
 import { computeHouseholdIdentity, confidenceNarrative } from "@/lib/household-identity";
 import {
   getPredictedPantry,
@@ -128,22 +129,37 @@ function Today() {
 
   if (!sample && !hasRealData()) {
     const profile = getHouseholdProfile();
+    const reflections = profile ? getReflections() : [];
     return (
       <AppShell title="Household HQ" eyebrow="Household Advisor">
         <div className="max-w-xl mx-auto space-y-4">
-          <HouseholdSnapshotStrip profile={profile} />
-          <div className="text-center rounded-2xl border border-border bg-surface p-10">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
-              We're just getting started
+          {profile && reflections.length > 0 && (
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <h1 className="text-xl font-semibold tracking-tight">Welcome back.</h1>
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                We already understand a few things about your household:
+              </p>
+              <ul className="mt-3 space-y-1.5">
+                {reflections.map((r) => (
+                  <li key={r} className="flex items-start gap-2 text-sm">
+                    <Circle className="h-1.5 w-1.5 mt-1.5 shrink-0 fill-current text-muted-foreground" />
+                    <span>{r}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <h1 className="text-2xl font-semibold tracking-tight">
+          )}
+          <div className="text-center rounded-2xl border border-border bg-surface p-10">
+            <h2 className="text-2xl font-semibold tracking-tight">
               {profile
-                ? "Let's teach Household Advisor about your shopping."
-                : "Let's build your household profile."}
-            </h1>
+                ? reflections.length > 0
+                  ? "Here's how we can get to know you even better."
+                  : "Let's teach Household Advisor about your shopping."
+                : "Let's get to know your household."}
+            </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               {profile
-                ? "Pick whichever is easiest today — every one of these helps us start predicting your pantry and shopping rhythm. Never invented numbers."
+                ? "Pick whichever is easiest today — every one helps us start predicting what you're running low on. We never make up numbers."
                 : "It takes about two minutes and needs no bill — just a few questions about your household."}
             </p>
             {profile ? (
@@ -575,52 +591,6 @@ function Today() {
         )}
       </div>
     </AppShell>
-  );
-}
-
-function HouseholdSnapshotStrip({ profile }: { profile: StoredHouseholdProfile | null }) {
-  if (!profile) {
-    return (
-      <Link
-        to="/household"
-        className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-border bg-surface px-5 py-3.5 hover:border-foreground/30 transition-colors"
-      >
-        <span className="text-sm font-medium">
-          Build your household profile to unlock personalized insights
-        </span>
-        <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
-      </Link>
-    );
-  }
-
-  const stats: { label: string; value: string }[] = [
-    { label: "Shopping style", value: profile.shoppingStyle },
-    { label: "Planning", value: profile.planningStyle },
-    { label: "Pantry", value: profile.pantryReadiness },
-    { label: "Profile confidence", value: `${Math.round(profile.confidence)}%` },
-  ];
-
-  return (
-    <section className="rounded-xl border border-border bg-surface px-5 py-3.5">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-4 flex-wrap">
-          {stats.map((s) => (
-            <div key={s.label}>
-              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                {s.label}
-              </div>
-              <div className="text-sm font-semibold">{s.value}</div>
-            </div>
-          ))}
-        </div>
-        <Link
-          to="/household"
-          className="text-xs font-semibold text-muted-foreground hover:text-foreground shrink-0"
-        >
-          Update profile →
-        </Link>
-      </div>
-    </section>
   );
 }
 
