@@ -11,7 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { trackAppOpened } from "../lib/founderIntelligence";
+import { initAnalytics, track } from "../lib/analytics";
 
 function NotFoundComponent() {
   return (
@@ -142,7 +142,8 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   useEffect(() => {
-    trackAppOpened(window.location.pathname);
+    initAnalytics();
+    track("App Opened", window.location.pathname);
   }, []);
 
   return (

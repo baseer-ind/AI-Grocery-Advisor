@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -15,7 +15,7 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { cn } from "@/lib/utils";
 import { submitFeedback, type FeedbackPayload } from "@/lib/feedbackService";
-import { logEvent } from "@/lib/founderIntelligence";
+import { track } from "@/lib/analytics";
 
 export const Route = createFileRoute("/feedback")({
   head: () => ({ meta: [{ title: "Help Us Build — Household Advisor AI" }] }),
@@ -168,10 +168,6 @@ function Feedback() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  useEffect(() => {
-    logEvent("Opened Feedback", "/feedback");
-  }, []);
-
   const totalSteps = sections.length + 1; // + founding household form
   const isLead = stepIdx === sections.length;
   const step = sections[stepIdx];
@@ -251,7 +247,7 @@ function Feedback() {
       localStorage.setItem("ha_feedback", JSON.stringify(existing));
       localStorage.setItem("ha_feedback_submitted", "1");
     } catch {}
-    logEvent("Submitted Feedback", "/feedback");
+    track("Submitted Feedback", "/feedback");
     setSubmitted(true);
   };
 

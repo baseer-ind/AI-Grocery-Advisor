@@ -17,7 +17,6 @@ import {
   Compass,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { logEvent } from "@/lib/founderIntelligence";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -39,10 +38,6 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
-  useEffect(() => {
-    logEvent("Landing Viewed", "/");
-  }, []);
-
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-clip">
       <Nav />

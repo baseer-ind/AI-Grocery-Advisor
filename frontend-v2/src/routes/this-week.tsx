@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { cn } from "@/lib/utils";
-import { logEvent } from "@/lib/founderIntelligence";
+import { identifyHousehold, track } from "@/lib/analytics";
 import {
   addPlannerItem,
   getHouseholdProfile,
@@ -180,7 +180,7 @@ function ThisWeek() {
     setAdded(getPlannerAdded());
     setRemoved(getPlannerRemoved());
     setNewItemName("");
-    logEvent("Added Shopping Event", "/this-week", undefined, profile?.householdId);
+    track("Shopping Event Created", "/this-week");
   }
 
   useEffect(() => {
@@ -192,7 +192,8 @@ function ThisWeek() {
   }, [profile]);
 
   useEffect(() => {
-    logEvent("Opened Shopping Planner", "/this-week", undefined, profile?.householdId);
+    if (profile) identifyHousehold(profile.householdId);
+    track("Opened Shopping Planner", "/this-week");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
