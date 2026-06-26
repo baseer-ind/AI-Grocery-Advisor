@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, Check, Plus, X } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { cn } from "@/lib/utils";
@@ -48,6 +48,12 @@ function ProductsPage() {
     saveFrequentProducts(selected);
     setSaved(true);
   }
+
+  useEffect(() => {
+    if (!saved) return;
+    const timer = setTimeout(() => setSaved(false), 2500);
+    return () => clearTimeout(timer);
+  }, [saved]);
 
   return (
     <AppShell title="Frequently Purchased Products" eyebrow="Household Advisor">
@@ -146,7 +152,11 @@ function ProductsPage() {
           >
             Save my selections
           </button>
-          {saved && <span className="text-sm text-muted-foreground">Saved.</span>}
+          {saved && (
+            <span className="inline-flex items-center gap-1 text-sm font-medium text-foreground animate-in fade-in">
+              <Check className="h-4 w-4" /> Saved
+            </span>
+          )}
         </div>
 
         <Link
