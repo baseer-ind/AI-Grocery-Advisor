@@ -21,6 +21,7 @@ import { Route as HouseholdRouteImport } from './routes/household'
 import { Route as HabitsRouteImport } from './routes/habits'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as BillCheckRouteImport } from './routes/bill-check'
+import { Route as BetaRouteImport } from './routes/beta'
 import { Route as IndexRouteImport } from './routes/index'
 
 const UploadRoute = UploadRouteImport.update({
@@ -83,6 +84,11 @@ const BillCheckRoute = BillCheckRouteImport.update({
   path: '/bill-check',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BetaRoute = BetaRouteImport.update({
+  id: '/beta',
+  path: '/beta',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -91,6 +97,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/beta': typeof BetaRoute
   '/bill-check': typeof BillCheckRoute
   '/feedback': typeof FeedbackRoute
   '/habits': typeof HabitsRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/beta': typeof BetaRoute
   '/bill-check': typeof BillCheckRoute
   '/feedback': typeof FeedbackRoute
   '/habits': typeof HabitsRoute
@@ -122,6 +130,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/beta': typeof BetaRoute
   '/bill-check': typeof BillCheckRoute
   '/feedback': typeof FeedbackRoute
   '/habits': typeof HabitsRoute
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/beta'
     | '/bill-check'
     | '/feedback'
     | '/habits'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/beta'
     | '/bill-check'
     | '/feedback'
     | '/habits'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/beta'
     | '/bill-check'
     | '/feedback'
     | '/habits'
@@ -185,6 +197,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BetaRoute: typeof BetaRoute
   BillCheckRoute: typeof BillCheckRoute
   FeedbackRoute: typeof FeedbackRoute
   HabitsRoute: typeof HabitsRoute
@@ -285,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BillCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/beta': {
+      id: '/beta'
+      path: '/beta'
+      fullPath: '/beta'
+      preLoaderRoute: typeof BetaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -297,6 +317,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BetaRoute: BetaRoute,
   BillCheckRoute: BillCheckRoute,
   FeedbackRoute: FeedbackRoute,
   HabitsRoute: HabitsRoute,

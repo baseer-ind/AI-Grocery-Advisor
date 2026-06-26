@@ -89,6 +89,12 @@ export function AppShell({
           <span className="font-semibold tracking-tight">Household Advisor</span>
         </Link>
         <div className="flex items-center gap-2">
+          <Link
+            to="/beta"
+            className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground border border-border rounded-full px-2 py-1"
+          >
+            Beta v1
+          </Link>
           <ThemeToggle />
           <button
             onClick={() => setOpen(!open)}
@@ -120,6 +126,13 @@ export function AppShell({
                 AI · v1.0
               </span>
             </div>
+          </Link>
+          <Link
+            to="/beta"
+            onClick={() => setOpen(false)}
+            className="mx-6 mt-3 mb-1 hidden lg:inline-flex w-fit items-center gap-1.5 rounded-full border border-border px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          >
+            Beta v1 · What to expect
           </Link>
           <nav className="flex-1 overflow-y-auto p-3 space-y-4">
             {navGroups.map((group) => (
