@@ -1,33 +1,36 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
-  Upload as UploadIcon,
   Sparkles,
   Check,
-  FileText,
-  Image as ImageIcon,
-  TrendingDown,
+  Menu,
+  X,
+  ShoppingBasket,
   Store,
   Clock,
-  ShoppingBasket,
-  Heart,
-  Flame,
+  ShieldCheck,
+  Lock,
+  Eye,
+  MessageCircle,
+  HeartHandshake,
+  Compass,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Household Advisor AI — Understand Your Household's Groceries." },
+      { title: "Household Advisor — Your household's quiet shopping co-pilot" },
       {
         name: "description",
         content:
-          "Build your household profile, compare stores, and find smarter swaps — add a bill whenever you're ready.",
+          "Household Advisor learns how your family actually shops, then helps you plan, compare, and save — without ever asking you to change how you live.",
       },
-      { property: "og:title", content: "Household Advisor AI" },
+      { property: "og:title", content: "Household Advisor" },
       {
         property: "og:description",
-        content: "Build your household profile, compare stores, and find smarter swaps.",
+        content: "It learns how your household shops. Then it starts helping.",
       },
     ],
   }),
@@ -36,17 +39,17 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground overflow-x-clip">
       <Nav />
       <Hero />
+      <Story />
       <HowItWorks />
-      <UploadBand />
-      <ResultPreview />
-      <Stores />
-      <Insights />
-      <Alternatives />
-      <WhyUs />
-      <FuturePreview />
+      <LearnsOverTime />
+      <WhyFamiliesLoveIt />
+      <Trust />
+      <Screenshots />
+      <BetaJourney />
+      <Faq />
       <FinalCta />
       <Footer />
     </div>
@@ -54,51 +57,102 @@ function Landing() {
 }
 
 /* ---------- Nav ---------- */
+const navLinks = [
+  { href: "#how", label: "How it Works" },
+  { href: "#why", label: "Why Household Advisor" },
+  { href: "#learns", label: "Features" },
+  { href: "#beta", label: "Beta" },
+  { href: "#faq", label: "FAQ" },
+];
+
 function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl flex items-center justify-between px-5 lg:px-8 h-16">
+    <header
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "border-b border-border bg-background/85 backdrop-blur-xl"
+          : "border-b border-transparent bg-transparent"
+      }`}
+    >
+      <div className="mx-auto max-w-7xl flex items-center justify-between px-5 lg:px-8 h-16 lg:h-20">
         <Link to="/" className="flex items-center gap-2.5">
           <Logo />
-          <div className="flex flex-col leading-tight">
-            <span className="font-semibold tracking-tight text-sm">Household Advisor</span>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              AI · v1.0
-            </span>
-          </div>
+          <span className="font-semibold tracking-tight text-base">Household Advisor</span>
         </Link>
-        <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
-          <a href="#how" className="hover:text-foreground transition-colors">
-            How it works
-          </a>
-          <a href="#stores" className="hover:text-foreground transition-colors">
-            Stores
-          </a>
-          <a href="#why" className="hover:text-foreground transition-colors">
-            Why us
-          </a>
-          <Link to="/pricing" className="hover:text-foreground transition-colors">
-            Pricing
-          </Link>
+        <nav className="hidden lg:flex items-center gap-8 text-sm text-muted-foreground">
+          {navLinks.map((l) => (
+            <a key={l.href} href={l.href} className="hover:text-foreground transition-colors">
+              {l.label}
+            </a>
+          ))}
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="hidden lg:flex items-center gap-3">
           <ThemeToggle />
           <Link
             to="/household"
-            className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-foreground text-background px-3.5 py-2 text-sm font-semibold hover:opacity-90"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            Get started
+            Sign In
+          </Link>
+          <Link
+            to="/household"
+            className="inline-flex items-center gap-1.5 rounded-full bg-foreground text-background px-4 py-2 text-sm font-semibold hover:opacity-90 transition-opacity"
+          >
+            Join the beta
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
+        <button
+          onClick={() => setOpen(!open)}
+          className="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border"
+          aria-label="Menu"
+        >
+          {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+        </button>
       </div>
+
+      {open && (
+        <div className="lg:hidden border-t border-border bg-background px-5 py-5 space-y-4 animate-entrance">
+          {navLinks.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              onClick={() => setOpen(false)}
+              className="block text-base font-medium text-foreground"
+            >
+              {l.label}
+            </a>
+          ))}
+          <div className="flex items-center gap-3 pt-2">
+            <ThemeToggle />
+            <Link
+              to="/household"
+              onClick={() => setOpen(false)}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full bg-foreground text-background px-4 py-2.5 text-sm font-semibold"
+            >
+              Join the beta
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
 
 function Logo() {
   return (
-    <div className="relative h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
+    <div className="relative h-8 w-8 rounded-lg bg-foreground flex items-center justify-center shrink-0">
       <div className="h-2.5 w-2.5 rounded-sm bg-background rotate-45" />
       <div className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-accent" />
     </div>
@@ -108,148 +162,128 @@ function Logo() {
 /* ---------- Hero ---------- */
 function Hero() {
   return (
-    <section className="relative overflow-hidden border-b border-border">
-      <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
-      <div className="relative mx-auto max-w-7xl px-5 lg:px-8 pt-16 lg:pt-24 pb-16 lg:pb-20 grid lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-        <div className="lg:col-span-7">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5">
+    <section className="relative overflow-hidden">
+      <div className="absolute inset-0 grid-bg opacity-[0.35] pointer-events-none" />
+      <div className="absolute -top-24 right-[-10%] h-[28rem] w-[28rem] rounded-full bg-accent/10 blur-3xl pointer-events-none" />
+      <div className="relative mx-auto max-w-7xl px-5 lg:px-8 pt-16 lg:pt-28 pb-20 lg:pb-28">
+        <div className="max-w-3xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3.5 py-1.5 animate-entrance">
             <Sparkles className="h-3.5 w-3.5 text-accent" />
-            <span className="font-mono text-[10px] uppercase tracking-widest">
-              AI Household Purchase Advisor
-            </span>
+            <span className="text-xs font-medium">Now welcoming founding beta households</span>
           </div>
-          <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.05] text-balance">
-            Understand your household's groceries. <br />
-            <span className="text-muted-foreground">Before you upload a single bill.</span>
+          <h1
+            className="mt-7 text-5xl sm:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.04] text-balance animate-entrance"
+            style={{ animationDelay: "60ms" }}
+          >
+            Your household already has a shopping rhythm.
+            <span className="block text-muted-foreground">We're learning it.</span>
           </h1>
-          <p className="mt-5 max-w-xl text-muted-foreground text-base lg:text-lg text-pretty">
-            Tell us about your household — size, budget, where you shop — and we'll build a profile
-            that gets sharper over time. Add a bill or a shopping list whenever you're ready.
+          <p
+            className="mt-6 max-w-xl text-lg lg:text-xl text-muted-foreground leading-relaxed text-pretty animate-entrance"
+            style={{ animationDelay: "120ms" }}
+          >
+            Household Advisor quietly learns how your family shops — what you buy, where, and how
+            often — and turns that into a calmer, smarter way to plan your next trip.
           </p>
-          <ul className="mt-5 flex flex-wrap gap-2 max-w-xl">
-            {["Household profile", "Store comparisons", "Smarter swaps", "When to buy"].map((x) => (
-              <li
-                key={x}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface pl-1.5 pr-3 py-1 text-xs font-medium"
-              >
-                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background">
-                  <Check className="h-2.5 w-2.5" />
-                </span>
-                {x}
-              </li>
-            ))}
-          </ul>
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div
+            className="mt-9 flex flex-wrap items-center gap-3 animate-entrance"
+            style={{ animationDelay: "180ms" }}
+          >
             <Link
               to="/household"
-              className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-3 text-sm font-semibold hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-6 py-3.5 text-base font-semibold hover:opacity-90 transition-opacity"
             >
-              Get started
+              Join the beta
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              to="/bill-check"
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-5 py-3 text-sm font-semibold hover:bg-surface-2"
+            <a
+              href="#how"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-6 py-3.5 text-base font-semibold hover:bg-surface-2 transition-colors"
             >
-              See sample analysis
-            </Link>
+              See how it works
+            </a>
           </div>
-          <div className="mt-6 flex items-center gap-4 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
-              <ImageIcon className="h-3.5 w-3.5" /> JPG · PNG · HEIC
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <FileText className="h-3.5 w-3.5" /> PDF · Screenshots
-            </span>
-            <span>· Bills never stored</span>
-          </div>
+          <p
+            className="mt-6 text-sm text-muted-foreground animate-entrance"
+            style={{ animationDelay: "240ms" }}
+          >
+            Built with early households. No fees during beta. Bills never stored.
+          </p>
         </div>
 
-        {/* Visual savings card */}
-        <div className="lg:col-span-5">
-          <SavingsHeroCard />
+        <div className="mt-16 lg:mt-20 animate-entrance" style={{ animationDelay: "260ms" }}>
+          <HeroPreview />
         </div>
       </div>
     </section>
   );
 }
 
-function SavingsHeroCard() {
+function HeroPreview() {
   return (
-    <div className="relative">
-      <div className="absolute -inset-px rounded-3xl bg-gradient-to-br from-foreground/10 via-transparent to-accent/20 blur-2xl opacity-60" />
-      <div className="relative rounded-3xl border border-border bg-surface p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            Aug 2025 · BigBasket
+    <div className="relative mx-auto max-w-3xl">
+      <div className="rounded-[2rem] border border-border bg-surface p-3 shadow-sm">
+        <div className="rounded-[1.5rem] bg-background border border-border overflow-hidden">
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-border">
+            <div className="h-2.5 w-2.5 rounded-full bg-accent/60" />
+            <div className="h-2.5 w-2.5 rounded-full bg-muted" />
+            <div className="h-2.5 w-2.5 rounded-full bg-muted" />
+            <span className="ml-2 text-xs text-muted-foreground font-mono">Your Household</span>
           </div>
-          <span className="rounded-full border border-border bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest">
-            Sample
-          </span>
-        </div>
-        <div className="mt-4">
-          <div className="text-sm text-muted-foreground">You could have saved</div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-5xl font-semibold tracking-tight font-mono">₹1,200</span>
-            <span className="text-sm text-muted-foreground">last month</span>
-          </div>
-        </div>
-
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <MiniStat label="Current spend" value="₹9,250" />
-          <MiniStat label="Optimized" value="₹8,050" accent />
-        </div>
-
-        <div className="mt-6 space-y-2.5">
-          {[
-            ["Cooking Oil", 220],
-            ["Rice", 180],
-            ["Snacks", 150],
-            ["Beverages", 120],
-          ].map(([name, amt]) => {
-            const max = 220;
-            const w = (Number(amt) / max) * 100;
-            return (
-              <div key={String(name)}>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">{name}</span>
-                  <span className="font-mono font-semibold">₹{amt}</span>
-                </div>
-                <div className="mt-1 h-1.5 rounded-full bg-surface-2 overflow-hidden">
-                  <div className="h-full bg-foreground" style={{ width: `${w}%` }} />
-                </div>
+          <div className="p-6 lg:p-8 grid sm:grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-border bg-surface p-5">
+              <div className="text-xs text-muted-foreground">We've learned</div>
+              <div className="mt-2 text-base font-medium leading-snug">
+                Your household shops every 5–6 days, mostly on weekends.
               </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-6 rounded-xl border border-border bg-background p-3 flex items-start gap-3">
-          <Sparkles className="h-4 w-4 text-accent mt-0.5 shrink-0" />
-          <p className="text-xs text-muted-foreground">
-            <span className="text-foreground font-medium">Illustrative example.</span> This is a
-            sample bill analysis — your own numbers appear once you upload a real bill. We never
-            recommend the cheapest option — we recommend the smartest one.
-          </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-surface p-5">
+              <div className="text-xs text-muted-foreground">Quiet suggestion</div>
+              <div className="mt-2 text-base font-medium leading-snug">
+                Cooking oil usually runs low around this time — worth adding to your next list.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function MiniStat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+/* ---------- Guided story ---------- */
+function Story() {
+  const lines = [
+    "Your household makes hundreds of shopping decisions every month.",
+    "Most apps only record those decisions after they happen.",
+    "Household Advisor quietly learns how your family shops.",
+    "Over time, it starts recognising your routine.",
+    "Then it begins helping you shop smarter — before you ask.",
+  ];
   return (
-    <div className="rounded-xl border border-border bg-background p-3">
-      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-        {label}
+    <section className="border-y border-border bg-surface">
+      <div className="mx-auto max-w-3xl px-5 lg:px-8 py-20 lg:py-28">
+        <ul className="space-y-7 lg:space-y-9">
+          {lines.map((line, i) => (
+            <li
+              key={line}
+              className="flex items-start gap-4 lg:gap-5 animate-entrance"
+              style={{ animationDelay: `${i * 70}ms` }}
+            >
+              <span className="mt-1.5 font-mono text-xs text-muted-foreground shrink-0 w-6">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <p
+                className={`text-xl lg:text-2xl tracking-tight text-balance ${
+                  i === lines.length - 1 ? "font-semibold" : "text-muted-foreground font-medium"
+                }`}
+              >
+                {line}
+              </p>
+            </li>
+          ))}
+        </ul>
       </div>
-      <div
-        className={`mt-1 text-xl font-semibold font-mono tracking-tight ${
-          accent ? "text-accent" : ""
-        }`}
-      >
-        {value}
-      </div>
-    </div>
+    </section>
   );
 }
 
@@ -259,56 +293,47 @@ function HowItWorks() {
     {
       n: "01",
       title: "Tell us about your household",
-      body: "Size, budget, where you shop — a couple of minutes, no bill needed.",
-      icon: Sparkles,
+      body: "A couple of minutes — size, budget, where you shop. No bill required to start.",
+      icon: Compass,
     },
     {
       n: "02",
-      title: "Get your household profile",
-      body: "Shopping style, planning style and where to focus first.",
+      title: "We build your household profile",
+      body: "Your shopping style and planning style, so recommendations start relevant, not generic.",
       icon: ShoppingBasket,
     },
     {
       n: "03",
-      title: "Add a bill, anytime",
-      body: "Photo, PDF or screenshot — any grocery app or kirana.",
-      icon: UploadIcon,
+      title: "Add a bill whenever you're ready",
+      body: "A photo, a PDF, a screenshot — from any store. Every bill sharpens what we understand.",
+      icon: Sparkles,
     },
     {
       n: "04",
-      title: "Get recommendations",
-      body: "Where, what and when to buy, based on your real data.",
-      icon: TrendingDown,
+      title: "Get one clear recommendation at a time",
+      body: "Where to buy, what to swap, when to wait — never a wall of numbers.",
+      icon: Store,
     },
   ];
   return (
-    <section id="how" className="border-b border-border">
-      <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-24">
-        <div className="flex items-end justify-between flex-wrap gap-4 max-w-3xl">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              How it works
-            </div>
-            <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
-              Start with your household. Add a bill whenever you like.
-            </h2>
-          </div>
-          <p className="text-xs text-muted-foreground max-w-xs">
-            No bill required to get started — your profile builds the foundation, real data sharpens
-            it.
-          </p>
-        </div>
-        <div className="mt-12 grid sm:grid-cols-2 md:grid-cols-4 gap-px bg-border rounded-2xl overflow-hidden border border-border">
+    <section id="how" className="py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-5 lg:px-8">
+        <SectionHeading
+          eyebrow="How it works"
+          title="Start with your household. Everything else follows."
+          body="No bill required to begin — your profile is the foundation, real shopping data sharpens it from there."
+        />
+        <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {steps.map((s) => (
-            <div key={s.n} className="bg-background p-6 relative">
-              <div className="flex items-center justify-between">
-                <div className="font-mono text-[10px] text-muted-foreground tracking-widest">
-                  STEP {s.n}
-                </div>
-                <s.icon className="h-4 w-4 text-muted-foreground" />
+            <div key={s.n} className="rounded-3xl border border-border bg-surface p-6 lg:p-7">
+              <div className="h-11 w-11 rounded-2xl bg-foreground text-background flex items-center justify-center">
+                <s.icon className="h-5 w-5" />
               </div>
-              <h3 className="mt-5 text-base font-semibold tracking-tight">{s.title}</h3>
-              <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">{s.body}</p>
+              <div className="mt-6 font-mono text-[11px] tracking-widest text-muted-foreground">
+                STEP {s.n}
+              </div>
+              <h3 className="mt-2 text-lg font-semibold tracking-tight">{s.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{s.body}</p>
             </div>
           ))}
         </div>
@@ -317,223 +342,72 @@ function HowItWorks() {
   );
 }
 
-/* ---------- Upload band ---------- */
-function UploadBand() {
+function SectionHeading({
+  eyebrow,
+  title,
+  body,
+}: {
+  eyebrow: string;
+  title: string;
+  body?: string;
+}) {
   return (
-    <section className="border-b border-border bg-surface">
-      <div className="mx-auto max-w-5xl px-5 lg:px-8 py-16 lg:py-20">
-        <div className="relative rounded-3xl border-2 border-dashed border-border bg-background p-10 lg:p-14 text-center overflow-hidden">
-          <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
-          <div className="relative z-10 flex flex-col items-center">
-            <div className="h-14 w-14 rounded-2xl bg-foreground text-background flex items-center justify-center">
-              <UploadIcon className="h-6 w-6" />
-            </div>
-            <h2 className="mt-5 text-2xl lg:text-3xl font-semibold tracking-tight">
-              Drop your grocery bill here.
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground">or upload from phone</p>
-            <Link
-              to="/upload"
-              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
-            >
-              Choose a file
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <div className="mt-5 flex items-center gap-5 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5">
-                <ImageIcon className="h-3.5 w-3.5" /> Photos
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <FileText className="h-3.5 w-3.5" /> PDFs
-              </span>
-              <span>Screenshots</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Result preview ---------- */
-function ResultPreview() {
-  const breakdown = [
-    { name: "Cooking Oil", save: 220 },
-    { name: "Rice", save: 180 },
-    { name: "Snacks", save: 150 },
-    { name: "Beverages", save: 120 },
-  ];
-  return (
-    <section className="border-b border-border">
-      <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-12 gap-10">
-        <div className="lg:col-span-5">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            Illustrative example · What you'll see
-          </div>
-          <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
-            A single, calm savings number — once you upload a real bill.
-          </h2>
-          <p className="mt-4 text-muted-foreground max-w-md">
-            Below is a sample breakdown. Your own numbers appear the moment you upload a real bill.
-            No noise, no upsells.
-          </p>
-          <div className="mt-6 rounded-2xl border border-border bg-surface p-6">
-            <div className="grid grid-cols-3 gap-3">
-              <Stat label="Current" value="₹9,250" />
-              <Stat label="Optimized" value="₹8,050" accent />
-              <Stat label="Savings" value="₹1,200" />
-            </div>
-          </div>
-        </div>
-        <div className="lg:col-span-7">
-          <div className="rounded-2xl border border-border bg-surface p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                Savings breakdown
-              </div>
-              <span className="text-xs text-muted-foreground">By category</span>
-            </div>
-            <div className="space-y-4">
-              {breakdown.map((b) => {
-                const w = (b.save / 220) * 100;
-                return (
-                  <div key={b.name}>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium">{b.name}</span>
-                      <span className="font-mono">₹{b.save}</span>
-                    </div>
-                    <div className="mt-2 h-2 rounded-full bg-surface-2 overflow-hidden">
-                      <div className="h-full bg-foreground" style={{ width: `${w}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div>
-      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-        {label}
-      </div>
-      <div
-        className={`mt-1 text-xl lg:text-2xl font-semibold font-mono tracking-tight ${
-          accent ? "text-accent" : ""
-        }`}
-      >
-        {value}
-      </div>
+    <div className="max-w-2xl">
+      <div className="font-mono text-[11px] uppercase tracking-widest text-accent">{eyebrow}</div>
+      <h2 className="mt-3 text-3xl lg:text-5xl font-semibold tracking-tight text-balance">
+        {title}
+      </h2>
+      {body && (
+        <p className="mt-4 text-base lg:text-lg text-muted-foreground text-pretty">{body}</p>
+      )}
     </div>
   );
 }
 
-/* ---------- Stores ---------- */
-function Stores() {
-  const stores = [
-    { name: "Blinkit", cost: 8450, avail: 96, delivery: "12 mins", rating: 4.5 },
-    { name: "Zepto", cost: 8320, avail: 98, delivery: "10 mins", rating: 4.4 },
-    { name: "BigBasket", cost: 8050, avail: 99, delivery: "Next Day", rating: 4.6, best: true },
-    { name: "Amazon Fresh", cost: 8180, avail: 97, delivery: "Same Day", rating: 4.7 },
-  ];
-  return (
-    <section id="stores" className="border-b border-border bg-surface">
-      <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-24">
-        <div className="flex items-end justify-between flex-wrap gap-4 mb-10">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              Illustrative example · Store intelligence
-            </div>
-            <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
-              The same basket, priced across every store you'd consider.
-            </h2>
-          </div>
-          <p className="text-sm text-muted-foreground max-w-sm">
-            Sample data shown below. We weigh price, availability, delivery and rating — not just
-            the cheapest sticker.
-          </p>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {stores.map((s) => (
-            <div
-              key={s.name}
-              className={`relative rounded-2xl border bg-background p-6 ${
-                s.best ? "border-foreground" : "border-border"
-              }`}
-            >
-              {s.best && (
-                <span className="absolute -top-2.5 left-6 rounded-full bg-foreground text-background font-mono text-[10px] uppercase tracking-widest px-2.5 py-1">
-                  Best overall value
-                </span>
-              )}
-              <div className="flex items-center gap-2">
-                <div className="h-9 w-9 rounded-lg bg-surface-2 flex items-center justify-center">
-                  <Store className="h-4 w-4" />
-                </div>
-                <div className="font-semibold">{s.name}</div>
-              </div>
-              <div className="mt-5">
-                <div className="text-[11px] text-muted-foreground">Basket cost</div>
-                <div className="font-mono font-semibold text-2xl tracking-tight">
-                  ₹{s.cost.toLocaleString("en-IN")}
-                </div>
-              </div>
-              <div className="mt-5 grid grid-cols-3 gap-3 text-[11px]">
-                <Kv k="Avail" v={`${s.avail}%`} />
-                <Kv k="Delivery" v={s.delivery} />
-                <Kv k="Rating" v={s.rating.toFixed(1)} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Kv({ k, v }: { k: string; v: string }) {
-  return (
-    <div>
-      <div className="text-muted-foreground">{k}</div>
-      <div className="font-mono font-semibold text-foreground mt-0.5">{v}</div>
-    </div>
-  );
-}
-
-/* ---------- Insights ---------- */
-function Insights() {
+/* ---------- What it learns over time ---------- */
+function LearnsOverTime() {
   const items = [
-    { icon: Flame, text: "Your snack spend is higher than the rest of your cart." },
-    { icon: TrendingDown, text: "Cooking oil is cheaper at nearby stores." },
-    { icon: Heart, text: "You're brand-loyal — and that's perfectly fine." },
-    { icon: Sparkles, text: "A few quiet swaps, no quality trade-off." },
+    {
+      week: "Week one",
+      title: "It learns the basics.",
+      body: "How big your household is, roughly what you spend, and where you usually shop.",
+    },
+    {
+      week: "First few weeks",
+      title: "It starts recognising your rhythm.",
+      body: "How often you shop, which categories matter most to you, and which brands you stay loyal to.",
+    },
+    {
+      week: "Over time",
+      title: "It starts helping before you ask.",
+      body: "A heads-up before something runs low, a quieter store for your usual basket, a swap worth trying — only when it's confident.",
+    },
   ];
   return (
-    <section className="border-b border-border">
-      <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-12 gap-10">
-        <div className="lg:col-span-4">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            Illustrative example · Insights
-          </div>
-          <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
-            What we'd quietly tell you.
-          </h2>
-        </div>
-        <div className="lg:col-span-8 grid sm:grid-cols-2 gap-4">
+    <section id="learns" className="py-20 lg:py-28 bg-surface border-y border-border">
+      <div className="mx-auto max-w-7xl px-5 lg:px-8">
+        <SectionHeading
+          eyebrow="What Household Advisor learns over time"
+          title="It gets quieter and more useful, not louder."
+        />
+        <div className="mt-14 grid lg:grid-cols-3 gap-5">
           {items.map((item, i) => (
             <div
-              key={i}
-              className="rounded-2xl border border-border bg-surface p-5 flex items-center gap-3"
+              key={item.week}
+              className="relative rounded-3xl border border-border bg-background p-7"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-foreground text-background">
-                <item.icon className="h-4 w-4" />
-              </span>
-              <p className="text-sm font-medium leading-snug">{item.text}</p>
+              <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                {item.week}
+              </div>
+              <h3 className="mt-3 text-xl font-semibold tracking-tight text-balance">
+                {item.title}
+              </h3>
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{item.body}</p>
+              {i < items.length - 1 && (
+                <div className="hidden lg:flex absolute top-7 -right-8 items-center justify-center text-muted-foreground">
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -542,127 +416,50 @@ function Insights() {
   );
 }
 
-/* ---------- Alternatives ---------- */
-function Alternatives() {
-  const rows = [
-    {
-      current: { name: "Fortune Sunflower Oil 5L", price: 920 },
-      alt: { name: "Sundrop Heart Sunflower 5L", price: 860 },
-      quality: "Minimal difference",
-      save: 60,
-    },
-    {
-      current: { name: "Lay's Classic Salted 52g × 6", price: 360 },
-      alt: { name: "Too Yumm! Karare 60g × 6", price: 270 },
-      quality: "Comparable",
-      save: 90,
-    },
-    {
-      current: { name: "Tropicana Orange 1L", price: 145 },
-      alt: { name: "Real Activ Orange 1L", price: 115 },
-      quality: "Minimal difference",
-      save: 30,
-    },
-  ];
-  return (
-    <section className="border-b border-border bg-surface">
-      <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-24">
-        <div className="max-w-2xl mb-10">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            Illustrative example · Smart alternatives
-          </div>
-          <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
-            Swap one or two things. Keep everything else.
-          </h2>
-          <p className="mt-4 text-sm text-muted-foreground">
-            We never push the cheapest. Only switches where quality stays close and savings are
-            real.
-          </p>
-        </div>
-        <div className="rounded-2xl border border-border bg-background overflow-hidden">
-          {rows.map((r, i) => (
-            <div
-              key={i}
-              className={`grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 px-6 py-5 ${
-                i > 0 ? "border-t border-border" : ""
-              }`}
-            >
-              <div className="lg:col-span-5">
-                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Current
-                </div>
-                <div className="mt-1 font-medium">{r.current.name}</div>
-                <div className="font-mono text-sm text-muted-foreground">₹{r.current.price}</div>
-              </div>
-              <div className="hidden lg:flex lg:col-span-1 items-center justify-center text-muted-foreground">
-                <ArrowRight className="h-4 w-4" />
-              </div>
-              <div className="lg:col-span-4">
-                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Alternative
-                </div>
-                <div className="mt-1 font-medium">{r.alt.name}</div>
-                <div className="font-mono text-sm text-muted-foreground">
-                  ₹{r.alt.price} · {r.quality}
-                </div>
-              </div>
-              <div className="lg:col-span-2 lg:text-right">
-                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Save
-                </div>
-                <div className="mt-1 font-mono font-semibold text-accent text-lg">₹{r.save}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Why us ---------- */
-function WhyUs() {
+/* ---------- Why families will love it ---------- */
+function WhyFamiliesLoveIt() {
   const cards = [
     {
-      icon: Store,
-      title: "Know where to buy",
-      body: "Balanced across price, availability, delivery and rating.",
-    },
-    {
-      icon: Clock,
-      title: "Know when to buy",
-      body: "Buy-now vs wait calls based on price history and seasonality.",
+      icon: HeartHandshake,
+      title: "It adapts to you — not the other way round.",
+      body: "We don't ask you to change how you shop. We learn how you already shop, and work around it.",
     },
     {
       icon: ShoppingBasket,
-      title: "Know what to buy",
-      body: "Quiet alternatives that respect your taste and brand loyalty.",
+      title: "One recommendation at a time.",
+      body: "No dashboards to interpret. Just the next sensible thing to do, explained in plain language.",
     },
     {
-      icon: Sparkles,
-      title: "Save without compromise",
-      body: "We tune for value, never for the cheapest possible cart.",
+      icon: Store,
+      title: "Honest about what it doesn't know yet.",
+      body: "If we're not confident, we say so — instead of guessing and calling it intelligence.",
+    },
+    {
+      icon: Clock,
+      title: "Respects your time.",
+      body: "A bill takes seconds to add. Everything else happens quietly in the background.",
     },
   ];
   return (
-    <section id="why" className="border-b border-border">
-      <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-24">
-        <div className="max-w-2xl">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            Why households use us
-          </div>
-          <h2 className="mt-2 text-3xl lg:text-4xl font-semibold tracking-tight text-balance">
-            A trusted advisor — not a comparison site.
-          </h2>
-        </div>
-        <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <section id="why" className="py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-5 lg:px-8">
+        <SectionHeading
+          eyebrow="Why families will love it"
+          title="Built to feel like help, not homework."
+        />
+        <div className="mt-14 grid sm:grid-cols-2 gap-5">
           {cards.map((c) => (
-            <div key={c.title} className="rounded-2xl border border-border bg-surface p-6">
-              <div className="h-9 w-9 rounded-lg bg-foreground text-background flex items-center justify-center">
-                <c.icon className="h-4 w-4" />
+            <div
+              key={c.title}
+              className="rounded-3xl border border-border bg-surface p-7 flex gap-5"
+            >
+              <div className="h-11 w-11 rounded-2xl bg-foreground text-background flex items-center justify-center shrink-0">
+                <c.icon className="h-5 w-5" />
               </div>
-              <h3 className="mt-5 font-semibold tracking-tight">{c.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{c.body}</p>
+              <div>
+                <h3 className="font-semibold tracking-tight text-lg">{c.title}</h3>
+                <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{c.body}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -671,46 +468,175 @@ function WhyUs() {
   );
 }
 
-/* ---------- Future ---------- */
-function FuturePreview() {
-  const items = [
-    "Household Intelligence",
-    "Pantry Assistant",
-    "Price History",
-    "Buy-Now vs Wait",
-    "Community Pricing",
+/* ---------- Trust ---------- */
+function Trust() {
+  const points = [
+    {
+      icon: Lock,
+      title: "Bills are never stored.",
+      body: "We read what's needed to understand your purchase, then discard the image.",
+    },
+    {
+      icon: Eye,
+      title: "Nothing is guessed and presented as fact.",
+      body: "Every number you see is gated by how much real data backs it — thin data means an honest 'still learning,' not a fabricated figure.",
+    },
+    {
+      icon: ShieldCheck,
+      title: "Your data builds your household's profile only.",
+      body: "It's never sold, and it's never used to build a profile of you for anyone else.",
+    },
   ];
   return (
-    <section className="border-b border-border bg-surface">
-      <div className="mx-auto max-w-7xl px-5 lg:px-8 py-16 lg:py-20">
-        <div className="flex items-end justify-between flex-wrap gap-4">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              Coming soon
-            </div>
-            <h2 className="mt-2 text-2xl lg:text-3xl font-semibold tracking-tight">
-              A quiet roadmap built around your household.
-            </h2>
-          </div>
-          <Link
-            to="/pricing"
-            className="text-sm font-semibold text-foreground hover:opacity-80 inline-flex items-center gap-1.5"
-          >
-            See Pro plan <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {items.map((x) => (
-            <div
-              key={x}
-              className="rounded-xl border border-border bg-background p-4 flex items-center justify-between"
-            >
-              <span className="text-sm font-medium">{x}</span>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                Soon
-              </span>
+    <section className="py-20 lg:py-28 bg-surface border-y border-border">
+      <div className="mx-auto max-w-7xl px-5 lg:px-8">
+        <SectionHeading eyebrow="Privacy & trust" title="Trust is the product, not a footnote." />
+        <div className="mt-14 grid lg:grid-cols-3 gap-5">
+          {points.map((p) => (
+            <div key={p.title} className="rounded-3xl border border-border bg-background p-7">
+              <div className="h-11 w-11 rounded-2xl bg-foreground text-background flex items-center justify-center">
+                <p.icon className="h-5 w-5" />
+              </div>
+              <h3 className="mt-6 font-semibold tracking-tight text-lg">{p.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{p.body}</p>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Screenshots ---------- */
+function Screenshots() {
+  const frames = [
+    {
+      label: "Your Household",
+      body: "A plain-language read on how your family shops — and why we think so.",
+    },
+    {
+      label: "Compare My Basket",
+      body: "See your basket priced across the stores you'd actually consider.",
+    },
+    { label: "Shopping List", body: "Built from what you usually buy, not a blank page." },
+  ];
+  return (
+    <section className="py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-5 lg:px-8">
+        <SectionHeading
+          eyebrow="A look inside"
+          title="Calm, focused screens — once you're in."
+          body="The app itself stays simple on purpose: one idea per screen, never a feed to scroll through."
+        />
+        <div className="mt-14 grid sm:grid-cols-3 gap-5">
+          {frames.map((f) => (
+            <div key={f.label} className="rounded-3xl border border-border bg-surface p-2">
+              <div className="rounded-[1.25rem] border border-border bg-background aspect-[9/14] p-5 flex flex-col">
+                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {f.label}
+                </div>
+                <div className="mt-4 flex-1 flex items-center">
+                  <p className="text-base font-medium leading-snug text-balance">{f.body}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Beta journey ---------- */
+function BetaJourney() {
+  return (
+    <section id="beta" className="py-20 lg:py-28 bg-surface border-y border-border">
+      <div className="mx-auto max-w-5xl px-5 lg:px-8">
+        <SectionHeading eyebrow="Beta" title="We're early, and we're saying so." />
+        <div className="mt-10 rounded-3xl border border-border bg-background p-8 lg:p-10">
+          <p className="text-lg leading-relaxed text-pretty">
+            Household Advisor is in beta. We're not chasing numbers — we're working closely with a
+            small group of founding households to get the experience right before opening up
+            further.
+          </p>
+          <p className="mt-4 text-base text-muted-foreground leading-relaxed">
+            Built with early households. If something confuses you, there's a small feedback button
+            on every screen — we read every single one.
+          </p>
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <Link
+              to="/household"
+              className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-5 py-3 text-sm font-semibold hover:opacity-90 transition-opacity"
+            >
+              Join our founding beta community
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+              <MessageCircle className="h-3.5 w-3.5" />
+              No fees during beta
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- FAQ ---------- */
+function Faq() {
+  const faqs = [
+    {
+      q: "Do I need to upload a bill to get started?",
+      a: "No. Building your household profile takes a couple of minutes on its own. Adding a bill is optional, and it makes everything sharper from there.",
+    },
+    {
+      q: "What happens to a bill once I upload it?",
+      a: "We read what's needed to understand the purchase — store, items, prices — and the image itself is never stored.",
+    },
+    {
+      q: "Is this only useful once I have a lot of history?",
+      a: "No. You'll get a household profile immediately. Recommendations that depend on real purchase history will honestly say 'still learning' until there's enough data to be confident.",
+    },
+    {
+      q: "Is it free during the beta?",
+      a: "Yes. There are no fees during beta — we want honest feedback, not friction.",
+    },
+    {
+      q: "How do I give feedback?",
+      a: "There's a quiet feedback button on every screen inside the app. You can also reach us directly — we read everything personally.",
+    },
+  ];
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
+  return (
+    <section id="faq" className="py-20 lg:py-28">
+      <div className="mx-auto max-w-3xl px-5 lg:px-8">
+        <SectionHeading eyebrow="FAQ" title="Good questions, answered plainly." />
+        <div className="mt-12 divide-y divide-border border-y border-border">
+          {faqs.map((f, i) => {
+            const isOpen = openIdx === i;
+            return (
+              <div key={f.q}>
+                <button
+                  onClick={() => setOpenIdx(isOpen ? null : i)}
+                  className="w-full flex items-center justify-between gap-4 py-5 text-left"
+                >
+                  <span className="font-medium text-base lg:text-lg">{f.q}</span>
+                  <span
+                    className={`shrink-0 h-7 w-7 rounded-full border border-border flex items-center justify-center text-base leading-none transition-transform ${
+                      isOpen ? "rotate-45" : ""
+                    }`}
+                  >
+                    +
+                  </span>
+                </button>
+                {isOpen && (
+                  <p className="pb-5 text-sm lg:text-base text-muted-foreground leading-relaxed pr-10">
+                    {f.a}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -720,26 +646,23 @@ function FuturePreview() {
 /* ---------- Final CTA ---------- */
 function FinalCta() {
   return (
-    <section className="border-b border-border">
-      <div className="mx-auto max-w-5xl px-5 lg:px-8 py-20 lg:py-28 text-center">
-        <h2 className="text-3xl lg:text-5xl font-semibold tracking-tight text-balance">
-          Most households find a few quiet savings.
-          <br />
-          <span className="text-muted-foreground">Let's find yours.</span>
+    <section className="py-24 lg:py-32 bg-surface border-t border-border">
+      <div className="mx-auto max-w-3xl px-5 lg:px-8 text-center">
+        <Check className="h-9 w-9 mx-auto text-accent" />
+        <h2 className="mt-6 text-3xl lg:text-5xl font-semibold tracking-tight text-balance">
+          Join the beta and help shape what comes next.
         </h2>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <p className="mt-4 text-base lg:text-lg text-muted-foreground text-pretty">
+          A few minutes to build your household profile. No bill required to start, no fees during
+          beta.
+        </p>
+        <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
           <Link
             to="/household"
-            className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-6 py-3 text-sm font-semibold hover:opacity-90"
+            className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-7 py-3.5 text-base font-semibold hover:opacity-90 transition-opacity"
           >
-            Get started
+            Join the beta
             <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link
-            to="/bill-check"
-            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-6 py-3 text-sm font-semibold hover:bg-surface-2"
-          >
-            See sample analysis
           </Link>
         </div>
       </div>
@@ -754,17 +677,17 @@ function Footer() {
       <div className="mx-auto max-w-7xl px-5 lg:px-8 py-10 flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-2.5">
           <Logo />
-          <span>© 2026 Household Advisor AI · Built for Indian households</span>
+          <span>© 2026 Household Advisor · Built with early households</span>
         </div>
         <div className="flex items-center gap-5">
           <Link to="/pricing" className="hover:text-foreground">
             Pricing
           </Link>
-          <Link to="/today" className="hover:text-foreground">
-            Today
+          <Link to="/feedback" className="hover:text-foreground">
+            Feedback
           </Link>
-          <Link to="/bill-check" className="hover:text-foreground">
-            Bill Check
+          <Link to="/today" className="hover:text-foreground">
+            Sign In
           </Link>
         </div>
       </div>
