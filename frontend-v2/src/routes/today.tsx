@@ -187,7 +187,7 @@ function Today() {
               <Sparkles className="h-3.5 w-3.5" /> Add a shopping event
             </Link>
             <Link
-              to="/memory"
+              to="/knowledge"
               className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground py-1"
             >
               What we know about you

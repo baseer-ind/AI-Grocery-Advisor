@@ -16,7 +16,6 @@ import { Route as ThisWeekRouteImport } from './routes/this-week'
 import { Route as TeachRouteImport } from './routes/teach'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as MemoryRouteImport } from './routes/memory'
 import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as HouseholdRouteImport } from './routes/household'
 import { Route as HabitsRouteImport } from './routes/habits'
@@ -58,11 +57,6 @@ const ProductsRoute = ProductsRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MemoryRoute = MemoryRouteImport.update({
-  id: '/memory',
-  path: '/memory',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KnowledgeRoute = KnowledgeRouteImport.update({
@@ -109,7 +103,6 @@ export interface FileRoutesByFullPath {
   '/habits': typeof HabitsRoute
   '/household': typeof HouseholdRoute
   '/knowledge': typeof KnowledgeRoute
-  '/memory': typeof MemoryRoute
   '/pricing': typeof PricingRoute
   '/products': typeof ProductsRoute
   '/teach': typeof TeachRoute
@@ -126,7 +119,6 @@ export interface FileRoutesByTo {
   '/habits': typeof HabitsRoute
   '/household': typeof HouseholdRoute
   '/knowledge': typeof KnowledgeRoute
-  '/memory': typeof MemoryRoute
   '/pricing': typeof PricingRoute
   '/products': typeof ProductsRoute
   '/teach': typeof TeachRoute
@@ -144,7 +136,6 @@ export interface FileRoutesById {
   '/habits': typeof HabitsRoute
   '/household': typeof HouseholdRoute
   '/knowledge': typeof KnowledgeRoute
-  '/memory': typeof MemoryRoute
   '/pricing': typeof PricingRoute
   '/products': typeof ProductsRoute
   '/teach': typeof TeachRoute
@@ -163,7 +154,6 @@ export interface FileRouteTypes {
     | '/habits'
     | '/household'
     | '/knowledge'
-    | '/memory'
     | '/pricing'
     | '/products'
     | '/teach'
@@ -180,7 +170,6 @@ export interface FileRouteTypes {
     | '/habits'
     | '/household'
     | '/knowledge'
-    | '/memory'
     | '/pricing'
     | '/products'
     | '/teach'
@@ -197,7 +186,6 @@ export interface FileRouteTypes {
     | '/habits'
     | '/household'
     | '/knowledge'
-    | '/memory'
     | '/pricing'
     | '/products'
     | '/teach'
@@ -215,7 +203,6 @@ export interface RootRouteChildren {
   HabitsRoute: typeof HabitsRoute
   HouseholdRoute: typeof HouseholdRoute
   KnowledgeRoute: typeof KnowledgeRoute
-  MemoryRoute: typeof MemoryRoute
   PricingRoute: typeof PricingRoute
   ProductsRoute: typeof ProductsRoute
   TeachRoute: typeof TeachRoute
@@ -274,13 +261,6 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/memory': {
-      id: '/memory'
-      path: '/memory'
-      fullPath: '/memory'
-      preLoaderRoute: typeof MemoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/knowledge': {
@@ -343,7 +323,6 @@ const rootRouteChildren: RootRouteChildren = {
   HabitsRoute: HabitsRoute,
   HouseholdRoute: HouseholdRoute,
   KnowledgeRoute: KnowledgeRoute,
-  MemoryRoute: MemoryRoute,
   PricingRoute: PricingRoute,
   ProductsRoute: ProductsRoute,
   TeachRoute: TeachRoute,

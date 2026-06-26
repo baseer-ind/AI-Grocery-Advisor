@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowRight, BookOpen, Check, Clock, Lock, Sparkles } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { cn } from "@/lib/utils";
 import {
   getFrequentProducts,
   getFrequentProductsSavedAt,
@@ -21,17 +20,11 @@ import { buildHouseholdKnowledge } from "@/lib/household-knowledge";
 import { computeHouseholdIdentity, confidenceNarrative } from "@/lib/household-identity";
 
 export const Route = createFileRoute("/knowledge")({
-  head: () => ({ meta: [{ title: "Household Knowledge — Household Advisor AI" }] }),
-  component: HouseholdKnowledgePage,
+  head: () => ({ meta: [{ title: "Your Household — Household Advisor AI" }] }),
+  component: YourHouseholdPage,
 });
 
-const statusStyles: Record<string, string> = {
-  unlocked: "border-accent/30 bg-accent/5",
-  learning: "border-warning/30 bg-warning/5",
-  locked: "border-border bg-surface",
-};
-
-function HouseholdKnowledgePage() {
+function YourHouseholdPage() {
   const profile = getHouseholdProfile();
   const [events, setEvents] = useState<ShoppingEventSummary[] | null>(null);
   const [pantry, setPantry] = useState<PredictedPantry | null>(null);
@@ -44,18 +37,19 @@ function HouseholdKnowledgePage() {
 
   if (!profile) {
     return (
-      <AppShell title="Household Knowledge" eyebrow="Household Advisor">
-        <div className="max-w-xl mx-auto text-center rounded-2xl border border-border bg-surface p-10">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
-            Nothing learned yet
-          </div>
+      <AppShell title="Your Household" eyebrow="Household Advisor">
+        <div className="max-w-xl mx-auto text-center py-10">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Build your household profile to start teaching us about your household.
+            We haven't started learning about your household yet.
           </h1>
+          <p className="mt-2 text-base text-muted-foreground">
+            Build your household profile and we'll start recognising your shopping rhythm from
+            there.
+          </p>
           <div className="mt-6">
             <Link
               to="/household"
-              className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-6 py-3 text-sm font-semibold hover:opacity-90"
             >
               Build my household profile <ArrowRight className="h-4 w-4" />
             </Link>
@@ -81,162 +75,164 @@ function HouseholdKnowledgePage() {
   );
 
   return (
-    <AppShell title="Household Knowledge" eyebrow="Household Advisor">
-      <div className="max-w-2xl mx-auto space-y-4">
-        <div className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-5">
-          <BookOpen className="h-5 w-5 mt-0.5 text-muted-foreground" />
-          <div>
-            <h1 className="text-lg font-semibold tracking-tight">
-              {identity ? (
-                <>
-                  We've learned that your household is a{" "}
-                  <span className="text-accent">{identity.label}</span>
-                  {profile.stores?.[0] ? ` that prefers ${profile.stores[0]}` : ""}.
-                </>
-              ) : (
-                "We're no longer just recording your shopping — we're learning about your household."
-              )}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">{narrative}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Every line below comes from something real: your onboarding answers, your shopping
-              history, or something you've told us directly. Nothing here is a guess.
-            </p>
-          </div>
+    <AppShell title="Your Household" eyebrow="Household Advisor">
+      <div className="max-w-2xl mx-auto space-y-10">
+        <div>
+          <h1 className="text-3xl lg:text-4xl font-semibold tracking-tight">Your Household</h1>
+          <p className="mt-3 text-base text-muted-foreground leading-relaxed">
+            {identity
+              ? `We've learned that your household is a ${identity.label.toLowerCase()}${
+                  profile.stores?.[0] ? `, and you prefer ${profile.stores[0]}` : ""
+                }.`
+              : "We've started understanding how your family shops."}{" "}
+            {narrative} Every shopping event, and every correction, helps us make better
+            recommendations.
+          </p>
         </div>
 
-        <section className="rounded-xl border border-border bg-surface p-4">
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
-            <Check className="h-3.5 w-3.5" /> What we know
-          </div>
-          {knowledge.known.length > 0 ? (
-            <ul className="space-y-2.5">
-              {knowledge.known.map((f) => (
-                <li key={f.id} className="flex items-start gap-2 text-sm">
-                  <Check className="h-3.5 w-3.5 mt-0.5 shrink-0 text-accent" />
-                  <span>
-                    <span className="text-muted-foreground">{f.label}:</span>{" "}
-                    <span className="font-medium">{f.value}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">Nothing confirmed yet.</p>
-          )}
-        </section>
+        <KnownSection items={knowledge.known} />
+        <LearningSection items={knowledge.learning} />
+        <DiscoveriesSection entries={knowledge.recentlyLearned} />
+        <AvailableSection unlocks={knowledge.unlocks} />
 
-        <section className="rounded-xl border border-border bg-surface p-4">
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
-            <Lock className="h-3.5 w-3.5" /> Still learning
-          </div>
-          {knowledge.learning.length > 0 ? (
-            <ul className="space-y-2.5">
-              {knowledge.learning.map((f) => (
-                <li key={f.id} className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <span className="shrink-0">○</span>
-                  <span>
-                    <span className="text-foreground font-medium">{f.label}.</span> {f.unlockedBy}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              We've learned everything we can for now.
-            </p>
-          )}
-        </section>
-
-        <section className="rounded-xl border border-border bg-surface p-4">
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
-            <Clock className="h-3.5 w-3.5" /> Recently learned
-          </div>
-          {knowledge.recentlyLearned.length > 0 ? (
-            <ul className="space-y-2.5">
-              {knowledge.recentlyLearned.map((entry) => (
-                <li key={entry.id} className="flex items-start gap-3 text-sm">
-                  <span className="shrink-0 w-20 font-mono text-xs text-muted-foreground pt-0.5">
-                    {entry.date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
-                  </span>
-                  <span className="font-medium">{entry.label}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Nothing learned yet — your milestones will show up here.
-            </p>
-          )}
-        </section>
-
-        <section className="rounded-xl border border-border bg-surface p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              <Sparkles className="h-3.5 w-3.5" /> Upcoming unlocks
-            </div>
-            <Link
-              to="/unlocks"
-              className="text-xs font-medium text-muted-foreground hover:text-foreground"
-            >
-              See all
-            </Link>
-          </div>
-          <ul className="space-y-2">
-            {[...knowledge.unlocks]
-              .sort((a, b) => {
-                const order = { locked: 0, learning: 1, unlocked: 2 };
-                return order[a.status] - order[b.status];
-              })
-              .slice(0, 3)
-              .map((u) => (
-                <li
-                  key={u.id}
-                  className={cn(
-                    "rounded-lg border px-3.5 py-2.5 flex items-start gap-3",
-                    statusStyles[u.status],
-                  )}
-                >
-                  {u.status === "unlocked" ? (
-                    <Check className="h-4 w-4 mt-0.5 shrink-0 text-accent" />
-                  ) : u.status === "learning" ? (
-                    <Sparkles className="h-4 w-4 mt-0.5 shrink-0 text-warning-foreground" />
-                  ) : (
-                    <Lock className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
-                  )}
-                  <div>
-                    <div className="text-sm font-medium flex items-center gap-2">
-                      {u.label}
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                        {u.status === "unlocked"
-                          ? "Unlocked"
-                          : u.status === "learning"
-                            ? "Learning…"
-                            : "Locked"}
-                      </span>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">{u.reason}</div>
-                  </div>
-                </li>
-              ))}
-          </ul>
-        </section>
-
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-6 pt-2">
           <Link
             to="/teach"
-            className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground py-1"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground"
           >
-            Teach Household Advisor <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-          <Link
-            to="/memory"
-            className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground py-1"
-          >
-            Household Memory <ArrowRight className="h-3.5 w-3.5" />
+            Teach Household Advisor →
           </Link>
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function KnownSection({
+  items,
+}: {
+  items: { id: string; label: string; value: string; evidence: string }[];
+}) {
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  return (
+    <section>
+      <h2 className="text-lg font-semibold tracking-tight mb-3">What we've learned</h2>
+      {items.length > 0 ? (
+        <ul className="space-y-1">
+          {items.map((item) => (
+            <li key={item.id}>
+              <button
+                onClick={() => setExpanded(expanded === item.id ? null : item.id)}
+                className="w-full text-left py-2.5 flex items-start gap-2.5"
+              >
+                <Check className="h-4 w-4 mt-0.5 shrink-0 text-accent" />
+                <span className="text-base">
+                  <span className="font-medium">{item.label}</span>{" "}
+                  <span className="text-muted-foreground">{item.value}</span>
+                </span>
+              </button>
+              {expanded === item.id && (
+                <p className="ml-[1.625rem] text-sm text-muted-foreground pb-2">
+                  Why? {item.evidence}
+                </p>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-base text-muted-foreground">Nothing confirmed yet.</p>
+      )}
+    </section>
+  );
+}
+
+function LearningSection({
+  items,
+}: {
+  items: { id: string; label: string; unlockedBy: string }[];
+}) {
+  return (
+    <section>
+      <h2 className="text-lg font-semibold tracking-tight mb-3">We're still learning</h2>
+      {items.length > 0 ? (
+        <ul className="space-y-2.5">
+          {items.map((item) => (
+            <li key={item.id} className="text-base">
+              <span className="font-medium">{item.label}.</span>{" "}
+              <span className="text-muted-foreground">{item.unlockedBy}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-base text-muted-foreground">We've learned everything we can for now.</p>
+      )}
+    </section>
+  );
+}
+
+function DiscoveriesSection({ entries }: { entries: { id: string; date: Date; label: string }[] }) {
+  return (
+    <section>
+      <h2 className="text-lg font-semibold tracking-tight mb-3">Recent discoveries</h2>
+      {entries.length > 0 ? (
+        <ul className="space-y-3">
+          {entries.map((entry) => (
+            <li key={entry.id} className="flex items-baseline gap-3 text-base">
+              <span className="shrink-0 w-20 text-sm text-muted-foreground">
+                {entry.date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
+              </span>
+              <span>{entry.label}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-base text-muted-foreground">
+          Nothing yet — your first discoveries will show up here.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function AvailableSection({
+  unlocks,
+}: {
+  unlocks: {
+    id: string;
+    label: string;
+    status: "unlocked" | "learning" | "locked";
+    reason: string;
+    to: string;
+  }[];
+}) {
+  const sorted = [...unlocks].sort((a, b) => {
+    const order = { unlocked: 0, learning: 1, locked: 2 };
+    return order[a.status] - order[b.status];
+  });
+
+  return (
+    <section>
+      <h2 className="text-lg font-semibold tracking-tight mb-3">What's now available</h2>
+      <ul className="space-y-2.5">
+        {sorted.map((u) => (
+          <li key={u.id} className="text-base">
+            {u.status === "unlocked" ? (
+              <Link to={u.to} className="flex items-baseline gap-2.5 hover:opacity-70">
+                <Check className="h-4 w-4 shrink-0 text-accent translate-y-1" />
+                <span className="font-medium">{u.label}</span>
+              </Link>
+            ) : (
+              <div className="flex items-baseline gap-2.5 text-muted-foreground">
+                <span className="h-4 w-4 shrink-0 inline-block rounded-full border border-current translate-y-1" />
+                <span>
+                  <span className="font-medium text-foreground">{u.label}</span> — {u.reason}
+                </span>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

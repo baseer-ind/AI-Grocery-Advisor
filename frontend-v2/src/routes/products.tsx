@@ -150,10 +150,10 @@ function ProductsPage() {
         </div>
 
         <Link
-          to="/memory"
+          to="/knowledge"
           className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground py-1"
         >
-          Back to Household Memory <ArrowRight className="h-3.5 w-3.5" />
+          Back to Your Household <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
     </AppShell>

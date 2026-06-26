@@ -18,6 +18,7 @@ export type KnownFact = {
   id: string;
   label: string;
   value: string;
+  evidence: string;
 };
 
 export type LearningFact = {
@@ -44,18 +45,37 @@ export function buildHouseholdKnowledge(
   unlockTimestamps: Record<string, string> = {},
 ): HouseholdKnowledge {
   const observations = buildHouseholdMemory(profile, events, frequentProducts);
+  const eventCount = events?.length ?? 0;
 
   const known: KnownFact[] = observations
     .filter((o) => o.value != null)
-    .map((o) => ({ id: o.id, label: o.label, value: o.value as string }));
+    .map((o) => ({
+      id: o.id,
+      label: o.label,
+      value: o.value as string,
+      evidence:
+        o.source === "history"
+          ? `Based on your last ${eventCount} shopping event${eventCount === 1 ? "" : "s"}.`
+          : "Based on what you told us when you set up your household.",
+    }));
 
   const identity = computeHouseholdIdentity(events, frequentProducts);
   if (identity) {
-    known.unshift({ id: "household-identity", label: "Household identity", value: identity.label });
+    known.unshift({
+      id: "household-identity",
+      label: "Household identity",
+      value: identity.label,
+      evidence: identity.evidence.join(" "),
+    });
   }
 
   for (const fact of taughtFacts) {
-    known.push({ id: `taught-${fact.id}`, label: fact.category, value: fact.text });
+    known.push({
+      id: `taught-${fact.id}`,
+      label: fact.category,
+      value: fact.text,
+      evidence: "Because you told us directly.",
+    });
   }
 
   const learning: LearningFact[] = observations
