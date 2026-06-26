@@ -137,8 +137,8 @@ function UploadPage() {
               </div>
               <h2 className="text-xl font-semibold tracking-tight">Drop your bill here</h2>
               <p className="text-sm text-muted-foreground mt-2 max-w-md">
-                Drag and drop a photo, PDF, or screenshot from any grocery app. We read it instantly —
-                and never keep the original image.
+                Drag and drop a photo, PDF, or screenshot from any grocery app. We read it instantly
+                — and never keep the original image.
               </p>
               <input
                 ref={fileInput}
@@ -158,8 +158,12 @@ function UploadPage() {
                 <ArrowRight className="h-4 w-4" />
               </button>
               <div className="mt-6 flex items-center gap-4 text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5"><ImageIcon className="h-3.5 w-3.5" /> JPG · PNG · HEIC</span>
-                <span className="inline-flex items-center gap-1.5"><FileText className="h-3.5 w-3.5" /> PDF · Screenshots</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <ImageIcon className="h-3.5 w-3.5" /> JPG · PNG · HEIC
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <FileText className="h-3.5 w-3.5" /> PDF · Screenshots
+                </span>
               </div>
             </div>
           </div>
@@ -188,8 +192,8 @@ function UploadPage() {
                     <span className="font-semibold">We couldn't read that bill</span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Something went wrong reaching our bill reader. Try a clearer photo, or try again in a moment —
-                    we won't show you made-up numbers.
+                    Something went wrong reaching our bill reader. Try a clearer photo, or try again
+                    in a moment — we won't show you made-up numbers.
                   </p>
                   <button
                     onClick={() => setStage("idle")}
@@ -202,11 +206,13 @@ function UploadPage() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle className="h-5 w-5 text-warning-foreground" />
-                    <span className="font-semibold">We read the bill, but couldn't find any items</span>
+                    <span className="font-semibold">
+                      We read the bill, but couldn't find any items
+                    </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    The image came through, but we couldn't pick out any line items from it. Try a clearer photo, or
-                    one that shows the full itemized list.
+                    The image came through, but we couldn't pick out any line items from it. Try a
+                    clearer photo, or one that shows the full itemized list.
                   </p>
                   <button
                     onClick={() => setStage("idle")}
@@ -224,7 +230,10 @@ function UploadPage() {
                   <div className="grid grid-cols-3 gap-4">
                     <Stat label="Products Found" value={String(real?.productsFound ?? 0)} />
                     <Stat label="Categories" value={String(real?.categories ?? 0)} />
-                    <Stat label="Total Spend" value={`₹${(real?.totalSpend ?? 0).toLocaleString("en-IN")}`} />
+                    <Stat
+                      label="Total Spend"
+                      value={`₹${(real?.totalSpend ?? 0).toLocaleString("en-IN")}`}
+                    />
                   </div>
                   <Link
                     to="/bill-check"
@@ -238,7 +247,7 @@ function UploadPage() {
             </div>
           )}
 
-          {debug && real?.debug && <DebugPanel info={real.debug} />}
+          {import.meta.env.DEV && debug && real?.debug && <DebugPanel info={real.debug} />}
 
           {stage === "done" && real && pendingReview.length > 0 && (
             <VerificationPanel
@@ -250,7 +259,11 @@ function UploadPage() {
                         ...prev,
                         items: prev.items.map((i) =>
                           i.basket_item_id === basketItemId
-                            ? { ...i, matched_product_id: matchedProductId, review_status: reviewStatus }
+                            ? {
+                                ...i,
+                                matched_product_id: matchedProductId,
+                                review_status: reviewStatus,
+                              }
                             : i,
                         ),
                       }
@@ -267,9 +280,21 @@ function UploadPage() {
           </div>
           <ol className="space-y-5">
             {[
-              { icon: ScanLine, title: "We read your bill", body: "Every item, price and quantity — picked up automatically." },
-              { icon: BarChart3, title: "We compare it", body: "Against your past shopping, so we know what's normal for you." },
-              { icon: Lightbulb, title: "We give you tips", body: "3 easy swaps and the best time to buy — never just \"cheapest\"." },
+              {
+                icon: ScanLine,
+                title: "We read your bill",
+                body: "Every item, price and quantity — picked up automatically.",
+              },
+              {
+                icon: BarChart3,
+                title: "We compare it",
+                body: "Against your past shopping, so we know what's normal for you.",
+              },
+              {
+                icon: Lightbulb,
+                title: "We give you tips",
+                body: '3 easy swaps and the best time to buy — never just "cheapest".',
+              },
             ].map((step) => (
               <li key={step.title} className="flex gap-3">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-foreground text-background">
@@ -308,8 +333,8 @@ function VerificationPanel({
         </span>
       </div>
       <p className="text-xs text-muted-foreground mb-4">
-        We couldn't confidently match these to a product. Pick the right one, search manually, or tell us
-        "Not Sure" — every answer makes future bills more accurate.
+        We couldn't confidently match these to a product. Pick the right one, search manually, or
+        tell us "Not Sure" — every answer makes future bills more accurate.
       </p>
       <div className="space-y-3">
         {items.map((item) =>
@@ -407,7 +432,8 @@ function VerificationRow({
           <div className="text-sm font-medium">{item.product_name}</div>
           <div className="text-xs text-muted-foreground mt-0.5">
             ₹{item.total_price.toLocaleString("en-IN")} · {item.quantity} {item.unit}
-            {item.match_confidence != null && ` · ${Math.round(item.match_confidence * 100)}% confident`}
+            {item.match_confidence != null &&
+              ` · ${Math.round(item.match_confidence * 100)}% confident`}
           </div>
         </div>
         <button
@@ -415,14 +441,20 @@ function VerificationRow({
           disabled={busy}
           className="shrink-0 text-xs font-semibold rounded-lg border border-border px-3 py-1.5 hover:bg-surface-2"
         >
-          {loadingSuggestions ? "Loading…" : suggestions === null ? "Show matches" : "Refresh matches"}
+          {loadingSuggestions
+            ? "Loading…"
+            : suggestions === null
+              ? "Show matches"
+              : "Refresh matches"}
         </button>
       </div>
 
       {suggestions !== null && (
         <div className="mt-3 space-y-1.5">
           {suggestions.length === 0 && (
-            <div className="text-xs text-muted-foreground">No close matches found in our catalog.</div>
+            <div className="text-xs text-muted-foreground">
+              No close matches found in our catalog.
+            </div>
           )}
           {suggestions.map((s) => (
             <button
@@ -432,7 +464,9 @@ function VerificationRow({
               className="w-full flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm hover:bg-surface-2 text-left"
             >
               <span>{s.product_name}</span>
-              <span className="text-xs text-muted-foreground">{Math.round(s.confidence * 100)}%</span>
+              <span className="text-xs text-muted-foreground">
+                {Math.round(s.confidence * 100)}%
+              </span>
             </button>
           ))}
         </div>
@@ -502,7 +536,10 @@ function DebugPanel({ info }: { info: BillDebugInfo }) {
       </div>
       <dl className="grid grid-cols-2 gap-2 text-xs">
         {rows.map(([k, v]) => (
-          <div key={k} className="flex items-center justify-between gap-2 rounded-lg bg-background px-3 py-2">
+          <div
+            key={k}
+            className="flex items-center justify-between gap-2 rounded-lg bg-background px-3 py-2"
+          >
             <dt className="text-muted-foreground">{k}</dt>
             <dd className="font-mono font-semibold">{v}</dd>
           </div>
@@ -510,20 +547,28 @@ function DebugPanel({ info }: { info: BillDebugInfo }) {
       </dl>
       {info.gemini_message && (
         <div className="mt-3">
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Gemini message</div>
-          <pre className="whitespace-pre-wrap rounded-lg bg-background px-3 py-2 text-xs">{info.gemini_message}</pre>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+            Gemini message
+          </div>
+          <pre className="whitespace-pre-wrap rounded-lg bg-background px-3 py-2 text-xs">
+            {info.gemini_message}
+          </pre>
         </div>
       )}
       {info.gemini_response && (
         <div className="mt-3">
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Gemini raw response</div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+            Gemini raw response
+          </div>
           <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-lg bg-background px-3 py-2 text-xs">
             {info.gemini_response}
           </pre>
         </div>
       )}
       <div className="mt-3">
-        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Raw OCR text</div>
+        <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+          Raw OCR text
+        </div>
         <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-lg bg-background px-3 py-2 text-xs">
           {info.raw_ocr_text || "(empty)"}
         </pre>
@@ -535,7 +580,9 @@ function DebugPanel({ info }: { info: BillDebugInfo }) {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-border bg-background p-4">
-      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
+      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        {label}
+      </div>
       <div className="text-2xl font-semibold tracking-tight font-mono mt-1">{value}</div>
     </div>
   );

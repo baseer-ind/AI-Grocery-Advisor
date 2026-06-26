@@ -25,7 +25,7 @@ export function computeHouseholdIntelligenceScore(
 ): HouseholdIntelligence | null {
   if (!profile) return null;
 
-  const profileConfidence = Math.round(profile.confidence * 100);
+  const profileConfidence = Math.round(profile.confidence);
   const historyDepthScore = Math.min((events?.length ?? 0) * 10, 100);
   const pantryConfidenceScore = pantry ? PANTRY_CONFIDENCE_SCORE[pantry.confidence] : 0;
 
@@ -91,7 +91,7 @@ export function buildHouseholdJourney(
     {
       id: "profile-completed",
       label: "Profile completed",
-      done: !!profile && profile.confidence >= 0.9,
+      done: !!profile && profile.confidence >= 90,
     },
     { id: "shopping-style-identified", label: "Shopping style identified", done: !!profile },
     { id: "first-event", label: "First shopping event logged", done: eventCount >= 1 },

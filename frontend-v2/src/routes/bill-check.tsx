@@ -150,17 +150,15 @@ function BillCheck() {
   }
 
   return (
-    <AppShell title="Bill Check" eyebrow="Bill / 21 Aug 2025">
-      {sample && (
-        <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-warning bg-warning/10 px-4 py-2.5">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-warning-foreground">
-            Sample mode — this is illustrative data, not your bill
-          </span>
-          <Link to="/upload" className="text-xs font-semibold underline hover:no-underline">
-            Upload your bill
-          </Link>
-        </div>
-      )}
+    <AppShell title="Bill Check" eyebrow="Sample analysis">
+      <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-warning bg-warning/10 px-4 py-2.5">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-warning-foreground">
+          Sample mode — this is illustrative data, not your bill
+        </span>
+        <Link to="/upload" className="text-xs font-semibold underline hover:no-underline">
+          Upload your bill
+        </Link>
+      </div>
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
         {tabs.map((t) => (
           <button

@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowUp, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { hasRealData } from "@/lib/real-data";
 
-type Msg = { role: "user" | "ai"; text: string; confidence?: number };
+type Msg = { role: "user" | "ai"; text: string };
 
 const seed: Msg[] = [
   {
     role: "ai",
-    confidence: 92,
     text: "Ask me anything about your spending — buy-vs-wait calls, brand swaps, or where your money is going.",
   },
 ];
@@ -18,31 +18,33 @@ const prompts = [
   "Should I buy basmati rice now or wait?",
 ];
 
+// These are illustrative, scripted answers shown only in demo mode (no real
+// shopping data yet) — never presented as a real recommendation about a
+// household's actual purchases. Once real data exists, the widget hides
+// itself rather than mixing fabricated answers with real ones.
 function sampleReply(q: string): Msg {
   const lower = q.toLowerCase();
   if (lower.includes("wait") || lower.includes("now")) {
     return {
       role: "ai",
-      confidence: 78,
-      text: "Hold off for now. Basmati rice is 8% above its 6-month average — harvest cycles usually drop the price ~₹70/5kg within 3 weeks. You have ~2 weeks of stock, so there's no risk of running out.",
+      text: "Example answer: Hold off for now. Basmati rice is often a little above its average price right after a bill cycle — harvest cycles tend to bring prices back down within a few weeks.",
     };
   }
   if (lower.includes("switch") || lower.includes("brand")) {
     return {
       role: "ai",
-      confidence: 86,
-      text: "Three switches I'd suggest, all rated ≥ your current pick:\n\n• Aashirvaad Atta → Pillsbury (−₹95)\n• Surf Excel → Tide Plus (−₹80)\n• Maggi → Yippee (−₹60)",
+      text: "Example answer: A few switches worth trying, close in quality to what you already buy:\n\n• Aashirvaad Atta → Pillsbury\n• Surf Excel → Tide Plus\n• Maggi → Yippee",
     };
   }
   return {
     role: "ai",
-    confidence: 88,
-    text: "Three moves get you there without changing your diet: switch Aashirvaad Atta to Pillsbury (-₹95), skip cooking oil this month since stock is 1.6× normal (-₹920), and re-time your snack run to next Friday's 2-for-1 (-₹180). Total modeled saving: ₹1,195.",
+    text: "Example answer: A few small moves without changing your diet — switching one staple brand, skipping a restock that's already well-stocked, and timing a snack run around a sale. Real numbers will replace this once we have your shopping history.",
   };
 }
 
 export function AskAiWidget() {
   const [open, setOpen] = useState(false);
+  const demoMode = !hasRealData();
   const [msgs, setMsgs] = useState<Msg[]>(seed);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
@@ -62,6 +64,11 @@ export function AskAiWidget() {
       setTyping(false);
     }, 900);
   };
+
+  // No real backend exists for this yet — only show the illustrative demo
+  // version before a household has real shopping data, rather than mixing
+  // fabricated answers into a household's real recommendations.
+  if (!demoMode) return null;
 
   return (
     <>
@@ -98,7 +105,9 @@ export function AskAiWidget() {
             </div>
             <div>
               <div className="font-semibold text-sm">Ask AI</div>
-              <div className="text-xs text-muted-foreground">Tuned to your household</div>
+              <div className="text-xs text-muted-foreground">
+                Demo · example answers until you add real data
+              </div>
             </div>
           </div>
           <button

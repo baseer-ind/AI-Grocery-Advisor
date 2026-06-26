@@ -538,7 +538,7 @@ function HouseholdSnapshotStrip({ profile }: { profile: StoredHouseholdProfile |
     { label: "Shopping style", value: profile.shoppingStyle },
     { label: "Planning", value: profile.planningStyle },
     { label: "Pantry", value: profile.pantryReadiness },
-    { label: "Profile confidence", value: `${Math.round(profile.confidence * 100)}%` },
+    { label: "Profile confidence", value: `${Math.round(profile.confidence)}%` },
   ];
 
   return (

@@ -70,8 +70,6 @@ export async function postToGoogleSheets<T extends Record<string, unknown>>(
   payload: T,
 ): Promise<SubmitResult> {
   try {
-    console.log("[feedbackService] Request:", url, payload);
-
     const body = toFormBody(payload);
 
     // application/x-www-form-urlencoded is a CORS-safe content type (no preflight)
@@ -89,7 +87,6 @@ export async function postToGoogleSheets<T extends Record<string, unknown>>(
         message:
           "Google Apps Script accepted the request; browser response is opaque due to no-cors mode.",
       };
-      console.log("[feedbackService] Response received:", data);
       return { ok: true, status: 0, message: "Submitted", data };
     }
 
@@ -99,8 +96,6 @@ export async function postToGoogleSheets<T extends Record<string, unknown>>(
     } catch {
       data = await res.text();
     }
-
-    console.log("[feedbackService] Response received:", res.status, data);
 
     if (!res.ok) {
       return { ok: false, status: res.status, message: `Request failed (${res.status})`, data };
@@ -130,17 +125,13 @@ export async function submitFounderFeedback(
 }
 
 export async function submitFeedback(payload: FeedbackPayload): Promise<SubmitResult> {
-  console.log("[feedbackService] Form submitted", payload);
-
   const result = await postToGoogleSheets(
     GOOGLE_APPS_SCRIPT_URL,
     payload as unknown as Record<string, unknown>,
   );
 
-  if (result.ok) {
-    console.log("[feedbackService] Response received", result);
-  } else {
-    console.error("[feedbackService] Submission failed", result);
+  if (!result.ok) {
+    console.error("[feedbackService] Submission failed", result.message);
   }
   return result;
 }
