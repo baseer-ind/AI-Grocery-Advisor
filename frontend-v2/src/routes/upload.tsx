@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { markHasRealData } from "@/lib/real-data";
+import { matchConfidenceNarrative } from "@/lib/household-identity";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/upload")({
@@ -433,7 +434,7 @@ function VerificationRow({
           <div className="text-xs text-muted-foreground mt-0.5">
             ₹{item.total_price.toLocaleString("en-IN")} · {item.quantity} {item.unit}
             {item.match_confidence != null &&
-              ` · ${Math.round(item.match_confidence * 100)}% confident`}
+              ` · ${matchConfidenceNarrative(item.match_confidence)}`}
           </div>
         </div>
         <button
@@ -465,7 +466,7 @@ function VerificationRow({
             >
               <span>{s.product_name}</span>
               <span className="text-xs text-muted-foreground">
-                {Math.round(s.confidence * 100)}%
+                {matchConfidenceNarrative(s.confidence)}
               </span>
             </button>
           ))}

@@ -33,6 +33,9 @@ export type StoredHouseholdProfile = {
   shoppingStyle: string;
   planningStyle: string;
   pantryReadiness: string;
+  // Profile-completeness score, 0–90 (never 0–1 or 0–100) — see
+  // deriveProfile() in household.tsx for how it's built. Already a
+  // whole-number percentage; never multiply by 100 when displaying it.
   confidence: number;
   // Raw onboarding answers, kept verbatim alongside the derived snapshot above
   // so screens like Household Memory can render honest observations

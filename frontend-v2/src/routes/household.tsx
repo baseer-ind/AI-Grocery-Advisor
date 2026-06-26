@@ -55,6 +55,13 @@ const initialAnswers: Answers = {
   priorities: [],
 };
 
+// `confidence` here is a profile-completeness score on a 0–90 scale (not 0–1,
+// not 0–100) — it caps below 100 because onboarding answers alone can never
+// fully describe a household; real shopping history closes the remaining gap.
+// Anywhere this value is displayed or combined with other 0–100 scores,
+// treat it as already a whole-number percentage — never multiply by 100.
+const MAX_PROFILE_CONFIDENCE = 90;
+
 function deriveProfile(answers: Answers) {
   let householdType = "Unknown Household";
   let shoppingStyle = "Not Enough Data";
@@ -102,7 +109,7 @@ function deriveProfile(answers: Answers) {
     confidence += 30;
   }
 
-  confidence = Math.min(confidence, 90);
+  confidence = Math.min(confidence, MAX_PROFILE_CONFIDENCE);
 
   return { householdType, shoppingStyle, planningStyle, pantryReadiness, confidence };
 }

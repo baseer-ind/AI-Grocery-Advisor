@@ -1,6 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { AlertCircle, ArrowLeft, ArrowRight, Check, Heart, Loader2, MessageCircle, Send, Sparkles, Star } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Heart,
+  Loader2,
+  MessageCircle,
+  Send,
+  Sparkles,
+  Star,
+} from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { cn } from "@/lib/utils";
 import { submitFeedback, type FeedbackPayload } from "@/lib/feedbackService";
@@ -20,7 +31,13 @@ const sections: StepDef[] = [
     title: "After exploring the product, what's your overall impression?",
     sub: "Be honest — even a low rating helps us.",
     type: "single",
-    options: ["⭐⭐⭐⭐⭐  Excellent", "⭐⭐⭐⭐  Good", "⭐⭐⭐  Average", "⭐⭐  Needs Improvement", "⭐  Not Useful"],
+    options: [
+      "⭐⭐⭐⭐⭐  Excellent",
+      "⭐⭐⭐⭐  Good",
+      "⭐⭐⭐  Average",
+      "⭐⭐  Needs Improvement",
+      "⭐  Not Useful",
+    ],
   },
   {
     key: "wouldUse",
@@ -126,12 +143,26 @@ const sections: StepDef[] = [
 ];
 
 type Answers = Record<string, string | string[]>;
-type Lead = { name: string; email: string; mobile: string; city: string; household: string; comments: string };
+type Lead = {
+  name: string;
+  email: string;
+  mobile: string;
+  city: string;
+  household: string;
+  comments: string;
+};
 
 function Feedback() {
   const [stepIdx, setStepIdx] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
-  const [lead, setLead] = useState<Lead>({ name: "", email: "", mobile: "", city: "", household: "", comments: "" });
+  const [lead, setLead] = useState<Lead>({
+    name: "",
+    email: "",
+    mobile: "",
+    city: "",
+    household: "",
+    comments: "",
+  });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -218,7 +249,6 @@ function Feedback() {
     setSubmitted(true);
   };
 
-
   if (submitted) {
     return (
       <AppShell title="Thank you" eyebrow="Feedback received">
@@ -281,7 +311,9 @@ function Feedback() {
               We're building Household Advisor to help families make smarter purchasing decisions.
               Every piece of feedback is reviewed and helps shape the product roadmap.
             </p>
-            <p className="mt-3 text-sm font-medium">Thank you for helping us build something meaningful.</p>
+            <p className="mt-3 text-sm font-medium">
+              Thank you for helping us build something meaningful.
+            </p>
           </div>
 
           <div className="rounded-2xl border border-border bg-surface p-6">
@@ -292,8 +324,8 @@ function Feedback() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Your input directly shapes what we build next — features, pricing, and what we cut.
-              No corporate survey. No spam.
+              Your input directly shapes what we build next — features, pricing, and what we cut. No
+              corporate survey. No spam.
             </p>
           </div>
         </aside>
@@ -315,7 +347,11 @@ function Feedback() {
             {!isLead && step ? (
               <>
                 <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  {step.type === "multi" ? "Select all that apply" : step.type === "text" ? "Open response" : "Single choice"}
+                  {step.type === "multi"
+                    ? "Select all that apply"
+                    : step.type === "text"
+                      ? "Open response"
+                      : "Single choice"}
                 </div>
                 <h2 className="mt-2 text-2xl lg:text-3xl font-semibold tracking-tight text-balance">
                   {step.title}
@@ -340,7 +376,9 @@ function Feedback() {
                         <button
                           key={opt}
                           onClick={() =>
-                            step.type === "single" ? setAnswer(step.key, opt) : toggleMulti(step.key, opt)
+                            step.type === "single"
+                              ? setAnswer(step.key, opt)
+                              : toggleMulti(step.key, opt)
                           }
                           className={cn(
                             "text-left rounded-xl border p-4 flex items-center justify-between gap-3 transition-all",
@@ -377,11 +415,37 @@ function Feedback() {
                 </p>
 
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Field label="Name" value={lead.name} onChange={(v) => setLead({ ...lead, name: v })} placeholder="Your full name" />
-                  <Field label="Email" value={lead.email} onChange={(v) => setLead({ ...lead, email: v })} placeholder="you@home.com" type="email" />
-                  <Field label="Mobile number" value={lead.mobile} onChange={(v) => setLead({ ...lead, mobile: v })} placeholder="+91 ..." />
-                  <Field label="City" value={lead.city} onChange={(v) => setLead({ ...lead, city: v })} placeholder="Hyderabad" />
-                  <Field label="Household size" value={lead.household} onChange={(v) => setLead({ ...lead, household: v })} placeholder="4 members" />
+                  <Field
+                    label="Name"
+                    value={lead.name}
+                    onChange={(v) => setLead({ ...lead, name: v })}
+                    placeholder="Your full name"
+                  />
+                  <Field
+                    label="Email"
+                    value={lead.email}
+                    onChange={(v) => setLead({ ...lead, email: v })}
+                    placeholder="you@home.com"
+                    type="email"
+                  />
+                  <Field
+                    label="Mobile number"
+                    value={lead.mobile}
+                    onChange={(v) => setLead({ ...lead, mobile: v })}
+                    placeholder="+91 ..."
+                  />
+                  <Field
+                    label="City"
+                    value={lead.city}
+                    onChange={(v) => setLead({ ...lead, city: v })}
+                    placeholder="Hyderabad"
+                  />
+                  <Field
+                    label="Household size"
+                    value={lead.household}
+                    onChange={(v) => setLead({ ...lead, household: v })}
+                    placeholder="4 members"
+                  />
                 </div>
                 <div className="mt-3">
                   <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -466,7 +530,9 @@ function Field({
 }) {
   return (
     <div>
-      <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{label}</label>
+      <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        {label}
+      </label>
       <input
         type={type}
         value={value}

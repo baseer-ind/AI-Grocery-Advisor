@@ -167,12 +167,54 @@ export const topProducts = [
 ];
 
 export const stores = [
-  { name: "BigBasket", type: "Online", basket: 8250, rating: 4.6, delivery: "Same day", confidence: "High" },
-  { name: "DMart Ready", type: "Online", basket: 8410, rating: 4.5, delivery: "Next day", confidence: "High" },
-  { name: "Zepto", type: "Online", basket: 8920, rating: 4.4, delivery: "10 min", confidence: "Medium" },
-  { name: "Reliance Fresh — Banjara Hills", type: "Local", basket: 8640, rating: 4.3, delivery: "Walk-in", confidence: "Community" },
-  { name: "Ratnadeep — Jubilee Hills", type: "Local", basket: 8990, rating: 4.5, delivery: "Walk-in", confidence: "Community" },
-  { name: "Local Kirana (Sai Stores)", type: "Local", basket: 9120, rating: 4.2, delivery: "Walk-in", confidence: "Submitted" },
+  {
+    name: "BigBasket",
+    type: "Online",
+    basket: 8250,
+    rating: 4.6,
+    delivery: "Same day",
+    confidence: "High",
+  },
+  {
+    name: "DMart Ready",
+    type: "Online",
+    basket: 8410,
+    rating: 4.5,
+    delivery: "Next day",
+    confidence: "High",
+  },
+  {
+    name: "Zepto",
+    type: "Online",
+    basket: 8920,
+    rating: 4.4,
+    delivery: "10 min",
+    confidence: "Medium",
+  },
+  {
+    name: "Reliance Fresh — Banjara Hills",
+    type: "Local",
+    basket: 8640,
+    rating: 4.3,
+    delivery: "Walk-in",
+    confidence: "Community",
+  },
+  {
+    name: "Ratnadeep — Jubilee Hills",
+    type: "Local",
+    basket: 8990,
+    rating: 4.5,
+    delivery: "Walk-in",
+    confidence: "Community",
+  },
+  {
+    name: "Local Kirana (Sai Stores)",
+    type: "Local",
+    basket: 9120,
+    rating: 4.2,
+    delivery: "Walk-in",
+    confidence: "Submitted",
+  },
 ];
 
 export const samplePriceList = [

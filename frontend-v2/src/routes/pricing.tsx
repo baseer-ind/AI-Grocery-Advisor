@@ -69,8 +69,8 @@ function Pricing() {
           Smarter purchasing decisions, every week.
         </h2>
         <p className="mt-3 text-muted-foreground text-pretty">
-          Pro pays for itself within a single bill. We're not optimizing for the cheapest — we're optimizing for the right
-          decision across price, quality, reviews, and timing.
+          Pro pays for itself within a single bill. We're not optimizing for the cheapest — we're
+          optimizing for the right decision across price, quality, reviews, and timing.
         </p>
       </div>
 
@@ -90,7 +90,9 @@ function Pricing() {
               </span>
             )}
             <div>
-              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{t.name}</div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                {t.name}
+              </div>
               <div className="mt-3 flex items-baseline gap-2">
                 <span className="text-4xl font-semibold tracking-tight font-mono">{t.price}</span>
                 <span className="text-sm text-muted-foreground">{t.cadence}</span>
@@ -100,7 +102,12 @@ function Pricing() {
             <ul className="mt-6 space-y-2.5 text-sm flex-1">
               {t.features.map((f) => (
                 <li key={f} className="flex items-start gap-2.5">
-                  <Check className={"h-4 w-4 mt-0.5 shrink-0 " + (t.highlight ? "text-accent" : "text-muted-foreground")} />
+                  <Check
+                    className={
+                      "h-4 w-4 mt-0.5 shrink-0 " +
+                      (t.highlight ? "text-accent" : "text-muted-foreground")
+                    }
+                  />
                   <span>{f}</span>
                 </li>
               ))}
@@ -108,7 +115,9 @@ function Pricing() {
             <button
               className={cn(
                 "mt-7 w-full rounded-lg px-4 py-2.5 text-sm font-semibold transition-all",
-                t.highlight ? "bg-foreground text-background hover:opacity-90" : "border border-border hover:bg-surface-2",
+                t.highlight
+                  ? "bg-foreground text-background hover:opacity-90"
+                  : "border border-border hover:bg-surface-2",
               )}
             >
               {t.cta}
@@ -119,9 +128,18 @@ function Pricing() {
 
       <section className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-5">
         {[
-          ["Not a comparison site", "We never push you to the cheapest. Quality, reviews and your household preferences carry equal weight."],
-          ["Not a delivery app", "We don't sell groceries or take affiliate fees. Our only incentive is your trust."],
-          ["Private by design", "Bills are parsed on-device when possible. We never resell your purchase history."],
+          [
+            "Not a comparison site",
+            "We never push you to the cheapest. Quality, reviews and your household preferences carry equal weight.",
+          ],
+          [
+            "Not a delivery app",
+            "We don't sell groceries or take affiliate fees. Our only incentive is your trust.",
+          ],
+          [
+            "Private by design",
+            "Bills are parsed on-device when possible. We never resell your purchase history.",
+          ],
         ].map(([t, b]) => (
           <div key={t} className="rounded-2xl border border-border bg-surface p-6">
             <h4 className="font-semibold tracking-tight">{t}</h4>

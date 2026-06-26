@@ -2,7 +2,6 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Heart, X } from "lucide-react";
 
-const TRIGGER_PATHS = new Set(["/analysis"]);
 const VISIT_KEY = "ha_visited_paths";
 const DISMISS_KEY = "ha_feedback_cta_dismissed";
 const SUBMIT_KEY = "ha_feedback_submitted";
@@ -28,7 +27,7 @@ export function FeedbackCta() {
       localStorage.setItem(VISIT_KEY, JSON.stringify(visited));
     }
 
-    if (visited.length >= THRESHOLD || TRIGGER_PATHS.has(pathname)) {
+    if (visited.length >= THRESHOLD) {
       const t = setTimeout(() => setShow(true), 600);
       return () => clearTimeout(t);
     }
@@ -42,7 +41,7 @@ export function FeedbackCta() {
   };
 
   return (
-    <div className="fixed bottom-20 right-4 lg:bottom-4 max-w-sm w-[calc(100%-2rem)] sm:w-auto rounded-2xl border border-border bg-surface shadow-2xl p-4 animate-in slide-in-from-bottom-4 z-40">
+    <div className="fixed bottom-36 right-4 lg:bottom-24 lg:right-5 max-w-sm w-[calc(100%-2rem)] sm:w-auto rounded-2xl border border-border bg-surface shadow-2xl p-4 animate-in slide-in-from-bottom-4 z-40">
       <div className="flex items-start gap-3">
         <div className="h-9 w-9 shrink-0 rounded-full bg-foreground text-background flex items-center justify-center">
           <Heart className="h-4 w-4" />

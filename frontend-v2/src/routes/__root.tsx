@@ -78,17 +78,37 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Lovable App" },
-      { name: "description", content: "AI Household Shopping Advisor helps households make smarter purchasing decisions for better value." },
+      {
+        name: "description",
+        content:
+          "AI Household Shopping Advisor helps households make smarter purchasing decisions for better value.",
+      },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "AI Household Shopping Advisor helps households make smarter purchasing decisions for better value." },
+      {
+        property: "og:description",
+        content:
+          "AI Household Shopping Advisor helps households make smarter purchasing decisions for better value.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "AI Household Shopping Advisor helps households make smarter purchasing decisions for better value." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/9b91298a-0e9f-439b-bc4e-41f301745880/id-preview-835682e1--74aa4bd6-a76f-44c9-ac80-1cf0481b8144.lovable.app-1782152146604.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/9b91298a-0e9f-439b-bc4e-41f301745880/id-preview-835682e1--74aa4bd6-a76f-44c9-ac80-1cf0481b8144.lovable.app-1782152146604.png" },
+      {
+        name: "twitter:description",
+        content:
+          "AI Household Shopping Advisor helps households make smarter purchasing decisions for better value.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/9b91298a-0e9f-439b-bc4e-41f301745880/id-preview-835682e1--74aa4bd6-a76f-44c9-ac80-1cf0481b8144.lovable.app-1782152146604.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/9b91298a-0e9f-439b-bc4e-41f301745880/id-preview-835682e1--74aa4bd6-a76f-44c9-ac80-1cf0481b8144.lovable.app-1782152146604.png",
+      },
     ],
     links: [
       {

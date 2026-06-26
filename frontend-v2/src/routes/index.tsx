@@ -102,7 +102,7 @@ function Nav() {
             to="/household"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            Sign In
+            Open My Household
           </Link>
           <Link
             to="/household"
@@ -687,7 +687,7 @@ function Footer() {
             Feedback
           </Link>
           <Link to="/today" className="hover:text-foreground">
-            Sign In
+            Open My Household
           </Link>
         </div>
       </div>

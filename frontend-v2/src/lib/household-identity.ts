@@ -180,3 +180,12 @@ export function confidenceNarrative(eventCount: number): string {
   if (eventCount < 8) return "We understand your routine well.";
   return "We can now make personalised recommendations with confidence.";
 }
+
+// Same plain-language-over-raw-percentage principle, applied to a single
+// product match rather than household-wide confidence — used wherever a
+// matched/suggested catalog product is shown next to its match score.
+export function matchConfidenceNarrative(score: number): string {
+  if (score >= 0.85) return "Likely match";
+  if (score >= 0.6) return "Possible match";
+  return "Uncertain match";
+}
