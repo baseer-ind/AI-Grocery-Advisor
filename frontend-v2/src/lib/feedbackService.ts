@@ -113,10 +113,29 @@ export async function postToGoogleSheets<T extends Record<string, unknown>>(
   }
 }
 
+export interface FounderFeedbackPayload {
+  timestamp: string;
+  page: string;
+  tryingTo: string;
+  confusing: string;
+}
+
+export async function submitFounderFeedback(
+  payload: FounderFeedbackPayload,
+): Promise<SubmitResult> {
+  return postToGoogleSheets(GOOGLE_APPS_SCRIPT_URL, {
+    ...(payload as unknown as Record<string, unknown>),
+    formType: "founder_feedback",
+  });
+}
+
 export async function submitFeedback(payload: FeedbackPayload): Promise<SubmitResult> {
   console.log("[feedbackService] Form submitted", payload);
 
-  const result = await postToGoogleSheets(GOOGLE_APPS_SCRIPT_URL, payload as unknown as Record<string, unknown>);
+  const result = await postToGoogleSheets(
+    GOOGLE_APPS_SCRIPT_URL,
+    payload as unknown as Record<string, unknown>,
+  );
 
   if (result.ok) {
     console.log("[feedbackService] Response received", result);
@@ -125,4 +144,3 @@ export async function submitFeedback(payload: FeedbackPayload): Promise<SubmitRe
   }
   return result;
 }
-

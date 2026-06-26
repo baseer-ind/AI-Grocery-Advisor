@@ -20,6 +20,7 @@ import {
 import { FeedbackCta } from "./feedback-cta";
 import { ThemeToggle } from "./theme-toggle";
 import { AskAiWidget } from "./ask-ai-widget";
+import { FounderFeedbackWidget } from "./founder-feedback-widget";
 import { cn } from "@/lib/utils";
 import { getHouseholdProfile, type StoredHouseholdProfile } from "@/lib/real-data";
 
@@ -240,6 +241,7 @@ export function AppShell({
       </nav>
 
       <FeedbackCta />
+      <FounderFeedbackWidget />
       <AskAiWidget />
     </div>
   );
