@@ -166,7 +166,7 @@ function Today() {
               Interactive demo — exploring a demo household, not your data
             </span>
             <Link to="/upload" className="text-xs font-semibold underline hover:no-underline">
-              Add your own bill
+              Add a bill
             </Link>
           </div>
         )}
@@ -184,7 +184,7 @@ function Today() {
               to="/upload"
               className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground py-1"
             >
-              <Sparkles className="h-3.5 w-3.5" /> Add a shopping event
+              <Sparkles className="h-3.5 w-3.5" /> Add a bill
             </Link>
             <Link
               to="/knowledge"

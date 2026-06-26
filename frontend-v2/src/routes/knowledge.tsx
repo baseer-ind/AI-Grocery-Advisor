@@ -84,7 +84,7 @@ function YourHouseholdPage() {
               ? `We've learned that your household is a ${identity.label.toLowerCase()}${
                   profile.stores?.[0] ? `, and you prefer ${profile.stores[0]}` : ""
                 }.`
-              : "We've started understanding how your family shops."}{" "}
+              : "We've started understanding how your household shops."}{" "}
             {narrative} Every shopping event, and every correction, helps us make better
             recommendations.
           </p>

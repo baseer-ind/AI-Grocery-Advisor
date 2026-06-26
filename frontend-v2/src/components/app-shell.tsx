@@ -41,7 +41,7 @@ const navGroups = [
   {
     label: "Improve Your Recommendations",
     items: [
-      { to: "/upload", label: "Add Shopping Event", icon: ScanLine },
+      { to: "/upload", label: "Add a Bill", icon: ScanLine },
       { to: "/bill-check", label: "Compare My Basket", icon: TrendingDown },
     ],
   },

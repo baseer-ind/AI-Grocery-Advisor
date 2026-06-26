@@ -239,7 +239,7 @@ function ThisWeek() {
             Interactive demo — exploring a demo household, not your data
           </span>
           <Link to="/upload" className="text-xs font-semibold underline hover:no-underline">
-            Add your own bill
+            Add a bill
           </Link>
         </div>
       )}
@@ -357,8 +357,8 @@ function ThisWeek() {
                   <div className="mt-5 rounded-xl border border-border bg-background p-4 flex items-start gap-2">
                     <Sparkles className="h-4 w-4 text-accent mt-0.5 shrink-0" />
                     <p className="text-xs text-muted-foreground">
-                      <span className="text-foreground font-medium">AI tip.</span> Splitting this
-                      list between BigBasket and DMart saves ₹140 and adds 0 delivery time.
+                      <span className="text-foreground font-medium">Recommendation.</span> Splitting
+                      this list between BigBasket and DMart saves ₹140 and adds 0 delivery time.
                     </p>
                   </div>
                 </>

@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Household Advisor learns how your family actually shops, then helps you plan, compare, and save — without ever asking you to change how you live.",
+          "Household Advisor learns how your household actually shops, then helps you plan, compare, and save — without ever asking you to change how you live.",
       },
       { property: "og:title", content: "Household Advisor" },
       {
@@ -45,7 +45,7 @@ function Landing() {
       <Story />
       <HowItWorks />
       <LearnsOverTime />
-      <WhyFamiliesLoveIt />
+      <WhyHouseholdsLoveIt />
       <Trust />
       <Screenshots />
       <BetaJourney />
@@ -182,7 +182,7 @@ function Hero() {
             className="mt-6 max-w-xl text-lg lg:text-xl text-muted-foreground leading-relaxed text-pretty animate-entrance"
             style={{ animationDelay: "120ms" }}
           >
-            Household Advisor quietly learns how your family shops — what you buy, where, and how
+            Household Advisor quietly learns how your household shops — what you buy, where, and how
             often — and turns that into a calmer, smarter way to plan your next trip.
           </p>
           <div
@@ -238,7 +238,7 @@ function HeroPreview() {
               </div>
             </div>
             <div className="rounded-2xl border border-border bg-surface p-5">
-              <div className="text-xs text-muted-foreground">Quiet suggestion</div>
+              <div className="text-xs text-muted-foreground">Recommendation</div>
               <div className="mt-2 text-base font-medium leading-snug">
                 Cooking oil usually runs low around this time — worth adding to your next list.
               </div>
@@ -255,7 +255,7 @@ function Story() {
   const lines = [
     "Your household makes hundreds of shopping decisions every month.",
     "Most apps only record those decisions after they happen.",
-    "Household Advisor quietly learns how your family shops.",
+    "Household Advisor quietly learns how your household shops.",
     "Over time, it starts recognising your routine.",
     "Then it begins helping you shop smarter — before you ask.",
   ];
@@ -416,8 +416,8 @@ function LearnsOverTime() {
   );
 }
 
-/* ---------- Why families will love it ---------- */
-function WhyFamiliesLoveIt() {
+/* ---------- Why households will love it ---------- */
+function WhyHouseholdsLoveIt() {
   const cards = [
     {
       icon: HeartHandshake,
@@ -444,7 +444,7 @@ function WhyFamiliesLoveIt() {
     <section id="why" className="py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <SectionHeading
-          eyebrow="Why families will love it"
+          eyebrow="Why households will love it"
           title="Built to feel like help, not homework."
         />
         <div className="mt-14 grid sm:grid-cols-2 gap-5">
@@ -512,7 +512,7 @@ function Screenshots() {
   const frames = [
     {
       label: "Your Household",
-      body: "A plain-language read on how your family shops — and why we think so.",
+      body: "A plain-language read on how your household shops — and why we think so.",
     },
     {
       label: "Compare My Basket",

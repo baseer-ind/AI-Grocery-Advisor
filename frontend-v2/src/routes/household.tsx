@@ -626,7 +626,7 @@ function SnapshotCard({
           className="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3.5 hover:opacity-80"
         >
           <span className="flex items-center gap-2.5 text-sm font-medium">
-            <UploadIcon className="h-4 w-4" /> Upload a Bill
+            <UploadIcon className="h-4 w-4" /> Add a Bill
           </span>
           <ArrowRight className="h-4 w-4 text-muted-foreground" />
         </Link>

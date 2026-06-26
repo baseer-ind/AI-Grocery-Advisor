@@ -308,7 +308,7 @@ function Feedback() {
               </div>
             </div>
             <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-              We're building Household Advisor to help families make smarter purchasing decisions.
+              We're building Household Advisor to help households make smarter purchasing decisions.
               Every piece of feedback is reviewed and helps shape the product roadmap.
             </p>
             <p className="mt-3 text-sm font-medium">

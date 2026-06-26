@@ -134,7 +134,7 @@ function BillCheck() {
               to="/upload"
               className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
             >
-              Upload a bill <ArrowRight className="h-4 w-4" />
+              Add a bill <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/bill-check"
@@ -156,7 +156,7 @@ function BillCheck() {
           Sample mode — this is illustrative data, not your bill
         </span>
         <Link to="/upload" className="text-xs font-semibold underline hover:no-underline">
-          Upload your bill
+          Add a bill
         </Link>
       </div>
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">

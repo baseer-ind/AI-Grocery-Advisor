@@ -116,7 +116,7 @@ function UploadPage() {
   const pendingReview = real?.items.filter((i) => i.review_status === "pending_review") ?? [];
 
   return (
-    <AppShell title="Upload your bill" eyebrow="Bills / New Upload">
+    <AppShell title="Add a bill" eyebrow="Bills / New Upload">
       <div className="grid grid-cols-12 gap-5">
         <div className="col-span-12 lg:col-span-8">
           <div
