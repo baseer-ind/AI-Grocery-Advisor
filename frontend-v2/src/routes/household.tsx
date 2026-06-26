@@ -232,6 +232,8 @@ function HouseholdOnboardingPage() {
   const [insight, setInsight] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const remaining =
+    answers.size == null ? 0 : answers.size - (answers.adults + answers.children + answers.seniors);
 
   useEffect(() => {
     if (step === "snapshot") return;
@@ -241,7 +243,7 @@ function HouseholdOnboardingPage() {
   const started = step !== "intro";
 
   async function submitProfile() {
-    if (answers.size == null || !answers.city.trim()) return;
+    if (answers.size == null || !answers.city.trim() || remaining !== 0) return;
     if (!API_BASE) {
       setError("Backend URL is not configured (VITE_API_URL is missing from this build).");
       return;
@@ -406,7 +408,11 @@ function HouseholdOnboardingPage() {
                         setAnswers((a) => ({
                           ...a,
                           size: n,
-                          adults: Math.min(a.adults, n) || 1,
+                          // Reset to a valid split whenever size changes — never leave
+                          // adults+children+seniors mismatched with the chosen size.
+                          adults: n,
+                          children: 0,
+                          seniors: 0,
                         }))
                       }
                     >
@@ -418,22 +424,37 @@ function HouseholdOnboardingPage() {
               </div>
 
               {answers.size != null && (
-                <div className="grid grid-cols-3 gap-3">
-                  <Counter
-                    label="Adults"
-                    value={answers.adults}
-                    onChange={(v) => setAnswers((a) => ({ ...a, adults: v }))}
-                  />
-                  <Counter
-                    label="Children"
-                    value={answers.children}
-                    onChange={(v) => setAnswers((a) => ({ ...a, children: v }))}
-                  />
-                  <Counter
-                    label="Seniors"
-                    value={answers.seniors}
-                    onChange={(v) => setAnswers((a) => ({ ...a, seniors: v }))}
-                  />
+                <div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <Counter
+                      label="Adults"
+                      value={answers.adults}
+                      max={answers.adults + remaining}
+                      onChange={(v) => setAnswers((a) => ({ ...a, adults: v }))}
+                    />
+                    <Counter
+                      label="Children"
+                      value={answers.children}
+                      max={answers.children + remaining}
+                      onChange={(v) => setAnswers((a) => ({ ...a, children: v }))}
+                    />
+                    <Counter
+                      label="Seniors"
+                      value={answers.seniors}
+                      max={answers.seniors + remaining}
+                      onChange={(v) => setAnswers((a) => ({ ...a, seniors: v }))}
+                    />
+                  </div>
+                  <p
+                    className={cn(
+                      "mt-2 text-xs",
+                      remaining === 0 ? "text-muted-foreground" : "text-warning-foreground",
+                    )}
+                  >
+                    {remaining === 0
+                      ? `Adults, children, and seniors add up to ${answers.size}. ✓`
+                      : `${remaining} more to assign to make this add up to a household of ${answers.size}.`}
+                  </p>
                 </div>
               )}
 
@@ -504,7 +525,7 @@ function HouseholdOnboardingPage() {
                 <PrimaryButton
                   onClick={submitProfile}
                   busy={busy}
-                  disabled={answers.size == null || !answers.city.trim()}
+                  disabled={answers.size == null || !answers.city.trim() || remaining !== 0}
                 >
                   Continue
                 </PrimaryButton>
@@ -654,10 +675,12 @@ function Label({ children }: { children: React.ReactNode }) {
 function Counter({
   label,
   value,
+  max,
   onChange,
 }: {
   label: string;
   value: number;
+  max: number;
   onChange: (v: number) => void;
 }) {
   return (
@@ -674,9 +697,10 @@ function Counter({
         </button>
         <span className="font-semibold">{value}</span>
         <button
-          onClick={() => onChange(value + 1)}
+          onClick={() => onChange(Math.min(max, value + 1))}
+          disabled={value >= max}
           aria-label={`Increase ${label.toLowerCase()}`}
-          className="h-9 w-9 rounded-full bg-surface flex items-center justify-center hover:opacity-80"
+          className="h-9 w-9 rounded-full bg-surface flex items-center justify-center hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           +
         </button>

@@ -26,7 +26,6 @@ export function buildUnlocks(
   frequentProducts: FrequentProduct[] | null,
 ): Unlock[] {
   const eventCount = events?.length ?? 0;
-  const distinctStores = new Set((events ?? []).map((e) => e.store_name).filter(Boolean)).size;
   const hasPreferredBrand = (frequentProducts ?? []).some((p) => !!p.preferredBrand);
 
   const unlocks: Unlock[] = [];
@@ -47,26 +46,6 @@ export function buildUnlocks(
           description: "A daily read on whether you're stocked up or due for a trip.",
           status: "locked",
           reason: "Needs your first shopping event.",
-          to: "/upload",
-        },
-  );
-
-  unlocks.push(
-    distinctStores >= 2
-      ? {
-          id: "store-recommendations",
-          label: "Store Recommendations",
-          description: "Compare your basket across the stores you actually shop at.",
-          status: "unlocked",
-          reason: `Your history spans ${distinctStores} stores.`,
-          to: "/bill-check",
-        }
-      : {
-          id: "store-recommendations",
-          label: "Store Recommendations",
-          description: "Compare your basket across the stores you actually shop at.",
-          status: "locked",
-          reason: `Needs shopping events from ${2 - distinctStores} more store${2 - distinctStores === 1 ? "" : "s"}.`,
           to: "/upload",
         },
   );
@@ -117,27 +96,6 @@ export function buildUnlocks(
           status: "locked",
           reason: "Tell us a preferred brand for a frequently bought product to unlock this.",
           to: "/products",
-        },
-  );
-
-  const eventsNeededForAlerts = Math.max(0, 3 - eventCount);
-  unlocks.push(
-    eventCount >= 3
-      ? {
-          id: "price-alerts",
-          label: "Price Alerts",
-          description: "We'll flag it when a price moves meaningfully on what you buy.",
-          status: "unlocked",
-          reason: "Enough shopping history to detect real price changes.",
-          to: "/bill-check",
-        }
-      : {
-          id: "price-alerts",
-          label: "Price Alerts",
-          description: "We'll flag it when a price moves meaningfully on what you buy.",
-          status: "locked",
-          reason: `Needs ${eventsNeededForAlerts} more shopping event${eventsNeededForAlerts === 1 ? "" : "s"}.`,
-          to: "/upload",
         },
   );
 

@@ -680,9 +680,6 @@ function Footer() {
           <span>© 2026 Household Advisor · Built with early households</span>
         </div>
         <div className="flex items-center gap-5">
-          <Link to="/pricing" className="hover:text-foreground">
-            Pricing
-          </Link>
           <Link to="/feedback" className="hover:text-foreground">
             Feedback
           </Link>

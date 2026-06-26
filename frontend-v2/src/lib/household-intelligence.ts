@@ -255,26 +255,5 @@ export function buildWeeklyActionCards(
     }
   }
 
-  const distinctStores = new Set((events ?? []).map((e) => e.store_name).filter(Boolean));
-  if (distinctStores.size >= 2) {
-    cards.push({
-      id: "store-recommendation",
-      tag: "Store recommendation",
-      title: "Your recent shops span multiple stores",
-      body:
-        identity?.archetype === "bulk-buyer"
-          ? "Because your household buys in bulk, comparing stores can save more per trip."
-          : "Compare your basket across them to see where it's cheaper this week.",
-      to: "/bill-check",
-      cta: "Compare stores",
-      why: `Because: your shopping history includes ${distinctStores.size} different stores, so we can compare prices across them.`,
-      improve:
-        distinctStores.size < 3
-          ? "Shopping events from one more store would make this comparison stronger."
-          : null,
-      confidence: "medium",
-    });
-  }
-
   return cards;
 }

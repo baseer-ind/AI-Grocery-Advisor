@@ -3,12 +3,10 @@ import { useEffect, useState } from "react";
 import {
   AlertCircle,
   ArrowRight,
-  Camera,
   Check,
   CheckCircle2,
   Clock,
   Plus,
-  ShoppingBasket,
   Sparkles,
   X,
   XCircle,
@@ -418,14 +416,6 @@ function ThisWeek() {
                   </p>
                 </>
               )}
-              <Link
-                to="/bill-check"
-                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-foreground text-background px-4 py-2.5 text-sm font-semibold hover:opacity-90"
-              >
-                <ShoppingBasket className="h-4 w-4" />
-                See store recommendations
-                <ArrowRight className="h-4 w-4" />
-              </Link>
             </div>
           </aside>
         </div>
@@ -528,34 +518,6 @@ function ThisWeek() {
               </div>
             </Section>
           )}
-
-          <section className="rounded-2xl border border-dashed border-border bg-surface p-6 lg:p-8">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <div className="h-12 w-12 rounded-xl border border-border bg-background flex items-center justify-center">
-                  <Camera className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold tracking-tight">Pantry photo recognition</h3>
-                    <span className="rounded-md bg-foreground text-background px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest font-semibold">
-                      Coming Soon
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-muted-foreground max-w-xl">
-                    Snap a photo of your shelf or fridge — AI identifies products, reads expiry
-                    dates, and updates your pantry automatically.
-                  </p>
-                </div>
-              </div>
-              <button
-                disabled
-                className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-semibold text-muted-foreground cursor-not-allowed"
-              >
-                Notify me
-              </button>
-            </div>
-          </section>
         </div>
       )}
     </AppShell>

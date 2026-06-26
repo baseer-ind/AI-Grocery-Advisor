@@ -20,7 +20,6 @@ import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as HouseholdRouteImport } from './routes/household'
 import { Route as HabitsRouteImport } from './routes/habits'
 import { Route as FeedbackRouteImport } from './routes/feedback'
-import { Route as BillCheckRouteImport } from './routes/bill-check'
 import { Route as BetaRouteImport } from './routes/beta'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -79,11 +78,6 @@ const FeedbackRoute = FeedbackRouteImport.update({
   path: '/feedback',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BillCheckRoute = BillCheckRouteImport.update({
-  id: '/bill-check',
-  path: '/bill-check',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const BetaRoute = BetaRouteImport.update({
   id: '/beta',
   path: '/beta',
@@ -98,7 +92,6 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/beta': typeof BetaRoute
-  '/bill-check': typeof BillCheckRoute
   '/feedback': typeof FeedbackRoute
   '/habits': typeof HabitsRoute
   '/household': typeof HouseholdRoute
@@ -114,7 +107,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/beta': typeof BetaRoute
-  '/bill-check': typeof BillCheckRoute
   '/feedback': typeof FeedbackRoute
   '/habits': typeof HabitsRoute
   '/household': typeof HouseholdRoute
@@ -131,7 +123,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/beta': typeof BetaRoute
-  '/bill-check': typeof BillCheckRoute
   '/feedback': typeof FeedbackRoute
   '/habits': typeof HabitsRoute
   '/household': typeof HouseholdRoute
@@ -149,7 +140,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/beta'
-    | '/bill-check'
     | '/feedback'
     | '/habits'
     | '/household'
@@ -165,7 +155,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/beta'
-    | '/bill-check'
     | '/feedback'
     | '/habits'
     | '/household'
@@ -181,7 +170,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/beta'
-    | '/bill-check'
     | '/feedback'
     | '/habits'
     | '/household'
@@ -198,7 +186,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BetaRoute: typeof BetaRoute
-  BillCheckRoute: typeof BillCheckRoute
   FeedbackRoute: typeof FeedbackRoute
   HabitsRoute: typeof HabitsRoute
   HouseholdRoute: typeof HouseholdRoute
@@ -291,13 +278,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedbackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/bill-check': {
-      id: '/bill-check'
-      path: '/bill-check'
-      fullPath: '/bill-check'
-      preLoaderRoute: typeof BillCheckRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/beta': {
       id: '/beta'
       path: '/beta'
@@ -318,7 +298,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BetaRoute: BetaRoute,
-  BillCheckRoute: BillCheckRoute,
   FeedbackRoute: FeedbackRoute,
   HabitsRoute: HabitsRoute,
   HouseholdRoute: HouseholdRoute,

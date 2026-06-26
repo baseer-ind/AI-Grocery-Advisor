@@ -3,14 +3,12 @@ import { type ReactNode, useEffect, useState } from "react";
 import {
   Sparkles,
   Home as HomeIcon,
-  Crown,
   Menu,
   X,
   ListChecks,
   Heart,
   UserCircle2,
   ScanLine,
-  TrendingDown,
   Repeat,
   ShoppingBasket,
   BookOpen,
@@ -40,17 +38,11 @@ const navGroups = [
   },
   {
     label: "Improve Your Recommendations",
-    items: [
-      { to: "/upload", label: "Add a Bill", icon: ScanLine },
-      { to: "/bill-check", label: "Compare My Basket", icon: TrendingDown },
-    ],
+    items: [{ to: "/upload", label: "Add a Bill", icon: ScanLine }],
   },
   {
     label: "Account",
-    items: [
-      { to: "/pricing", label: "Pro", icon: Crown },
-      { to: "/feedback", label: "Help Us Build", icon: Heart },
-    ],
+    items: [{ to: "/feedback", label: "Help Us Build", icon: Heart }],
   },
 ] as const;
 

@@ -248,10 +248,10 @@ function UploadPage() {
                     />
                   </div>
                   <Link
-                    to="/bill-check"
+                    to="/today"
                     className="mt-6 inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
                   >
-                    Analyze My Spending
+                    See what we learned
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
