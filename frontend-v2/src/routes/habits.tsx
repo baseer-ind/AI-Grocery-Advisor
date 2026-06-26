@@ -14,10 +14,14 @@ export const Route = createFileRoute("/habits")({
 function ShoppingHabitsPage() {
   const profile = getHouseholdProfile();
   const [events, setEvents] = useState<ShoppingEventSummary[] | null>(null);
+  const [loading, setLoading] = useState(!!profile);
 
   useEffect(() => {
     if (!profile) return;
-    getShoppingEvents(profile.householdId).then(setEvents);
+    setLoading(true);
+    getShoppingEvents(profile.householdId)
+      .then(setEvents)
+      .finally(() => setLoading(false));
   }, [profile]);
 
   if (!profile) {
@@ -38,6 +42,17 @@ function ShoppingHabitsPage() {
               Build my household profile <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (loading) {
+    return (
+      <AppShell title="Shopping Habits" eyebrow="Household Advisor">
+        <div className="max-w-2xl mx-auto space-y-4 animate-pulse">
+          <div className="h-20 rounded-2xl bg-surface-2" />
+          <div className="h-20 rounded-2xl bg-surface-2" />
         </div>
       </AppShell>
     );

@@ -28,11 +28,15 @@ function YourHouseholdPage() {
   const profile = getHouseholdProfile();
   const [events, setEvents] = useState<ShoppingEventSummary[] | null>(null);
   const [pantry, setPantry] = useState<PredictedPantry | null>(null);
+  const [loading, setLoading] = useState(!!profile);
 
   useEffect(() => {
     if (!profile) return;
-    getShoppingEvents(profile.householdId).then(setEvents);
-    getPredictedPantry(profile.householdId).then(setPantry);
+    setLoading(true);
+    Promise.all([
+      getShoppingEvents(profile.householdId).then(setEvents),
+      getPredictedPantry(profile.householdId).then(setPantry),
+    ]).finally(() => setLoading(false));
   }, [profile]);
 
   if (!profile) {
@@ -54,6 +58,18 @@ function YourHouseholdPage() {
               Build my household profile <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (loading) {
+    return (
+      <AppShell title="Your Household" eyebrow="Household Advisor">
+        <div className="max-w-2xl mx-auto space-y-10 animate-pulse">
+          <div className="h-8 w-48 rounded bg-surface-2" />
+          <div className="h-24 rounded-2xl bg-surface-2" />
+          <div className="h-24 rounded-2xl bg-surface-2" />
         </div>
       </AppShell>
     );

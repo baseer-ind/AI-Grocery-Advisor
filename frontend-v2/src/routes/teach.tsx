@@ -120,7 +120,7 @@ function TeachPage() {
                   </div>
                   <button
                     onClick={() => handleRemove(f.id)}
-                    className="shrink-0 text-muted-foreground hover:text-destructive"
+                    className="shrink-0 p-1.5 -m-1.5 text-muted-foreground hover:text-destructive"
                     aria-label={`Remove "${f.text}"`}
                   >
                     <X className="h-4 w-4" />

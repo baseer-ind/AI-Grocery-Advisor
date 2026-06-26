@@ -589,7 +589,7 @@ function Group({
                       ? "bg-foreground border-foreground text-background"
                       : "border-border bg-background",
                   )}
-                  aria-label={onRemove ? "Confirm" : "toggle"}
+                  aria-label={onRemove ? `Confirm ${r.name}` : `Mark ${r.name} as needed`}
                   title={onRemove ? "Confirm — yes, I need this" : undefined}
                 >
                   {isChecked && <Check className="h-3 w-3" />}

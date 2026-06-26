@@ -121,14 +121,19 @@ function UploadPage() {
         <div className="col-span-12 lg:col-span-8">
           <div
             onDragOver={(e) => {
+              if (stage === "processing") return;
               e.preventDefault();
               setDrag(true);
             }}
             onDragLeave={() => setDrag(false)}
-            onDrop={onDrop}
+            onDrop={(e) => {
+              if (stage === "processing") return;
+              onDrop(e);
+            }}
             className={cn(
               "relative rounded-2xl border-2 border-dashed transition-all p-12 text-center",
               drag ? "border-foreground bg-surface-2" : "border-border bg-surface",
+              stage === "processing" && "opacity-60 pointer-events-none",
             )}
           >
             <div className="absolute inset-0 grid-bg opacity-30 rounded-2xl pointer-events-none" />
@@ -153,7 +158,8 @@ function UploadPage() {
               />
               <button
                 onClick={() => fileInput.current?.click()}
-                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
+                disabled={stage === "processing"}
+                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Browse files
                 <ArrowRight className="h-4 w-4" />

@@ -104,13 +104,17 @@ function Today() {
 
   const [pantry, setPantry] = useState<PredictedPantry | null>(null);
   const [events, setEvents] = useState<ShoppingEventSummary[] | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const profileForFetch = sample ? null : getHouseholdProfile();
 
   useEffect(() => {
     if (!profileForFetch) return;
-    getPredictedPantry(profileForFetch.householdId).then(setPantry);
-    getShoppingEvents(profileForFetch.householdId).then(setEvents);
+    setLoading(true);
+    Promise.all([
+      getPredictedPantry(profileForFetch.householdId).then(setPantry),
+      getShoppingEvents(profileForFetch.householdId).then(setEvents),
+    ]).finally(() => setLoading(false));
   }, [profileForFetch]);
 
   if (!sample && !hasRealData()) {
@@ -156,6 +160,18 @@ function Today() {
   }
 
   const profile = getHouseholdProfile();
+
+  if (loading) {
+    return (
+      <AppShell title="Household HQ" eyebrow="Household Advisor">
+        <div className="max-w-xl mx-auto space-y-4 animate-pulse">
+          <div className="h-20 rounded-2xl bg-surface-2" />
+          <div className="h-32 rounded-2xl bg-surface-2" />
+          <div className="h-32 rounded-2xl bg-surface-2" />
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell title="Household HQ" eyebrow="Household Advisor">

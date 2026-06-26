@@ -115,7 +115,7 @@ function Nav() {
         <button
           onClick={() => setOpen(!open)}
           className="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border"
-          aria-label="Menu"
+          aria-label={open ? "Close menu" : "Open menu"}
         >
           {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </button>

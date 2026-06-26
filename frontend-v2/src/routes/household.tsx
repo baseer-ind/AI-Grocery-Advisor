@@ -302,12 +302,23 @@ function HouseholdOnboardingPage() {
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <div className="flex items-center justify-between mb-8">
-          <Link
-            to="/today"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground"
-          >
-            ← Back
-          </Link>
+          {step === "intro" || step === "snapshot" ? (
+            <Link
+              to="/today"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              ← Back
+            </Link>
+          ) : (
+            <button
+              onClick={() =>
+                setStep(step === "profile" ? "intro" : step === "behavior" ? "profile" : "behavior")
+              }
+              className="text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              ← Back
+            </button>
+          )}
           {started && step !== "snapshot" && <StepDots step={step} />}
         </div>
 
@@ -574,14 +585,17 @@ function Counter({
       <div className="flex items-center justify-between">
         <button
           onClick={() => onChange(Math.max(0, value - 1))}
-          className="h-7 w-7 rounded-full bg-surface flex items-center justify-center hover:opacity-80"
+          disabled={value === 0}
+          aria-label={`Decrease ${label.toLowerCase()}`}
+          className="h-9 w-9 rounded-full bg-surface flex items-center justify-center hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           −
         </button>
         <span className="font-semibold">{value}</span>
         <button
           onClick={() => onChange(value + 1)}
-          className="h-7 w-7 rounded-full bg-surface flex items-center justify-center hover:opacity-80"
+          aria-label={`Increase ${label.toLowerCase()}`}
+          className="h-9 w-9 rounded-full bg-surface flex items-center justify-center hover:opacity-80"
         >
           +
         </button>

@@ -448,8 +448,12 @@ function BillCheck() {
               Equal-quality brand swaps and a split across BigBasket and DMart save ₹1,300/month
               with no drop in your household's quality scores.
             </p>
-            <button className="mt-4 inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-4 py-2.5 text-sm font-semibold hover:opacity-90">
-              Apply this basket
+            <button
+              disabled
+              title="Coming soon"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-4 py-2.5 text-sm font-semibold opacity-40 cursor-not-allowed"
+            >
+              Apply this basket · Coming soon
             </button>
           </div>
         </div>
@@ -607,11 +611,19 @@ function BillCheck() {
                   <Metric label="Delivery" value={s.delivery} small />
                 </div>
                 <div className="mt-5 pt-5 border-t border-border grid grid-cols-2 gap-2">
-                  <button className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-foreground text-background px-2.5 py-2 text-xs font-semibold hover:opacity-90">
-                    <ShoppingBasket className="h-3.5 w-3.5" /> Open basket
+                  <button
+                    disabled
+                    title="Coming soon"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-foreground text-background px-2.5 py-2 text-xs font-semibold opacity-40 cursor-not-allowed"
+                  >
+                    <ShoppingBasket className="h-3.5 w-3.5" /> Coming soon
                   </button>
-                  <button className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-2 text-xs font-semibold hover:bg-surface-2">
-                    <Plus className="h-3.5 w-3.5" /> Add to cart
+                  <button
+                    disabled
+                    title="Coming soon"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-2 text-xs font-semibold opacity-40 cursor-not-allowed"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Coming soon
                   </button>
                 </div>
               </article>

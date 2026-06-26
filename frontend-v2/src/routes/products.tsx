@@ -120,7 +120,7 @@ function ProductsPage() {
                 <div key={p.name} className="flex items-center gap-2">
                   <button
                     onClick={() => toggle(p.name)}
-                    className="shrink-0 text-muted-foreground hover:text-foreground"
+                    className="shrink-0 p-1.5 -m-1.5 text-muted-foreground hover:text-foreground"
                     aria-label={`Remove ${p.name}`}
                   >
                     <X className="h-4 w-4" />
