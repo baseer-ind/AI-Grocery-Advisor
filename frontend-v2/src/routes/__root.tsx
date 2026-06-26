@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { trackAppOpened } from "../lib/founderIntelligence";
 
 function NotFoundComponent() {
   return (
@@ -139,6 +140,10 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    trackAppOpened(window.location.pathname);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

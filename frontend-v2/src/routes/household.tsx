@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, ListChecks, Sparkles, Upload as UploadIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { saveHouseholdProfile } from "@/lib/real-data";
+import { logEvent } from "@/lib/founderIntelligence";
 
 export const Route = createFileRoute("/household")({
   head: () => ({ meta: [{ title: "Build Your Household Profile — Household Advisor AI" }] }),
@@ -331,6 +332,7 @@ function HouseholdOnboardingPage() {
         });
       }
       clearOnboardingDraft();
+      logEvent("Completed Onboarding", "/household", undefined, householdId);
     } catch (err) {
       console.error("submitStyle failed", err);
       setError(
@@ -378,7 +380,14 @@ function HouseholdOnboardingPage() {
                 household and we'll take it from there.
               </p>
               <div className="mt-7 flex justify-center sm:justify-start">
-                <PrimaryButton onClick={() => setStep("profile")}>Start</PrimaryButton>
+                <PrimaryButton
+                  onClick={() => {
+                    logEvent("Started Onboarding", "/household");
+                    setStep("profile");
+                  }}
+                >
+                  Start
+                </PrimaryButton>
               </div>
             </div>
           )}
@@ -392,13 +401,14 @@ function HouseholdOnboardingPage() {
                     <OptionButton
                       key={n}
                       selected={answers.size === n}
-                      onClick={() =>
+                      onClick={() => {
+                        logEvent("Entered Household Size", "/household", { size: n });
                         setAnswers((a) => ({
                           ...a,
                           size: n,
                           adults: Math.min(a.adults, n) || 1,
-                        }))
-                      }
+                        }));
+                      }}
                     >
                       {n}
                       {n === 5 ? "+" : ""}
@@ -453,34 +463,39 @@ function HouseholdOnboardingPage() {
                       <OptionButton
                         key={r.value}
                         selected={answers.budgetKnowledge === "rough" && answers.budget === r.value}
-                        onClick={() =>
+                        onClick={() => {
+                          logEvent("Selected Grocery Budget Range", "/household", {
+                            range: r.label,
+                          });
                           setAnswers((a) => ({
                             ...a,
                             budget: r.value,
                             budgetKnowledge: "rough",
-                          }))
-                        }
+                          }));
+                        }}
                       >
                         {r.label}
                       </OptionButton>
                     ))}
                     <OptionButton
                       selected={answers.budgetKnowledge === "figure_it_out"}
-                      onClick={() =>
+                      onClick={() => {
+                        logEvent("Selected Figure It Out", "/household");
                         setAnswers((a) => ({
                           ...a,
                           budget: null,
                           budgetKnowledge: "figure_it_out",
-                        }))
-                      }
+                        }));
+                      }}
                     >
                       We'd like Household Advisor to figure it out
                     </OptionButton>
                   </div>
                   <button
-                    onClick={() =>
-                      setAnswers((a) => ({ ...a, budget: null, budgetKnowledge: "unsure" }))
-                    }
+                    onClick={() => {
+                      logEvent("Skipped Grocery Budget", "/household");
+                      setAnswers((a) => ({ ...a, budget: null, budgetKnowledge: "unsure" }));
+                    }}
                     className="mt-2 text-xs text-muted-foreground hover:text-foreground underline"
                   >
                     Not sure? Skip this for now. We'll estimate it after a few shopping events.

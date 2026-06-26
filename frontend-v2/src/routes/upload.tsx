@@ -17,6 +17,7 @@ import { AppShell } from "@/components/app-shell";
 import { markHasRealData } from "@/lib/real-data";
 import { matchConfidenceNarrative } from "@/lib/household-identity";
 import { cn } from "@/lib/utils";
+import { logEvent } from "@/lib/founderIntelligence";
 
 export const Route = createFileRoute("/upload")({
   head: () => ({ meta: [{ title: "Upload Bill — Household Advisor AI" }] }),
@@ -79,11 +80,13 @@ function UploadPage() {
   const start = async (file?: File) => {
     if (!file) return;
     setStage("processing");
+    logEvent("Attempted Bill Upload", "/upload");
 
     if (!API_BASE) {
       // No backend configured — fail loudly rather than ever showing
       // invented stats that look like a real read of this user's bill.
       setStage("error");
+      logEvent("Bill Upload Failed", "/upload");
       return;
     }
 
@@ -108,8 +111,10 @@ function UploadPage() {
       });
       if (basket.length > 0) markHasRealData();
       setStage("done");
+      logEvent("Bill Upload Success", "/upload", { productsFound: basket.length });
     } catch {
       setStage("error");
+      logEvent("Bill Upload Failed", "/upload");
     }
   };
 

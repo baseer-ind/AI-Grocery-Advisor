@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Heart, ShieldCheck, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { logEvent } from "@/lib/founderIntelligence";
 
 export const Route = createFileRoute("/beta")({
   head: () => ({ meta: [{ title: "Welcome to the Beta — Household Advisor AI" }] }),
@@ -8,6 +10,10 @@ export const Route = createFileRoute("/beta")({
 });
 
 function BetaPage() {
+  useEffect(() => {
+    logEvent("Viewed Beta Page", "/beta");
+  }, []);
+
   return (
     <AppShell title="Household Advisor Beta" eyebrow="Welcome">
       <div className="max-w-2xl mx-auto space-y-10">

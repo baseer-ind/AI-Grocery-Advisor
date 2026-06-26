@@ -18,6 +18,7 @@ import {
 import { computePlanningScore } from "@/lib/household-intelligence";
 import { buildHouseholdKnowledge } from "@/lib/household-knowledge";
 import { computeHouseholdIdentity, confidenceNarrative } from "@/lib/household-identity";
+import { logEvent } from "@/lib/founderIntelligence";
 
 export const Route = createFileRoute("/knowledge")({
   head: () => ({ meta: [{ title: "Your Household — Household Advisor AI" }] }),
@@ -38,6 +39,11 @@ function YourHouseholdPage() {
       getPredictedPantry(profile.householdId).then(setPantry),
     ]).finally(() => setLoading(false));
   }, [profile]);
+
+  useEffect(() => {
+    logEvent("Viewed Your Household", "/knowledge", undefined, profile?.householdId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!profile) {
     return (

@@ -28,6 +28,7 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { categories, household, monthlyTrend } from "@/lib/sample-data";
 import { demoEvents, demoPantry, demoProfile } from "@/lib/demo-household";
+import { logEvent } from "@/lib/founderIntelligence";
 import {
   getFrequentProducts,
   getHouseholdProfile,
@@ -117,6 +118,13 @@ function Today() {
     ]).finally(() => setLoading(false));
   }, [profileForFetch]);
 
+  useEffect(() => {
+    if (!sample && hasRealData()) {
+      logEvent("Viewed Household HQ", "/today", undefined, profileForFetch?.householdId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (!sample && !hasRealData()) {
     const profile = getHouseholdProfile();
     return (
@@ -141,6 +149,14 @@ function Today() {
               <div className="mt-6 grid gap-2.5 max-w-sm mx-auto text-left">
                 <Link
                   to="/products"
+                  onClick={() =>
+                    logEvent(
+                      "Selected Teaching Method Manual",
+                      "/today",
+                      undefined,
+                      profile?.householdId,
+                    )
+                  }
                   className="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3.5 hover:opacity-80"
                 >
                   <span className="text-sm font-medium">Tell us what you usually buy</span>
@@ -148,6 +164,14 @@ function Today() {
                 </Link>
                 <Link
                   to="/this-week"
+                  onClick={() =>
+                    logEvent(
+                      "Selected Teaching Method Shopping List",
+                      "/today",
+                      undefined,
+                      profile?.householdId,
+                    )
+                  }
                   className="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3.5 hover:opacity-80"
                 >
                   <span className="text-sm font-medium">Build a shopping list together</span>
@@ -155,6 +179,14 @@ function Today() {
                 </Link>
                 <Link
                   to="/upload"
+                  onClick={() =>
+                    logEvent(
+                      "Selected Teaching Method Bill Upload",
+                      "/today",
+                      undefined,
+                      profile?.householdId,
+                    )
+                  }
                   className="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3.5 hover:opacity-80"
                 >
                   <span className="text-sm font-medium">Upload a bill (optional)</span>

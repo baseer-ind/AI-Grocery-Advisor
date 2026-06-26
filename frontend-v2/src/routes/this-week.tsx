@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { cn } from "@/lib/utils";
+import { logEvent } from "@/lib/founderIntelligence";
 import {
   addPlannerItem,
   getHouseholdProfile,
@@ -179,6 +180,7 @@ function ThisWeek() {
     setAdded(getPlannerAdded());
     setRemoved(getPlannerRemoved());
     setNewItemName("");
+    logEvent("Added Shopping Event", "/this-week", undefined, profile?.householdId);
   }
 
   useEffect(() => {
@@ -188,6 +190,11 @@ function ThisWeek() {
       .then(setPantry)
       .finally(() => setPantryLoading(false));
   }, [profile]);
+
+  useEffect(() => {
+    logEvent("Opened Shopping Planner", "/this-week", undefined, profile?.householdId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!sample && !hasRealData()) {
     return (
