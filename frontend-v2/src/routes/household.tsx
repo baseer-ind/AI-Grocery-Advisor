@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, ListChecks, Sparkles, Upload as UploadIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { saveHouseholdProfile } from "@/lib/real-data";
@@ -38,6 +38,7 @@ type Answers = {
   seniors: number;
   city: string;
   budget: number | null;
+  budgetKnowledge: "exact" | "rough" | "unsure" | "figure_it_out" | null;
   stores: string[];
   frequency: string | null;
   priorities: string[];
@@ -50,10 +51,47 @@ const initialAnswers: Answers = {
   seniors: 0,
   city: "",
   budget: null,
+  budgetKnowledge: null,
   stores: [],
   frequency: null,
   priorities: [],
 };
+
+const BUDGET_RANGES: { value: number; label: string }[] = [
+  { value: 5000, label: "Under ₹5,000" },
+  { value: 10000, label: "₹5,000–10,000" },
+  { value: 15000, label: "₹10,000–15,000" },
+  { value: 20000, label: "₹15,000–20,000" },
+  { value: 25000, label: "₹20,000+" },
+];
+
+const ONBOARDING_DRAFT_KEY = "ha_onboarding_draft";
+
+function loadOnboardingDraft(): { step: StepKey; answers: Answers } | null {
+  try {
+    const raw = localStorage.getItem(ONBOARDING_DRAFT_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function saveOnboardingDraft(step: StepKey, answers: Answers) {
+  try {
+    localStorage.setItem(ONBOARDING_DRAFT_KEY, JSON.stringify({ step, answers }));
+  } catch {
+    // localStorage unavailable (e.g. private browsing) — non-critical, skip persisting
+  }
+}
+
+function clearOnboardingDraft() {
+  try {
+    localStorage.removeItem(ONBOARDING_DRAFT_KEY);
+  } catch {
+    // localStorage unavailable (e.g. private browsing) — non-critical, skip clearing
+  }
+}
 
 // `confidence` here is a profile-completeness score on a 0–90 scale (not 0–1,
 // not 0–100) — it caps below 100 because onboarding answers alone can never
@@ -76,7 +114,7 @@ function deriveProfile(answers: Answers) {
     else householdType = "Family Household";
   }
 
-  if (answers.budget != null && answers.size) {
+  if (answers.budgetKnowledge != null && answers.size) {
     confidence += 15;
   }
 
@@ -186,12 +224,18 @@ function PrimaryButton({
 type StepKey = "intro" | "profile" | "behavior" | "style" | "snapshot";
 
 function HouseholdOnboardingPage() {
-  const [step, setStep] = useState<StepKey>("intro");
-  const [answers, setAnswers] = useState<Answers>(initialAnswers);
+  const draft = loadOnboardingDraft();
+  const [step, setStep] = useState<StepKey>(draft?.step ?? "intro");
+  const [answers, setAnswers] = useState<Answers>(draft?.answers ?? initialAnswers);
   const [householdId, setHouseholdId] = useState<number | null>(null);
   const [insight, setInsight] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (step === "snapshot") return;
+    saveOnboardingDraft(step, answers);
+  }, [step, answers]);
 
   const started = step !== "intro";
 
@@ -286,6 +330,7 @@ function HouseholdOnboardingPage() {
           priorities: answers.priorities,
         });
       }
+      clearOnboardingDraft();
     } catch (err) {
       console.error("submitStyle failed", err);
       setError(
@@ -396,24 +441,50 @@ function HouseholdOnboardingPage() {
 
               {answers.size != null && answers.city.trim() && (
                 <div>
-                  <Label>Monthly grocery budget (optional)</Label>
-                  <div className="relative mt-2">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                      ₹
-                    </span>
-                    <input
-                      type="number"
-                      value={answers.budget ?? ""}
-                      onChange={(e) =>
+                  <Label>
+                    About how much does your household usually spend on groceries in a month?
+                  </Label>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Don't worry if you're not sure. A rough estimate is enough — we'll improve this
+                    over time.
+                  </p>
+                  <div className="grid grid-cols-1 gap-2 mt-2">
+                    {BUDGET_RANGES.map((r) => (
+                      <OptionButton
+                        key={r.value}
+                        selected={answers.budgetKnowledge === "rough" && answers.budget === r.value}
+                        onClick={() =>
+                          setAnswers((a) => ({
+                            ...a,
+                            budget: r.value,
+                            budgetKnowledge: "rough",
+                          }))
+                        }
+                      >
+                        {r.label}
+                      </OptionButton>
+                    ))}
+                    <OptionButton
+                      selected={answers.budgetKnowledge === "figure_it_out"}
+                      onClick={() =>
                         setAnswers((a) => ({
                           ...a,
-                          budget: e.target.value ? Number(e.target.value) : null,
+                          budget: null,
+                          budgetKnowledge: "figure_it_out",
                         }))
                       }
-                      placeholder="12000"
-                      className="w-full rounded-2xl bg-surface-2 pl-8 pr-4 py-3 text-sm"
-                    />
+                    >
+                      We'd like Household Advisor to figure it out
+                    </OptionButton>
                   </div>
+                  <button
+                    onClick={() =>
+                      setAnswers((a) => ({ ...a, budget: null, budgetKnowledge: "unsure" }))
+                    }
+                    className="mt-2 text-xs text-muted-foreground hover:text-foreground underline"
+                  >
+                    Not sure? Skip this for now. We'll estimate it after a few shopping events.
+                  </button>
                 </div>
               )}
 

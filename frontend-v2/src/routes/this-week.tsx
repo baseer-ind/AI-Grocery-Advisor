@@ -198,26 +198,46 @@ function ThisWeek() {
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">
             {profile
-              ? "We'll build your shopping list after your first bill."
+              ? "Let's teach Household Advisor about your shopping."
               : "Let's build your household profile."}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {profile
-              ? "Once we've seen a couple of shopping events, we'll start predicting what's running low — never invented numbers."
+              ? "Pick whichever is easiest today — every one of these helps us start predicting what's running low. Never invented numbers."
               : "It takes about two minutes and needs no bill — just a few questions about your household."}
           </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              to={profile ? "/upload" : "/household"}
-              className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
-            >
-              {profile ? "Add a bill" : "Build my household profile"}{" "}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+          {profile ? (
+            <div className="mt-6 grid gap-2.5 max-w-sm mx-auto text-left">
+              <Link
+                to="/products"
+                className="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3.5 hover:opacity-80"
+              >
+                <span className="text-sm font-medium">Tell us what you usually buy</span>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Link>
+              <Link
+                to="/upload"
+                className="flex items-center justify-between rounded-2xl bg-surface-2 px-4 py-3.5 hover:opacity-80"
+              >
+                <span className="text-sm font-medium">Upload a bill (optional)</span>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                to="/household"
+                className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90"
+              >
+                Build my household profile <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          )}
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
             <Link
               to="/this-week"
               search={{ sample: true }}
-              className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-semibold hover:bg-surface-2"
+              className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               See how it works
             </Link>
@@ -283,7 +303,7 @@ function ThisWeek() {
               <div className="rounded-2xl border border-border bg-surface p-8 text-center">
                 <p className="text-sm text-muted-foreground">
                   We'll start predicting what's running low once we understand your shopping habits
-                  — add a bill to get started.
+                  — tell us what you usually buy, or add a bill if that's easier.
                 </p>
               </div>
             ) : (
@@ -482,8 +502,8 @@ function ThisWeek() {
           ) : noPantryYet || !pantry || pantry.items.length === 0 ? (
             <div className="rounded-2xl border border-border bg-surface p-8 text-center">
               <p className="text-sm text-muted-foreground">
-                We'll begin predicting your pantry once we understand your shopping habits — add a
-                couple of bills to get started.
+                We'll begin predicting your pantry once we understand your shopping habits — tell us
+                what you usually buy, or add a couple of bills if that's easier.
               </p>
             </div>
           ) : (
