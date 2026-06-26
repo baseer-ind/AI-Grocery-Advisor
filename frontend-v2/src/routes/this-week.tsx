@@ -155,6 +155,7 @@ function ThisWeek() {
   const toggle = (k: string) => setChecked((s) => ({ ...s, [k]: !s[k] }));
 
   const [pantry, setPantry] = useState<PredictedPantry | null>(null);
+  const [pantryLoading, setPantryLoading] = useState(false);
   const profile = sample ? null : getHouseholdProfile();
 
   const [removed, setRemoved] = useState<string[]>(() => getPlannerRemoved());
@@ -182,7 +183,10 @@ function ThisWeek() {
 
   useEffect(() => {
     if (!profile) return;
-    getPredictedPantry(profile.householdId).then(setPantry);
+    setPantryLoading(true);
+    getPredictedPantry(profile.householdId)
+      .then(setPantry)
+      .finally(() => setPantryLoading(false));
   }, [profile]);
 
   if (!sample && !hasRealData()) {
@@ -218,6 +222,17 @@ function ThisWeek() {
               See how it works
             </Link>
           </div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (pantryLoading) {
+    return (
+      <AppShell title="This Week" eyebrow="Pantry & Shopping List">
+        <div className="max-w-xl mx-auto space-y-4 animate-pulse">
+          <div className="h-20 rounded-2xl bg-surface-2" />
+          <div className="h-20 rounded-2xl bg-surface-2" />
         </div>
       </AppShell>
     );
@@ -684,7 +699,14 @@ function PantryCard({ item, tone }: { item: Item; tone: "warning" | "success" })
           <h4 className="font-semibold tracking-tight">{item.name}</h4>
           <div className="text-xs text-muted-foreground">{item.size}</div>
         </div>
-        <span className="font-mono text-xs font-semibold">{item.level}%</span>
+        <span
+          className={cn(
+            "font-mono text-xs font-semibold",
+            tone === "warning" ? "text-warning-foreground" : "text-accent",
+          )}
+        >
+          {tone === "warning" ? "Low" : "Stocked"} · {item.level}%
+        </span>
       </div>
       <div className="mt-4 h-1.5 rounded-full bg-surface-2 overflow-hidden">
         <div

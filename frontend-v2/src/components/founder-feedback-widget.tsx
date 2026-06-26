@@ -35,7 +35,7 @@ export function FounderFeedbackWidget() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-20 left-3 lg:bottom-4 z-30 flex items-center gap-1.5 rounded-full bg-surface/90 backdrop-blur px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground shadow-sm"
+        className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-3 lg:bottom-4 z-30 flex items-center gap-1.5 rounded-full bg-surface/90 backdrop-blur px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground shadow-sm"
       >
         <MessageCircle className="h-3.5 w-3.5" />
         Tell Baseer what confused you

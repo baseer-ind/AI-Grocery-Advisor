@@ -75,7 +75,7 @@ export function AskAiWidget() {
       <button
         onClick={() => setOpen(true)}
         className={cn(
-          "fixed bottom-20 right-4 lg:bottom-5 lg:right-5 z-40 inline-flex items-center gap-2 rounded-full bg-foreground text-background px-4 py-3 text-sm font-semibold shadow-lg hover:opacity-90 transition-all",
+          "fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 lg:bottom-5 lg:right-5 z-40 inline-flex items-center gap-2 rounded-full bg-foreground text-background px-4 py-3 text-sm font-semibold shadow-lg hover:opacity-90 transition-all",
           open && "scale-0 opacity-0 pointer-events-none",
         )}
         aria-label="Ask AI"

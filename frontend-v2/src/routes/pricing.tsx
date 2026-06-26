@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, Crown, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { cn } from "@/lib/utils";
@@ -112,16 +112,32 @@ function Pricing() {
                 </li>
               ))}
             </ul>
-            <button
-              className={cn(
-                "mt-7 w-full rounded-lg px-4 py-2.5 text-sm font-semibold transition-all",
-                t.highlight
-                  ? "bg-foreground text-background hover:opacity-90"
-                  : "border border-border hover:bg-surface-2",
-              )}
-            >
-              {t.cta}
-            </button>
+            {t.cta === "Current plan" ? (
+              <button
+                disabled
+                className="mt-7 w-full rounded-lg border border-border px-4 py-2.5 text-sm font-semibold opacity-60 cursor-not-allowed"
+              >
+                Current plan
+              </button>
+            ) : t.cta === "Talk to us" ? (
+              <Link
+                to="/feedback"
+                className="mt-7 w-full inline-flex items-center justify-center rounded-lg border border-border px-4 py-2.5 text-sm font-semibold hover:bg-surface-2"
+              >
+                Talk to us
+              </Link>
+            ) : (
+              <button
+                disabled
+                title="Coming soon"
+                className={cn(
+                  "mt-7 w-full rounded-lg px-4 py-2.5 text-sm font-semibold opacity-40 cursor-not-allowed",
+                  t.highlight ? "bg-foreground text-background" : "border border-border",
+                )}
+              >
+                {t.cta} · Coming soon
+              </button>
+            )}
           </article>
         ))}
       </section>

@@ -363,6 +363,7 @@ function VerificationRow({
 }) {
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [suggestionsError, setSuggestionsError] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<{ id: number; name: string }[]>([]);
@@ -373,12 +374,14 @@ function VerificationRow({
   const loadSuggestions = async () => {
     if (suggestions !== null || loadingSuggestions || !item.basket_item_id) return;
     setLoadingSuggestions(true);
+    setSuggestionsError(false);
     try {
       const res = await fetch(`${API_BASE}/api/v1/bills/items/${item.basket_item_id}/suggestions`);
+      if (!res.ok) throw new Error("request failed");
       const data = await res.json();
       setSuggestions(data);
     } catch {
-      setSuggestions([]);
+      setSuggestionsError(true);
     } finally {
       setLoadingSuggestions(false);
     }
@@ -456,6 +459,9 @@ function VerificationRow({
         </button>
       </div>
 
+      {suggestionsError && (
+        <div className="mt-3 text-xs text-destructive">Couldn't load matches — try again.</div>
+      )}
       {suggestions !== null && (
         <div className="mt-3 space-y-1.5">
           {suggestions.length === 0 && (
